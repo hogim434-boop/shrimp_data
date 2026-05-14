@@ -1,3 +1,112 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "c2b8ba64-f4ce-4c4f-b49e-1268b4929be1",
+      "name": "T-013a useFavorites hook + 단위 테스트",
+      "description": "lib/circles/use-favorites.ts (Client hook) 신설. sessionStorage 키 'kcircle:favorites' 에 JSON.stringify(string[]) 저장. 반환 { favoriteIds: Set<string>, isFavorite(id), toggle(id), isAuthenticated: boolean | null }. mount 시 useEffect 로 storage 복원 + 모듈 singleton authPromise (createClient().auth.getClaims() 1회) 로 isAuthenticated 동기화. toggle 은 isAuthenticated===false 시 router.push('/auth/login?next='+pathname) 후 return, null/true 시 setFavoriteIds + writeStorage + window.dispatchEvent(CustomEvent 'kcircle:favorites-changed'). 다른 인스턴스는 useEffect 안에서 같은 이벤트 listener 추가하여 readStorage()→setFavoriteIds 동기화. hasEnvVars false 시 isAuthenticated null 유지(storage 토글만). tests/unit/use-favorites.test.ts(jsdom) 5건+ — sessionStorage 복원/toggle 영속/두 인스턴스 동기화.",
+      "notes": "모듈 singleton authPromise 는 페이지 navigation 후에도 캐시 — stale 가능하지만 T-013 단계는 단순화 우선. T-015 이후 SWR/Realtime 패턴으로 정식 갱신. CustomEvent broadcast 로 페이지의 카드 6개+액션 바 모두 동기. jsdom 의 supabase auth fetch 는 mock 가능 — 본 테스트는 인증 무관 storage 동작만 검증. router.push 도 next/navigation 모듈 mock 필요 시 vitest mock.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-14T08:51:24.175Z",
+      "updatedAt": "2026-05-14T08:51:24.175Z",
+      "relatedFiles": [
+        {
+          "path": "lib/circles/use-favorites.ts",
+          "type": "CREATE",
+          "description": "Client hook — storage + auth + custom event broadcast"
+        },
+        {
+          "path": "tests/unit/use-favorites.test.ts",
+          "type": "CREATE",
+          "description": "jsdom 환경, renderHook + act"
+        },
+        {
+          "path": "lib/supabase/client.ts",
+          "type": "DEPENDENCY",
+          "description": "browser createClient"
+        },
+        {
+          "path": "lib/utils.ts",
+          "type": "DEPENDENCY",
+          "description": "hasEnvVars"
+        }
+      ],
+      "implementationGuide": "STEP1: lib/circles/use-favorites.ts 'use client'. 모듈 레벨 const STORAGE_KEY='kcircle:favorites', FAVORITES_EVENT='kcircle:favorites-changed', let authPromise:Promise<boolean|null>|null=null. function getAuthPromise(): Promise<boolean|null> { if(!authPromise) authPromise = (!hasEnvVars ? Promise.resolve(null) : createClient().auth.getClaims().then(({data})=>Boolean(data?.claims)).catch(()=>null)); return authPromise; }. function readStorage()/writeStorage()/broadcast(). export function useFavorites() { const router=useRouter(); const pathname=usePathname(); const [favoriteIds,setFavoriteIds]=useState<Set<string>>(()=>new Set()); const [isAuthenticated,setIsAuthenticated]=useState<boolean|null>(null); useEffect(()=>setFavoriteIds(readStorage()),[]); useEffect(()=>{getAuthPromise().then(setIsAuthenticated);},[]); useEffect(()=>{ const handler=()=>setFavoriteIds(readStorage()); window.addEventListener(FAVORITES_EVENT,handler); return ()=>window.removeEventListener(FAVORITES_EVENT,handler); },[]); const isFavorite=useCallback((id:string)=>favoriteIds.has(id),[favoriteIds]); const toggle=useCallback((id:string)=>{ if(isAuthenticated===false){ router.push(`/auth/login?next=${pathname}`); return; } setFavoriteIds(prev=>{ const next=new Set(prev); if(next.has(id))next.delete(id); else next.add(id); writeStorage(next); broadcast(); return next; }); },[isAuthenticated,router,pathname]); return { favoriteIds, isFavorite, toggle, isAuthenticated }; }. STEP2: tests/unit/use-favorites.test.ts — vitest + @testing-library/react renderHook + act. beforeEach: window.sessionStorage.clear(). 5건: (1) 초기 favoriteIds 빈 Set, (2) toggle('id-1') 후 isFavorite('id-1')===true, (3) sessionStorage 에 '[\"id-1\"]' 저장됨, (4) 다른 hook 인스턴스도 동기화(CustomEvent 후), (5) 재 renderHook 시 sessionStorage 에서 복원. STEP3: npm run test 통과 확인 (37+5=42 이상).",
+      "verificationCriteria": "(1) lib/circles/use-favorites.ts 신설, 시그니처 { favoriteIds, isFavorite, toggle, isAuthenticated }. (2) sessionStorage 'kcircle:favorites' 키 사용. (3) CustomEvent broadcast 동기화 동작. (4) 단위 테스트 5건+ PASS. (5) lint+build 통과.",
+      "analysisResult": "T-013 「하단 고정 액션 바 + 즐겨찾기 토글 UI」. useFavorites hook(sessionStorage+CustomEvent broadcast로 같은 페이지 다중 인스턴스 동기화+모듈 singleton authPromise 1회 fetch+hasEnvVars false 시 null) + FavoriteToggleButton variant 2종 + CircleActions layout 'mobile'/'desktop' 분기. CircleCard 의 span placeholder → button. 상세 페이지 Header 옆 데스크탑 inline + 본문 끝 모바일 fixed 액션 바. 「参加する」 onClick 은 T-014 anchor placeholder. BottomNav 와 z-30 같지만 /circles/[uuid] 정규식 자동 hidden 으로 충돌 없음. Custom event 'kcircle:favorites-changed' 로 카드 6개 + 액션 바 동기. 변경 범위: lib/circles/use-favorites.ts(신규), components/circles/{favorite-toggle-button,circle-actions}.tsx(신규), components/circles/circle-card.tsx(span→button), app/circles/[id]/page.tsx(액션 바 통합), tests/unit/use-favorites.test.ts + tests/e2e/favorites.spec.ts."
+    },
+    {
+      "id": "31632e4c-f2a4-4a4a-a9dc-1f4f872aa1da",
+      "name": "T-013b FavoriteToggleButton + CircleCard 하트 교체",
+      "description": "components/circles/favorite-toggle-button.tsx (Client) 신설 — props={circleId, variant: 'card'|'action-bar'}. useFavorites 사용. button 의 onClick={(e)=>{e.preventDefault(); e.stopPropagation(); toggle(circleId);}}. aria-pressed={active}, aria-label 동적('お気に入りに追加'/'お気に入りから削除'). variant 별 사이즈/스타일 분기(card: h-9 w-9 bg-background/80 backdrop-blur / action-bar: h-12 w-12 border bg-background). Heart 아이콘 active 시 fill-current text-red-500. components/circles/circle-card.tsx 의 우상단 span aria-hidden placeholder 를 <FavoriteToggleButton circleId={circle.id} variant='card' /> 로 교체. lint+build 통과.",
+      "notes": "Heart 아이콘의 fill 은 active 시에만. lucide Heart 는 기본 outline. text-red-500 은 위험·강조 컬러 — keio-navy 와는 다른 「감정 표현」 컬러. CircleCard 안의 absolute 위치 유지(기존 'right-2 top-2'). variant='card' 의 h-9 w-9 = 36×36px 로 ROADMAP 의 44px 터치 영역보다 작지만 카드 컨텍스트에선 일반 패턴. 액션 바는 h-12=48px 로 권장 충족.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c2b8ba64-f4ce-4c4f-b49e-1268b4929be1"
+        }
+      ],
+      "createdAt": "2026-05-14T08:51:24.175Z",
+      "updatedAt": "2026-05-14T08:51:24.175Z",
+      "relatedFiles": [
+        {
+          "path": "components/circles/favorite-toggle-button.tsx",
+          "type": "CREATE",
+          "description": "Client 하트 버튼 (variant 2종)"
+        },
+        {
+          "path": "components/circles/circle-card.tsx",
+          "type": "TO_MODIFY",
+          "description": "span placeholder → FavoriteToggleButton"
+        },
+        {
+          "path": "lib/circles/use-favorites.ts",
+          "type": "DEPENDENCY",
+          "description": "T-013a"
+        }
+      ],
+      "implementationGuide": "STEP1: components/circles/favorite-toggle-button.tsx 'use client'. import Heart from lucide-react, useFavorites from @/lib/circles/use-favorites, cn from @/lib/utils. interface Props{ circleId: string; variant: 'card'|'action-bar' }. function FavoriteToggleButton: const {isFavorite,toggle}=useFavorites(); const active=isFavorite(circleId); return <button type='button' onClick={(e)=>{e.preventDefault();e.stopPropagation();toggle(circleId);}} aria-pressed={active} aria-label={active?'お気に入りから削除':'お気に入りに追加'} className={cn('inline-flex items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2', variant==='card'&&'h-9 w-9 bg-background/80 text-muted-foreground hover:text-foreground backdrop-blur', variant==='action-bar'&&'h-12 w-12 border bg-background hover:bg-accent')}><Heart className={cn('size-5',active&&'fill-current text-red-500')} aria-hidden='true' /></button>;. STEP2: components/circles/circle-card.tsx 수정 — 기존 span aria-hidden 'absolute right-2 top-2 inline-flex h-9 w-9 ...' 블록을 <div className='absolute right-2 top-2'><FavoriteToggleButton circleId={id} variant='card' /></div> 로 교체. STEP3: npm run lint+build 통과 확인. 카드의 button click 이 Link navigation 차단되는지는 다음 task T-013c 의 E2E 에서 검증.",
+      "verificationCriteria": "(1) components/circles/favorite-toggle-button.tsx props=circleId+variant. (2) onClick 이 e.preventDefault+stopPropagation 호출. (3) aria-pressed 동적. (4) CircleCard 의 placeholder span 이 button 으로 교체됨. (5) lint+build 통과.",
+      "analysisResult": "T-013 「하단 고정 액션 바 + 즐겨찾기 토글 UI」. useFavorites hook(sessionStorage+CustomEvent broadcast로 같은 페이지 다중 인스턴스 동기화+모듈 singleton authPromise 1회 fetch+hasEnvVars false 시 null) + FavoriteToggleButton variant 2종 + CircleActions layout 'mobile'/'desktop' 분기. CircleCard 의 span placeholder → button. 상세 페이지 Header 옆 데스크탑 inline + 본문 끝 모바일 fixed 액션 바. 「参加する」 onClick 은 T-014 anchor placeholder. BottomNav 와 z-30 같지만 /circles/[uuid] 정규식 자동 hidden 으로 충돌 없음. Custom event 'kcircle:favorites-changed' 로 카드 6개 + 액션 바 동기. 변경 범위: lib/circles/use-favorites.ts(신규), components/circles/{favorite-toggle-button,circle-actions}.tsx(신규), components/circles/circle-card.tsx(span→button), app/circles/[id]/page.tsx(액션 바 통합), tests/unit/use-favorites.test.ts + tests/e2e/favorites.spec.ts."
+    },
+    {
+      "id": "871b0276-9da2-4af8-b251-cfd199f075f4",
+      "name": "T-013c CircleActions + 상세 페이지 통합 + E2E + ROADMAP T-013 완료",
+      "description": "components/circles/circle-actions.tsx (Client) 신설 — props={circle: CircleDetail, layout: 'mobile'|'desktop'}. 'mobile': fixed bottom md:hidden + safe-area-inset-bottom + flex gap-3 + FavoriteToggleButton variant='action-bar' + Button size='lg' className='flex-1 bg-keio-navy' onClick={handleJoin} '参加する'. 'desktop': hidden md:flex inline + 동일 컴포넌트. handleJoin 은 placeholder console.info (T-014 anchor). app/circles/[id]/page.tsx Header 안에 <CircleActions layout='desktop' /> 추가, CircleDetailContent 끝에 <CircleActions layout='mobile' /> 추가. tests/e2e/favorites.spec.ts 신설 — 카드 하트 클릭/aria-pressed/페이지 새로고침 영속 mobile+desktop. ROADMAP T-013 ✅ + 완료 요약.",
+      "notes": "handleJoin 의 console.info 는 T-014 에서 실제 모달 open 호출로 교체. layout 분기 시 mobile 은 fixed bottom 으로 일반 컨테이너 plow 외부, desktop 은 Header 안 인라인. ContactSection 은 그대로 유지(T-014 후 채널 모달이 본 영역 통합 검토). E2E 의 카드 하트 검증은 visible 한 카드만 매칭(첫 카드).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "31632e4c-f2a4-4a4a-a9dc-1f4f872aa1da"
+        }
+      ],
+      "createdAt": "2026-05-14T08:51:24.175Z",
+      "updatedAt": "2026-05-14T08:51:24.175Z",
+      "relatedFiles": [
+        {
+          "path": "components/circles/circle-actions.tsx",
+          "type": "CREATE",
+          "description": "Client 액션 영역 (mobile fixed / desktop inline)"
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "Header 안 데스크탑 inline + 본문 끝 모바일 액션 바"
+        },
+        {
+          "path": "tests/e2e/favorites.spec.ts",
+          "type": "CREATE",
+          "description": "하트 토글 + 새로고침 영속 mobile+desktop"
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-013 ✅ + 완료 요약"
+        }
+      ],
+      "implementationGuide": "STEP1: components/circles/circle-actions.tsx 'use client'. import Button, FavoriteToggleButton, type CircleDetail, cn. interface Props{ circle: CircleDetail; layout: 'mobile'|'desktop' }. function handleJoin(){ console.info('[T-014 anchor] open channel modal for', circle.id); }. layout==='mobile' 시 <div className='fixed bottom-0 left-0 right-0 z-30 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 pb-[env(safe-area-inset-bottom)] md:hidden'><div className='container mx-auto flex max-w-md items-center gap-3 p-3'><FavoriteToggleButton circleId={circle.id} variant='action-bar' /><Button size='lg' onClick={handleJoin} className='bg-keio-navy text-keio-navy-foreground hover:bg-keio-navy/90 flex-1'>参加する</Button></div></div>. layout==='desktop' 시 <div className='hidden md:flex items-center gap-3'><FavoriteToggleButton circleId={circle.id} variant='action-bar' /><Button size='lg' onClick={handleJoin} className='bg-keio-navy text-keio-navy-foreground hover:bg-keio-navy/90'>参加する</Button></div>. STEP2: app/circles/[id]/page.tsx Header 컴포넌트 안 끝에 <CircleActions circle={circle} layout='desktop' /> 추가. CircleDetailContent 반환 article 끝에 <CircleActions circle={circle} layout='mobile' /> 추가. STEP3: tests/e2e/favorites.spec.ts. test1 '카드 하트 클릭 토글': await page.goto('/'); const heart=page.locator('button[aria-label=\"お気に入りに追加\"]').first(); await heart.click(); await expect(heart).toHaveAttribute('aria-pressed','true'). test2 '새로고침 후 영속': test1 같이 클릭 후 await page.reload(); 같은 카드 위치의 button 의 aria-pressed='true' 또는 aria-label='お気に入りから削除'. test3(데스크탑만): await page.goto('/circles/00000000-0000-4000-8000-000000000001'); 데스크탑 inline 영역의 「参加する」 visible. STEP4: docs/ROADMAP.md T-013 행 status pending→completed + ✅ + 완료 요약. STEP5: 전체 검증.",
+      "verificationCriteria": "(1) components/circles/circle-actions.tsx layout 분기. (2) 상세 페이지에 mobile+desktop 모두 적용. (3) handleJoin placeholder. (4) tests/e2e/favorites.spec.ts mobile+desktop PASS. (5) ROADMAP T-013 ✅. (6) 전체 검증 통과.",
+      "analysisResult": "T-013 「하단 고정 액션 바 + 즐겨찾기 토글 UI」. useFavorites hook(sessionStorage+CustomEvent broadcast로 같은 페이지 다중 인스턴스 동기화+모듈 singleton authPromise 1회 fetch+hasEnvVars false 시 null) + FavoriteToggleButton variant 2종 + CircleActions layout 'mobile'/'desktop' 분기. CircleCard 의 span placeholder → button. 상세 페이지 Header 옆 데스크탑 inline + 본문 끝 모바일 fixed 액션 바. 「参加する」 onClick 은 T-014 anchor placeholder. BottomNav 와 z-30 같지만 /circles/[uuid] 정규식 자동 hidden 으로 충돌 없음. Custom event 'kcircle:favorites-changed' 로 카드 6개 + 액션 바 동기. 변경 범위: lib/circles/use-favorites.ts(신규), components/circles/{favorite-toggle-button,circle-actions}.tsx(신규), components/circles/circle-card.tsx(span→button), app/circles/[id]/page.tsx(액션 바 통합), tests/unit/use-favorites.test.ts + tests/e2e/favorites.spec.ts."
+    }
+  ]
 }
