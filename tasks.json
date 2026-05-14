@@ -103,14 +103,14 @@
       "name": "T-012c not-found + E2E + ROADMAP T-012 완료",
       "description": "app/circles/[id]/not-found.tsx 신설 — 「サークルが見つかりません」 h1 + 설명문 + 「サークル一覧に戻る」 Button asChild Link. RSC, fetch 없음. tests/e2e/circle-detail.spec.ts 신설 — (1) 홈에서 첫 카드 클릭 → /circles/UUID 진입 + h1 서클명 visible, (2) 요약 카드 5종 라벨(活動頻度/年会費/活動曜日/会員数/新入生比率) visible, (3) /circles/00000000-0000-4000-8000-999999999999(존재하지않는) → 「サークルが見つかりません」 visible. mobile+desktop 양쪽 회귀. ROADMAP.md T-012 행 ✅ + 완료 요약 4단계.",
       "notes": "test1 의 카드 클릭 동작은 BottomNav 가 자동 hidden 되는지도 자연 검증(이미 별도 test 존재). E2E 의 viewport 분기는 page.viewportSize() 로 모바일/데스크탑 구분 불필요 — 본 spec 의 검증은 둘 다 동일하게 통과해야 함.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "9dcf00cb-d407-4495-87c1-2d5db006195b"
         }
       ],
       "createdAt": "2026-05-14T08:34:54.716Z",
-      "updatedAt": "2026-05-14T08:34:54.716Z",
+      "updatedAt": "2026-05-14T08:42:54.298Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/not-found.tsx",
