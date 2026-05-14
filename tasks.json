@@ -137,7 +137,7 @@
         }
       ],
       "createdAt": "2026-05-14T06:28:21.730Z",
-      "updatedAt": "2026-05-14T06:34:21.565Z",
+      "updatedAt": "2026-05-14T06:36:25.506Z",
       "relatedFiles": [
         {
           "path": "app/layout.tsx",
@@ -159,7 +159,8 @@
       ],
       "implementationGuide": "STEP1: app/layout.tsx 수정. ThemeProvider 내부 최상단에 <Header /> 추가. Toaster 는 children 다음에 그대로. STEP2: app/page.tsx 의 <nav> 블록(line 16-32) 제거. footer 의 <ThemeSwitcher /> 제거. STEP3: 본문 padding 검토 — header 가 sticky 라 본문 최상단에 추가 padding 불필요(natural flow). STEP4: dev 로 / 페이지가 헤더 + Hero + Next steps + footer 순서로 정상 렌더되는지 확인.",
       "verificationCriteria": "(1) app/layout.tsx 가 Header import 및 렌더. (2) app/page.tsx 에 <nav> 블록 없음. (3) dev server 에서 / 페이지가 헤더 + 본문 + 푸터 순서로 정상 렌더. (4) /circles, /favorites, /mypage 등 다른 페이지에서도 동일 헤더 노출. (5) npm run build + lint 통과.",
-      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한.",
+      "summary": "app/layout.tsx 갱신 — ThemeProvider 내부 최상단에 <Header /> 추가, cacheComponents 모드 대응을 위해 Suspense fallback(빈 h-14 헤더로 layout shift 방지) 으로 래핑. app/page.tsx 정리 — 자체 <nav> 블록(로고 + DeployButton + AuthButton + EnvVarWarning) 제거, footer 안의 ThemeSwitcher 제거, DeployButton/AuthButton/EnvVarWarning/Link import 정리, min-h-screen 을 헤더 14 빼고 calc(100vh-3.5rem) 으로 조정. 첫 빌드에서 「Uncached data was accessed outside of Suspense」 에러 발견 → Header 가 getClaims()(cookies 의존)로 비동기 → Suspense 추가하여 해결. 재빌드 결과 23 페이지 모두 ◐(Partial Prerender) 로 정상 빌드 — Header 동적 부분만 streaming, 본문은 정적."
     },
     {
       "id": "a48fa087-ef65-48ad-82b5-a9ddd6a332b0",
