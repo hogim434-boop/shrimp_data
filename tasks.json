@@ -74,7 +74,7 @@
         }
       ],
       "createdAt": "2026-05-14T06:28:21.730Z",
-      "updatedAt": "2026-05-14T06:31:40.223Z",
+      "updatedAt": "2026-05-14T06:34:08.394Z",
       "relatedFiles": [
         {
           "path": "components/auth-button.tsx",
@@ -121,7 +121,8 @@
       ],
       "implementationGuide": "STEP1: components/auth-button.tsx 갱신 — getClaims() 로 user 추출 후 user 없으면 [ログイン/新規登録] 2개 버튼, user 있으면 Avatar 이니셜 + DropdownMenu(マイページ로 Link / LogoutButton). user.role 은 별도 export 안 함, Header 에서 별도 query. STEP2: components/layout/main-nav.tsx 신설 (use client). usePathname 으로 active 강조. props role?: 'admin'. 링크 5개 + role='admin' 시 6번째 추가. STEP3: components/layout/mobile-nav.tsx 신설 (use client). shadcn Sheet + 햄버거 버튼(lucide Menu). 동일 링크 리스트. STEP4: components/layout/header.tsx 신설 (RSC). createClient().auth.getClaims() 로 user + (있으면 profiles 조회로 role - profiles 테이블 미존재 시 undefined fallback). sticky top-0 z-40 border-b backdrop-blur 헤더 + 좌측 MobileNav(md:hidden) + KCircle 로고 Link + MainNav(hidden md:flex) + 우측 ThemeSwitcher + Suspense(AuthButton fallback Skeleton).",
       "verificationCriteria": "(1) components/layout/{header,main-nav,mobile-nav}.tsx 3개 파일 존재. (2) components/auth-button.tsx 의 라벨이 일본어. (3) main-nav 의 링크 텍스트가 PRD 메뉴 구조 일본어 라벨 그대로. (4) role='admin' 분기 코드 존재. (5) Header 가 sticky 클래스 적용. (6) npm run build + lint 통과.",
-      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한.",
+      "summary": "5개 컴포넌트 생성 + 1개 수정: (1) components/layout/header.tsx (RSC) sticky top-0 + backdrop-blur, getClaims 로 role 추출 후 MobileNav/MainNav 에 prop 전달, hasEnvVars 분기로 EnvVarWarning/AuthButton 노출, AuthButton 은 Suspense 래핑. (2) components/layout/main-nav.tsx (Client) usePathname active 강조 + role='admin' 시 「承認管理」 추가. (3) components/layout/mobile-nav.tsx (Client) shadcn Sheet + 햄버거(lucide Menu) + 모바일 메뉴, SheetTitle 로 a11y 확보. (4) components/layout/user-menu.tsx (Client, plan 외 추가) — RSC/Client 경계 분리 필수로 신설. Avatar 이니셜 + DropdownMenu(マイページ/登録サークル管理/ログアウト). (5) components/auth-button.tsx 갱신 — 일본어 라벨 + UserMenu 분리 호출. (6) components/logout-button.tsx 라벨 Logout → ログアウト + variant ghost size sm. PRD 메뉴 구조 일본어 라벨 그대로 사용, role 분기 코드 존재, sticky 클래스 적용, 빌드/린트 통과."
     },
     {
       "id": "a2a7b8bd-d0eb-4ccb-b760-58347fe2cb07",
