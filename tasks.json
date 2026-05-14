@@ -8,7 +8,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T06:28:21.730Z",
-      "updatedAt": "2026-05-14T06:30:10.944Z",
+      "updatedAt": "2026-05-14T06:31:30.902Z",
       "relatedFiles": [
         {
           "path": "components/layout/coming-soon.tsx",
@@ -58,7 +58,8 @@
       ],
       "implementationGuide": "STEP1: components/layout/coming-soon.tsx 신설. props 는 { title: string, description?: string, plannedPhase: string }. shadcn Card 또는 단순 section + 중앙 정렬. STEP2: app/circles/page.tsx 외 7개 페이지 파일 생성. 각 파일은 ComingSoon 을 import 하여 title 만 다르게 호출. 일본어 제목 사용: サークル一覧 / サークル詳細 / サークル登録 / お気に入り / 比較 / マイページ / 登録サークル管理 / 承認管理. STEP3: dev/build 로 모든 라우트 200 확인.",
       "verificationCriteria": "(1) components/layout/coming-soon.tsx 존재 + 8개 페이지가 모두 이 컴포넌트 사용. (2) npm run build 결과에 8개 신규 라우트 모두 표시. (3) npm run lint 통과.",
-      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한.",
+      "summary": "components/layout/coming-soon.tsx 신설 — title/description/plannedPhase props 를 받는 shadcn Card 기반 RSC 셸 컴포넌트. lucide Construction 아이콘 + Badge 로 「Phase 1.X (T-XXX) で公開予定」 표시. 8개 페이지(circles, circles/[id], circles/new, favorites, compare, mypage, mypage/circles, admin/circles) 모두 동일 컴포넌트를 import 하여 일본어 제목·설명·Phase 만 다르게 호출. 빌드 결과 모든 라우트 정상 생성(◯ 정적 또는 ◐ PPR), lint 통과. 향후 데이터 fetch 가 들어갈 때 Suspense 추가 필요 위치를 주석으로 명시."
     },
     {
       "id": "59def6c4-1d86-4ef3-be94-fe88497fc40a",
