@@ -8,7 +8,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T07:23:59.093Z",
-      "updatedAt": "2026-05-14T07:24:48.158Z",
+      "updatedAt": "2026-05-14T07:27:22.519Z",
       "relatedFiles": [
         {
           "path": "package.json",
@@ -48,7 +48,8 @@
       ],
       "implementationGuide": "STEP1: npm i -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom jsdom vite-tsconfig-paths. STEP2: vitest.config.ts 생성 — defineConfig({ plugins: [tsconfigPaths()], test: { environment: 'jsdom', setupFiles: ['./vitest.setup.ts'], include: ['tests/unit/**/*.test.ts'] } }). STEP3: vitest.setup.ts 생성 — import '@testing-library/jest-dom'. STEP4: package.json scripts 에 test/test:watch/test:ui 3개 추가. STEP5: tests/unit/constants.test.ts 작성 — describe 'category constants'(CATEGORIES.length===8, 각 키에 LABELS 있음) + 'official type constants'(OFFICIAL_TYPES.length===5 학생 단체 통합 정책 반영, 각 키에 LABELS 있음). STEP6: npm run lint + npm run build + npm run test 모두 통과 확인.",
       "verificationCriteria": "(1) package.json 의 devDependencies 에 vitest, @vitest/ui, @testing-library/react, @testing-library/jest-dom, jsdom, vite-tsconfig-paths 추가. (2) vitest.config.ts + vitest.setup.ts 신규 파일 존재. (3) tests/unit/constants.test.ts 에 CATEGORIES 8종 + OFFICIAL_TYPES 5종 검증 test 존재. (4) npm run test 통과 (4건 이상 it PASS). (5) npm run build + lint 영향 없음.",
-      "analysisResult": "T-004 「Vitest + Playwright 테스트 러너 도입」. Vitest(jsdom + vite-tsconfig-paths) 단위 테스트 + Playwright(Chromium, Mobile+Desktop projects) E2E 분리 도입. 단위 테스트는 T-003 의 lib/constants/* 매핑 검증으로 회귀 가드 + 학생 단체 5종 정책 명문화. E2E 는 헤더 「KCircle」 로고 노출 스모크 1건으로 시작. tsconfig paths(`@/*`) 는 Vitest 에서 vite-tsconfig-paths 로 처리, Playwright spec 은 alias import 회피로 단순화. 모바일 퍼스트 viewport(Pixel 5 393px) + Desktop Chrome 2 projects 로 자동 회귀. 변경 범위: package.json, vitest.config.ts, vitest.setup.ts, playwright.config.ts, tests/unit/constants.test.ts, tests/e2e/smoke.spec.ts, .gitignore, docs/ROADMAP.md. T-004a → T-004b 순차 (devDep 충돌 회피)."
+      "analysisResult": "T-004 「Vitest + Playwright 테스트 러너 도입」. Vitest(jsdom + vite-tsconfig-paths) 단위 테스트 + Playwright(Chromium, Mobile+Desktop projects) E2E 분리 도입. 단위 테스트는 T-003 의 lib/constants/* 매핑 검증으로 회귀 가드 + 학생 단체 5종 정책 명문화. E2E 는 헤더 「KCircle」 로고 노출 스모크 1건으로 시작. tsconfig paths(`@/*`) 는 Vitest 에서 vite-tsconfig-paths 로 처리, Playwright spec 은 alias import 회피로 단순화. 모바일 퍼스트 viewport(Pixel 5 393px) + Desktop Chrome 2 projects 로 자동 회귀. 변경 범위: package.json, vitest.config.ts, vitest.setup.ts, playwright.config.ts, tests/unit/constants.test.ts, tests/e2e/smoke.spec.ts, .gitignore, docs/ROADMAP.md. T-004a → T-004b 순차 (devDep 충돌 회피).",
+      "summary": "Vitest 4.1.6 + jsdom + vite-tsconfig-paths + @testing-library/react + @testing-library/jest-dom 6개 devDep 설치. vitest.config.ts (jsdom 환경, tsconfig paths 플러그인, tests/unit/** 만 include, tests/e2e exclude) + vitest.setup.ts (jest-dom/vitest 확장 import) 신설. package.json 에 test/test:watch/test:ui 3개 스크립트 추가. tests/unit/constants.test.ts 에서 T-003 의 5개 상수 모듈(category 8종, official-type 5종 — 학생 단체 통합 정책 명문화 포함, activity-frequency 3종, circle-status 3종, tag-kind 4종) 의 KEYS·LABELS·ORDER 매핑 정합성 검증. npm run test 결과 1 file / 10 tests 모두 PASS (443ms). lint/build 영향 없음. vite-tsconfig-paths 의 deprecation 안내는 무해(Vite 6 native option 권유). 향후 native 마이그레이션 가능."
     },
     {
       "id": "b2753cf1-af63-42a4-8fdd-8ba1ff6fa627",
