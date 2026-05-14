@@ -42,14 +42,14 @@
       "name": "T-013b FavoriteToggleButton + CircleCard 하트 교체",
       "description": "components/circles/favorite-toggle-button.tsx (Client) 신설 — props={circleId, variant: 'card'|'action-bar'}. useFavorites 사용. button 의 onClick={(e)=>{e.preventDefault(); e.stopPropagation(); toggle(circleId);}}. aria-pressed={active}, aria-label 동적('お気に入りに追加'/'お気に入りから削除'). variant 별 사이즈/스타일 분기(card: h-9 w-9 bg-background/80 backdrop-blur / action-bar: h-12 w-12 border bg-background). Heart 아이콘 active 시 fill-current text-red-500. components/circles/circle-card.tsx 의 우상단 span aria-hidden placeholder 를 <FavoriteToggleButton circleId={circle.id} variant='card' /> 로 교체. lint+build 통과.",
       "notes": "Heart 아이콘의 fill 은 active 시에만. lucide Heart 는 기본 outline. text-red-500 은 위험·강조 컬러 — keio-navy 와는 다른 「감정 표현」 컬러. CircleCard 안의 absolute 위치 유지(기존 'right-2 top-2'). variant='card' 의 h-9 w-9 = 36×36px 로 ROADMAP 의 44px 터치 영역보다 작지만 카드 컨텍스트에선 일반 패턴. 액션 바는 h-12=48px 로 권장 충족.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "c2b8ba64-f4ce-4c4f-b49e-1268b4929be1"
         }
       ],
       "createdAt": "2026-05-14T08:51:24.175Z",
-      "updatedAt": "2026-05-14T08:51:24.175Z",
+      "updatedAt": "2026-05-14T08:55:07.001Z",
       "relatedFiles": [
         {
           "path": "components/circles/favorite-toggle-button.tsx",
