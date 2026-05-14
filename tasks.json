@@ -5,10 +5,10 @@
       "name": "shadcn 누락 컴포넌트 12종 일괄 추가",
       "description": "PRD 「shadcn 컴포넌트 매핑」 표 기준으로 누락된 12종 컴포넌트(form, dialog, sheet, tabs, table, select, textarea, avatar, skeleton, sonner, alert, radio-group)를 shadcn MCP 와 npx shadcn add 명령으로 일괄 추가한다. Form 컴포넌트가 react-hook-form 과 @hookform/resolvers 를, Sonner 가 sonner 패키지를 의존하므로 package.json 변경을 함께 확인한다. 기존 7종(badge/button/card/checkbox/dropdown-menu/input/label)은 덮어쓰지 않는다.",
       "notes": "shadcn CLI 가 자동으로 use client 지시문, kebab-case 파일명, components/ui 위치를 처리한다. 변경 범위 최소화 원칙으로 비즈니스 컴포넌트는 건드리지 않는다.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T06:09:17.240Z",
-      "updatedAt": "2026-05-14T06:09:17.240Z",
+      "updatedAt": "2026-05-14T06:10:26.503Z",
       "relatedFiles": [
         {
           "path": "components.json",
