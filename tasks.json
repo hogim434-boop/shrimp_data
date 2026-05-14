@@ -130,14 +130,14 @@
       "name": "T-002c app/layout.tsx 헤더 통합 + app/page.tsx nav 제거",
       "description": "app/layout.tsx 에 <Header /> 컴포넌트를 children 위에 렌더. app/page.tsx 의 자체 nav 블록과 footer 의 ThemeSwitcher 를 제거(헤더로 이동되었으므로). 본문(Hero, SignUpUserSteps, ConnectSupabaseSteps) 은 그대로 유지. 헤더 도입으로 시각적으로 깨지지 않도록 page.tsx 의 padding 최소 조정.",
       "notes": "DeployButton, SupabaseLogo 같은 스타터킷 잔재는 page.tsx 의 nav 제거와 함께 자연스럽게 사라짐 — 파일은 삭제하지 않음(다른 곳에서 import 없는지만 확인). 만약 page.tsx 가 import 하는 컴포넌트(Hero 등)가 깨지면 import 만 정리.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "59def6c4-1d86-4ef3-be94-fe88497fc40a"
         }
       ],
       "createdAt": "2026-05-14T06:28:21.730Z",
-      "updatedAt": "2026-05-14T06:28:21.730Z",
+      "updatedAt": "2026-05-14T06:34:21.565Z",
       "relatedFiles": [
         {
           "path": "app/layout.tsx",
