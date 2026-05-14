@@ -47,14 +47,14 @@
       "name": "T-014b CircleActions 에 모달 통합",
       "description": "components/circles/circle-actions.tsx 수정. useState 추가하여 modalOpen state 관리. handleJoin 의 console.info placeholder 제거하고 setModalOpen(true) 로 교체. layout 분기 (mobile/desktop) 밖 Fragment 끝에 JoinChannelModal 한 번만 렌더 — 두 layout 이 같은 state 공유. 기존 mobile/desktop layout className·구조 그대로 유지. JSDoc 갱신.",
       "notes": "두 layout 이 동시에 mount 되지 않음 (viewport 분기로 한쪽만 visible) 이라 state 공유 문제 없음. Fragment 끝에 모달 한 번만 렌더 → React tree 에 instance 1개.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "4fb2086a-6196-401e-b3cd-b28c3d1d8bc6"
         }
       ],
       "createdAt": "2026-05-14T14:22:44.885Z",
-      "updatedAt": "2026-05-14T14:22:44.885Z",
+      "updatedAt": "2026-05-14T14:26:38.235Z",
       "relatedFiles": [
         {
           "path": "components/circles/circle-actions.tsx",
