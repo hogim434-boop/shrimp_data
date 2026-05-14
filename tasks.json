@@ -5,10 +5,10 @@
       "name": "T-012a CircleDetail 타입 + 더미 30건 보강 + 단위 테스트",
       "description": "lib/types/domain.ts 의 CircleDetail 에 activity_days(string)/member_count(number)/freshmen_ratio(number) 3 필드를 필수로 추가. lib/dummy/circles.ts 에 buildGallery(seed) helper 추가(picsum seed 기반 4장 CircleImage[] 반환). DUMMY_CIRCLES 30건 모두에 activity_days(일본어 free text, official_type 별 자연스러운 패턴), member_count(athletics 60-100/official 30-80/unofficial 10-40/intercollegiate 40-100/other 20-50), freshmen_ratio(0-100 %), images(buildGallery 4장) 추가. tests/unit/dummy-circles.test.ts 보강 — 모든 단체에 새 3 필드 존재, member_count > 0, freshmen_ratio 0~100 범위, images.length === 4. 분포 회귀 가드(DUMMY_CIRCLES_DISTRIBUTION) 영향 없음(category/official_type 만 검증).",
       "notes": "activity_days 는 active 한 자연스러움 위해 30건 각각 명시적 작성. official_type 별 패턴: athletics 「月・水・金」 같은 3일 / official 「火・木」 같은 2일 / unofficial 「土曜日」 같은 1일 / intercollegiate 「第2・第4日曜日」 같은 격주 / other 「不定期」 같은 가변. member_count/freshmen_ratio 는 단체 성격에 맞춰 분포.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T08:34:54.716Z",
-      "updatedAt": "2026-05-14T08:34:54.716Z",
+      "updatedAt": "2026-05-14T08:35:45.630Z",
       "relatedFiles": [
         {
           "path": "lib/types/domain.ts",
