@@ -5,10 +5,10 @@
       "name": "T-010a 더미 데이터 30건 + helper + 분포 단위 테스트",
       "description": "lib/dummy/circles.ts 에 30건의 학생 단체 더미 데이터 작성. CircleDetail[] 타입(T-012/T-018 재사용), 변수명 DUMMY_CIRCLES (SCREAMING_SNAKE_CASE). 카테고리 분포 sports5/culture_art4/music4/academic4/international4/event3/volunteer3/media3 = 30. official_type 분포 athletics3/official12/unofficial9/intercollegiate4/other2 (公認 한정 인상 방지). 각 단체에 연락처(IG/X/LINE) 1개 이상 + 태그 3-5개. async helper getPopularCircles(limit)/getCircleById(id)/getCirclesByCategory(slug) export (시그니처는 T-009 와이어업 후 Supabase fetch 로 교체 가능하도록 미리 async). 이미지 URL 은 picsum.photos seed 기반(결정론적). 분포 expected 객체 DUMMY_CIRCLES_DISTRIBUTION 도 함께 export. tests/unit/dummy-circles.test.ts 에서 expected 와 동적 비교로 회귀 가드.",
       "notes": "id 는 고정 UUID(시드와 일치 anchor) — T-009 시드 SQL 이 같은 UUID 로 INSERT. picsum.photos seed 기반 URL 은 결정론적(같은 seed=같은 이미지) 이므로 시각 회귀 안정. helper 가 async 인 이유는 T-009 와이어업 시 Supabase fetch 로 무손실 교체 가능하게 하기 위함.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T07:39:54.151Z",
-      "updatedAt": "2026-05-14T07:39:54.151Z",
+      "updatedAt": "2026-05-14T07:42:45.716Z",
       "relatedFiles": [
         {
           "path": "lib/dummy/circles.ts",
