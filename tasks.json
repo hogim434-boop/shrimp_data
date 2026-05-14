@@ -5,10 +5,10 @@
       "name": "T-003 도메인 타입 + 일본어 라벨 매핑 정의",
       "description": "PRD 「데이터 모델」 7개 테이블 + 보조 테이블 2개 + RPC 함수 2개의 TypeScript 타입을 정의하고, UI 컴포넌트가 props 로 받을 도메인 타입과 일본어 라벨 매핑을 별도 파일로 분리한다. 영문 slug + 일본어 라벨 분리 정책으로 Category/OfficialType/ActivityFrequency/CircleStatus/TagKind/Role 6종 리터럴을 as const 배열로 정의. database.ts 는 Supabase 공식 패턴(Database = { public: { Tables, Functions } })을 따라 T-006 이후 generate_typescript_types 결과로 무손실 교체 가능하도록 작성. domain.ts 의 CircleSummary 는 카드용 최소 필드, CircleDetail 은 상세용 전체 필드 + 조인 결과 모델. 작업 완료 후 ROADMAP T-003 라인에 ✅ 처리.",
       "notes": "ROADMAP 의 모바일 퍼스트 원칙은 본 타입 정의 작업과 무관(UI 레이어가 아님). TagSlug 는 string 으로 유연 유지(10종 시드는 T-005/T-009 SQL 에서 관리). domain.ts 와 database.ts 는 서로 import 안 함 — 조인 변환은 Server Action(T-009) 에서 처리. role 임시 분기는 user.app_metadata.role 로 진행중이므로 본 작업에서도 Role 리터럴은 'user' | 'admin' 둘만.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T06:54:23.162Z",
-      "updatedAt": "2026-05-14T07:09:35.106Z",
+      "updatedAt": "2026-05-14T07:10:34.051Z",
       "relatedFiles": [
         {
           "path": "lib/constants/category.ts",
