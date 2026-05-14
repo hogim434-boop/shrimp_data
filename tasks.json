@@ -1,3 +1,192 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "05d5ce1c-4f05-451c-884e-b28cb579582d",
+      "name": "T-002a 빈 셸 페이지 8개 + ComingSoon 공통 컴포넌트",
+      "description": "헤더 메뉴 링크가 404 가 되지 않도록 8개 라우트(/circles, /circles/[id], /circles/new, /favorites, /compare, /mypage, /mypage/circles, /admin/circles) 에 「coming soon」 플레이스홀더 페이지 추가. 페이지 본문은 PRD 의 페이지명을 일본어로 표시하고 「Phase 1.X で公開予定」 안내 한 줄. 공통 ComingSoon 컴포넌트를 components/layout/coming-soon.tsx 에 정의하여 8개 페이지가 props 만 다르게 호출. cacheComponents 모드에 대비해 페이지 자체는 동적 데이터 fetch 가 없으므로 Suspense 불필요. 다만 향후 데이터 fetch 가 들어갈 때를 대비한 주석 명시.",
+      "notes": "이 단계에서는 헤더가 아직 없으므로 직접 URL 입력으로 페이지 도달. T-002b 이후 헤더 링크로 자연스럽게 도달. 디자인은 최소화(과한 디자인 금지).",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-14T06:28:21.730Z",
+      "updatedAt": "2026-05-14T06:28:21.730Z",
+      "relatedFiles": [
+        {
+          "path": "components/layout/coming-soon.tsx",
+          "type": "CREATE",
+          "description": "8개 페이지가 공유할 셸 컴포넌트"
+        },
+        {
+          "path": "app/circles/page.tsx",
+          "type": "CREATE",
+          "description": "서클 목록 셸 (Phase 1.1 T-011 에서 실제 구현)"
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "CREATE",
+          "description": "서클 상세 셸 (Phase 1.1 T-012)"
+        },
+        {
+          "path": "app/circles/new/page.tsx",
+          "type": "CREATE",
+          "description": "서클 등록 폼 셸 (Phase 1.3 T-018)"
+        },
+        {
+          "path": "app/favorites/page.tsx",
+          "type": "CREATE",
+          "description": "즐겨찾기 셸 (Phase 1.3 T-017)"
+        },
+        {
+          "path": "app/compare/page.tsx",
+          "type": "CREATE",
+          "description": "비교 셸 (Phase 2 T-024)"
+        },
+        {
+          "path": "app/mypage/page.tsx",
+          "type": "CREATE",
+          "description": "마이페이지 셸 (Phase 1.3 T-016)"
+        },
+        {
+          "path": "app/mypage/circles/page.tsx",
+          "type": "CREATE",
+          "description": "내 서클 관리 셸 (Phase 1.3 T-016)"
+        },
+        {
+          "path": "app/admin/circles/page.tsx",
+          "type": "CREATE",
+          "description": "관리자 승인 큐 셸 (Phase 1.4 T-019)"
+        }
+      ],
+      "implementationGuide": "STEP1: components/layout/coming-soon.tsx 신설. props 는 { title: string, description?: string, plannedPhase: string }. shadcn Card 또는 단순 section + 중앙 정렬. STEP2: app/circles/page.tsx 외 7개 페이지 파일 생성. 각 파일은 ComingSoon 을 import 하여 title 만 다르게 호출. 일본어 제목 사용: サークル一覧 / サークル詳細 / サークル登録 / お気に入り / 比較 / マイページ / 登録サークル管理 / 承認管理. STEP3: dev/build 로 모든 라우트 200 확인.",
+      "verificationCriteria": "(1) components/layout/coming-soon.tsx 존재 + 8개 페이지가 모두 이 컴포넌트 사용. (2) npm run build 결과에 8개 신규 라우트 모두 표시. (3) npm run lint 통과.",
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+    },
+    {
+      "id": "59def6c4-1d86-4ef3-be94-fe88497fc40a",
+      "name": "T-002b 헤더 컴포넌트 3종 + AuthButton 일본어 리팩토링",
+      "description": "components/layout/ 에 header.tsx(RSC) + main-nav.tsx(Client, usePathname active 강조) + mobile-nav.tsx(Client, Sheet 햄버거) 3개 신설. components/auth-button.tsx 기존 파일을 리팩토링: 라벨을 ログイン/新規登録/ログアウト 일본어화 + 로그인 시 [Avatar + DropdownMenu(マイページ/ログアウト)] 패턴, role 정보를 호출자(Header) 가 받을 수 있도록 user/role 반환 구조로. main-nav 와 mobile-nav 는 role='admin' 프롭으로 受け取り 「承認管理」 메뉴 조건부 노출. EnvVarWarning 은 헤더의 인증 영역 분기에 그대로 활용.",
+      "notes": "profiles 테이블 아직 없으므로 role 은 항상 undefined 일 것 — 코드 분기 자체는 작성하되 실제 테스트는 T-006 이후. user.app_metadata.role 같은 임시 경로 사용 가능. AuthButton 의 LogoutButton 은 기존 components/logout-button.tsx 재사용.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "05d5ce1c-4f05-451c-884e-b28cb579582d"
+        }
+      ],
+      "createdAt": "2026-05-14T06:28:21.730Z",
+      "updatedAt": "2026-05-14T06:28:21.730Z",
+      "relatedFiles": [
+        {
+          "path": "components/auth-button.tsx",
+          "type": "TO_MODIFY",
+          "description": "라벨 일본어화 + Avatar/DropdownMenu 리팩토링",
+          "lineStart": 1,
+          "lineEnd": 30
+        },
+        {
+          "path": "components/logout-button.tsx",
+          "type": "DEPENDENCY",
+          "description": "AuthButton 의 하위 컴포넌트로 재사용"
+        },
+        {
+          "path": "components/layout/header.tsx",
+          "type": "CREATE",
+          "description": "RSC 통합 헤더"
+        },
+        {
+          "path": "components/layout/main-nav.tsx",
+          "type": "CREATE",
+          "description": "데스크탑 가로 nav + active 강조"
+        },
+        {
+          "path": "components/layout/mobile-nav.tsx",
+          "type": "CREATE",
+          "description": "모바일 햄버거 + Sheet"
+        },
+        {
+          "path": "components/ui/sheet.tsx",
+          "type": "DEPENDENCY",
+          "description": "T-001 에서 추가한 shadcn Sheet"
+        },
+        {
+          "path": "components/ui/avatar.tsx",
+          "type": "DEPENDENCY",
+          "description": "T-001 에서 추가한 shadcn Avatar"
+        },
+        {
+          "path": "components/theme-switcher.tsx",
+          "type": "DEPENDENCY",
+          "description": "헤더 우측에 그대로 재사용"
+        }
+      ],
+      "implementationGuide": "STEP1: components/auth-button.tsx 갱신 — getClaims() 로 user 추출 후 user 없으면 [ログイン/新規登録] 2개 버튼, user 있으면 Avatar 이니셜 + DropdownMenu(マイページ로 Link / LogoutButton). user.role 은 별도 export 안 함, Header 에서 별도 query. STEP2: components/layout/main-nav.tsx 신설 (use client). usePathname 으로 active 강조. props role?: 'admin'. 링크 5개 + role='admin' 시 6번째 추가. STEP3: components/layout/mobile-nav.tsx 신설 (use client). shadcn Sheet + 햄버거 버튼(lucide Menu). 동일 링크 리스트. STEP4: components/layout/header.tsx 신설 (RSC). createClient().auth.getClaims() 로 user + (있으면 profiles 조회로 role - profiles 테이블 미존재 시 undefined fallback). sticky top-0 z-40 border-b backdrop-blur 헤더 + 좌측 MobileNav(md:hidden) + KCircle 로고 Link + MainNav(hidden md:flex) + 우측 ThemeSwitcher + Suspense(AuthButton fallback Skeleton).",
+      "verificationCriteria": "(1) components/layout/{header,main-nav,mobile-nav}.tsx 3개 파일 존재. (2) components/auth-button.tsx 의 라벨이 일본어. (3) main-nav 의 링크 텍스트가 PRD 메뉴 구조 일본어 라벨 그대로. (4) role='admin' 분기 코드 존재. (5) Header 가 sticky 클래스 적용. (6) npm run build + lint 통과.",
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+    },
+    {
+      "id": "a2a7b8bd-d0eb-4ccb-b760-58347fe2cb07",
+      "name": "T-002c app/layout.tsx 헤더 통합 + app/page.tsx nav 제거",
+      "description": "app/layout.tsx 에 <Header /> 컴포넌트를 children 위에 렌더. app/page.tsx 의 자체 nav 블록과 footer 의 ThemeSwitcher 를 제거(헤더로 이동되었으므로). 본문(Hero, SignUpUserSteps, ConnectSupabaseSteps) 은 그대로 유지. 헤더 도입으로 시각적으로 깨지지 않도록 page.tsx 의 padding 최소 조정.",
+      "notes": "DeployButton, SupabaseLogo 같은 스타터킷 잔재는 page.tsx 의 nav 제거와 함께 자연스럽게 사라짐 — 파일은 삭제하지 않음(다른 곳에서 import 없는지만 확인). 만약 page.tsx 가 import 하는 컴포넌트(Hero 등)가 깨지면 import 만 정리.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "59def6c4-1d86-4ef3-be94-fe88497fc40a"
+        }
+      ],
+      "createdAt": "2026-05-14T06:28:21.730Z",
+      "updatedAt": "2026-05-14T06:28:21.730Z",
+      "relatedFiles": [
+        {
+          "path": "app/layout.tsx",
+          "type": "TO_MODIFY",
+          "description": "ThemeProvider 안에 Header 컴포넌트 추가"
+        },
+        {
+          "path": "app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "자체 nav 블록 제거 + footer ThemeSwitcher 제거",
+          "lineStart": 14,
+          "lineEnd": 58
+        },
+        {
+          "path": "components/layout/header.tsx",
+          "type": "DEPENDENCY",
+          "description": "T-002b 산출물"
+        }
+      ],
+      "implementationGuide": "STEP1: app/layout.tsx 수정. ThemeProvider 내부 최상단에 <Header /> 추가. Toaster 는 children 다음에 그대로. STEP2: app/page.tsx 의 <nav> 블록(line 16-32) 제거. footer 의 <ThemeSwitcher /> 제거. STEP3: 본문 padding 검토 — header 가 sticky 라 본문 최상단에 추가 padding 불필요(natural flow). STEP4: dev 로 / 페이지가 헤더 + Hero + Next steps + footer 순서로 정상 렌더되는지 확인.",
+      "verificationCriteria": "(1) app/layout.tsx 가 Header import 및 렌더. (2) app/page.tsx 에 <nav> 블록 없음. (3) dev server 에서 / 페이지가 헤더 + 본문 + 푸터 순서로 정상 렌더. (4) /circles, /favorites, /mypage 등 다른 페이지에서도 동일 헤더 노출. (5) npm run build + lint 통과.",
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+    },
+    {
+      "id": "a48fa087-ef65-48ad-82b5-a9ddd6a332b0",
+      "name": "T-002d proxy.ts 화이트리스트 함수화 + next 파라미터 + ROADMAP T-002 완료 처리",
+      "description": "lib/supabase/proxy.ts 의 미인증 통과 조건을 isPublicPath(pathname: string): boolean 함수로 추출. /circles 와 /circles/[id] 는 미인증 통과, /circles/new 는 명시적 블랙리스트. /favorites, /compare, /mypage, /admin/* 등 그 외 라우트는 기존대로 인증 강제. 리디렉션 시 ?next={pathname} 파라미터 부여하여 로그인 후 복귀 동선을 표준화(PRD F012 의 next 패턴과 일관). 마지막으로 docs/ROADMAP.md 의 T-002 행과 세부 설명에 ✅ + 완료 요약 한 줄 추가.",
+      "notes": "단위 테스트는 T-004 (Vitest 도입) 이후 별도 작업으로 추가. 본 작업에서는 분기 로직 정확성만 코드 리뷰로 확인. ROADMAP 의 Phase 1.0 헤더에는 ✅ 부여 안 함(T-003, T-004 남음).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "a2a7b8bd-d0eb-4ccb-b760-58347fe2cb07"
+        }
+      ],
+      "createdAt": "2026-05-14T06:28:21.730Z",
+      "updatedAt": "2026-05-14T06:28:21.730Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "TO_MODIFY",
+          "description": "isPublicPath 함수 추출 + next 파라미터 부여",
+          "lineStart": 40,
+          "lineEnd": 60
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-002 행 ✅ + 완료 요약 한 줄"
+        }
+      ],
+      "implementationGuide": "STEP1: lib/supabase/proxy.ts 수정 — updateSession 함수 안에 isPublicPath 함수 추출. 매칭 규칙: pathname==='/' OR startsWith('/auth') OR startsWith('/login') OR pathname==='/circles' OR (startsWith('/circles/') AND pathname!=='/circles/new'). STEP2: 미인증 시 url.searchParams.set('next', request.nextUrl.pathname) 추가. STEP3: docs/ROADMAP.md 의 T-002 표 행에 ✅ + status 를 completed 로 변경. T-002 세부 설명 마지막에 '**완료 (2026-05-14)**: components/layout/* 4종 + 빈 셸 8개 + proxy.ts isPublicPath 함수화 + next 파라미터 표준화 + app/page.tsx 자체 nav 제거. 빌드/린트 통과.' 한 줄 추가. STEP4: npm run build + lint. STEP5: dev server 로 미로그인 상태에서 /favorites 접속 → /auth/login?next=/favorites 리디렉션 확인, /circles 접속 → 200 확인.",
+      "verificationCriteria": "(1) lib/supabase/proxy.ts 에 isPublicPath 함수 존재. (2) /circles 와 /circles/[id] 미인증 통과, /circles/new 와 /favorites 등 미인증 시 /auth/login?next=... 리디렉션. (3) docs/ROADMAP.md 의 T-002 라인에 ✅ 마크. (4) npm run build + lint 모두 통과. (5) dev server 에서 위 동작 시각 확인.",
+      "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한."
+    }
+  ]
 }
