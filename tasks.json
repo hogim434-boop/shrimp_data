@@ -54,7 +54,7 @@
         }
       ],
       "createdAt": "2026-05-14T14:22:44.885Z",
-      "updatedAt": "2026-05-14T14:26:38.235Z",
+      "updatedAt": "2026-05-14T14:27:54.040Z",
       "relatedFiles": [
         {
           "path": "components/circles/circle-actions.tsx",
@@ -71,7 +71,8 @@
       ],
       "implementationGuide": "Pseudo (Edit):\\n\\n기존:\\nexport function CircleActions({ circle, layout }) {\\n  function handleJoin() {\\n    console.info('[T-014 anchor] open channel modal for', circle.id)\\n  }\\n  if (layout === 'mobile') return <MobileBar />\\n  return <DesktopInline />\\n}\\n\\n새:\\nimport useState from react\\nimport JoinChannelModal from @/components/circles/join-channel-modal\\n\\nexport function CircleActions({ circle, layout }) {\\n  const [modalOpen, setModalOpen] = useState(false)\\n  function handleJoin() { setModalOpen(true) }\\n\\n  return (\\n    <>\\n      {layout === 'mobile' ? <기존 MobileBar 그대로 (Button onClick={handleJoin})/> : <기존 DesktopInline 그대로/>}\\n      <JoinChannelModal circle={circle} open={modalOpen} onOpenChange={setModalOpen} />\\n    </>\\n  )\\n}\\n\\n변경 요점:\\n1. import 추가: useState, JoinChannelModal\\n2. 함수 시작에 const [modalOpen, setModalOpen] = useState(false) 추가\\n3. handleJoin 의 console.info 제거 → setModalOpen(true)\\n4. return 을 Fragment 로 감싸 + JoinChannelModal 한 번만 렌더 (분기 밖)\\n5. JSDoc 의 'handleJoin 은 T-014 anchor placeholder' 문구 갱신 → 'handleJoin 은 JoinChannelModal 을 open 함'\\n\\n주의:\\n- mobile bar 의 fixed bottom · safe-area · md:hidden 패턴 그대로.\\n- desktop inline 의 hidden md:flex 패턴 그대로.\\n- FavoriteToggleButton variant=action-bar 그대로 (T-013 영향 없음).",
       "verificationCriteria": "npm run lint 통과. npm run build 통과 (23 routes). dev server 에서 /circles/{uuid} 진입 → 「参加する」 클릭 시 모달 visible. 모바일 viewport 에서 모바일 액션 바의 「参加する」, 데스크탑 viewport 에서 헤더 inline 의 「参加する」 양쪽에서 동일 모달 노출 확인. 기존 favorites e2e 의 「参加する 버튼이 노출된다」 케이스 PASS 유지.",
-      "analysisResult": "T-014 「参加する」 채널 모달 UI. 서클 상세 페이지의 「参加する」 우측 메인 CTA 클릭 시 단체의 contact_instagram/contact_x/contact_line 중 입력된 채널만 풀폭 버튼으로 노출하는 shadcn Sheet side=bottom 모달을 띄우고, 채널 선택 시 anchor 의 native target=_blank rel=noopener noreferrer 로 새 탭 오픈. RPC increment_inquiry_count 호출은 console.info '[T-009 anchor]' placeholder 로만 남기고 본 작업은 UI 만 처리. 미로그인 동선은 JSDoc anchor 만 (T-015 이전이라 실제 리다이렉트 미구현). 직전 T-013 작업으로 circle-actions.tsx 의 handleJoin 이 이미 placeholder anchor 로 박혀 있어 본 task 는 그 자리 교체 + 새 모달 컴포넌트 신설 + e2e 보강. 검증은 lint/build/test 영향 없음 + e2e 3 신규 케이스 PASS (mobile+desktop 양쪽 자동 = 총 6 PASS 추가)."
+      "analysisResult": "T-014 「参加する」 채널 모달 UI. 서클 상세 페이지의 「参加する」 우측 메인 CTA 클릭 시 단체의 contact_instagram/contact_x/contact_line 중 입력된 채널만 풀폭 버튼으로 노출하는 shadcn Sheet side=bottom 모달을 띄우고, 채널 선택 시 anchor 의 native target=_blank rel=noopener noreferrer 로 새 탭 오픈. RPC increment_inquiry_count 호출은 console.info '[T-009 anchor]' placeholder 로만 남기고 본 작업은 UI 만 처리. 미로그인 동선은 JSDoc anchor 만 (T-015 이전이라 실제 리다이렉트 미구현). 직전 T-013 작업으로 circle-actions.tsx 의 handleJoin 이 이미 placeholder anchor 로 박혀 있어 본 task 는 그 자리 교체 + 새 모달 컴포넌트 신설 + e2e 보강. 검증은 lint/build/test 영향 없음 + e2e 3 신규 케이스 PASS (mobile+desktop 양쪽 자동 = 총 6 PASS 추가).",
+      "summary": "circle-actions.tsx 수정 완료. useState로 modalOpen 상태 관리 추가. handleJoin에서 console.info placeholder 제거 후 setModalOpen(true)로 교체. 기존 mobile/desktop layout className 구조 유지하면서 if/return 분기를 삼항연산자 Fragment로 통합. Fragment 끝에 JoinChannelModal 한 번만 렌더(mobile/desktop 레이아웃 공유). JSDoc 갱신(handleJoin 역할 설명). npm run lint + npm run build(23 routes) 모두 통과."
     },
     {
       "id": "a8b15d88-b918-42f6-9809-3e02019a53de",
