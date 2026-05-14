@@ -1,3 +1,132 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "b004d755-a5de-42b7-b3c5-87e4c4725dca",
+      "name": "T-012a CircleDetail 타입 + 더미 30건 보강 + 단위 테스트",
+      "description": "lib/types/domain.ts 의 CircleDetail 에 activity_days(string)/member_count(number)/freshmen_ratio(number) 3 필드를 필수로 추가. lib/dummy/circles.ts 에 buildGallery(seed) helper 추가(picsum seed 기반 4장 CircleImage[] 반환). DUMMY_CIRCLES 30건 모두에 activity_days(일본어 free text, official_type 별 자연스러운 패턴), member_count(athletics 60-100/official 30-80/unofficial 10-40/intercollegiate 40-100/other 20-50), freshmen_ratio(0-100 %), images(buildGallery 4장) 추가. tests/unit/dummy-circles.test.ts 보강 — 모든 단체에 새 3 필드 존재, member_count > 0, freshmen_ratio 0~100 범위, images.length === 4. 분포 회귀 가드(DUMMY_CIRCLES_DISTRIBUTION) 영향 없음(category/official_type 만 검증).",
+      "notes": "activity_days 는 active 한 자연스러움 위해 30건 각각 명시적 작성. official_type 별 패턴: athletics 「月・水・金」 같은 3일 / official 「火・木」 같은 2일 / unofficial 「土曜日」 같은 1일 / intercollegiate 「第2・第4日曜日」 같은 격주 / other 「不定期」 같은 가변. member_count/freshmen_ratio 는 단체 성격에 맞춰 분포.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-14T08:34:54.716Z",
+      "updatedAt": "2026-05-14T08:34:54.716Z",
+      "relatedFiles": [
+        {
+          "path": "lib/types/domain.ts",
+          "type": "TO_MODIFY",
+          "description": "CircleDetail 에 3 필드 추가"
+        },
+        {
+          "path": "lib/dummy/circles.ts",
+          "type": "TO_MODIFY",
+          "description": "buildGallery helper + 30건 보강"
+        },
+        {
+          "path": "tests/unit/dummy-circles.test.ts",
+          "type": "TO_MODIFY",
+          "description": "새 3 필드 + images 검증"
+        },
+        {
+          "path": "lib/constants/activity-frequency.ts",
+          "type": "DEPENDENCY",
+          "description": "activity_days 패턴 결정 참고"
+        }
+      ],
+      "implementationGuide": "STEP1: lib/types/domain.ts CircleDetail interface 에 3 필드 추가 — activity_days: string; member_count: number; freshmen_ratio: number;. JSDoc 한국어 주석으로 의미 명시. STEP2: lib/dummy/circles.ts 에 file-private function buildGallery(seed: string): CircleImage[] 추가 — Array.from({length:4}).map((_,i) => ({ id: `${seed}-img-${i+1}`, image_url: `https://picsum.photos/seed/${seed}-img-${i+1}/1200/800`, sort_order: i })). STEP3: DUMMY_CIRCLES 30건 entry 각각에 activity_days/member_count/freshmen_ratio 추가 + images: buildGallery(seedStr) — circleSeed 는 cover() 의 seed 와 동일 패턴(예: 'kc-sports-tennis'). 일관성을 위해 const seed 변수 추출. STEP4: tests/unit/dummy-circles.test.ts 에 describe 'DUMMY_CIRCLES 상세 필드' 추가 — 3건의 it (각 필드 존재 + 범위 + images 4장). STEP5: npm run test 통과 확인 (32 + 3 = 35건).",
+      "verificationCriteria": "(1) CircleDetail 에 activity_days/member_count/freshmen_ratio 3 필드 추가됨. (2) DUMMY_CIRCLES 30건 모두 새 3 필드 + images.length===4. (3) member_count > 0, freshmen_ratio 0~100 범위 검증 PASS. (4) tests/unit/dummy-circles.test.ts 35건+ PASS. (5) lint+build 통과 (CircleSummary 영향 없음).",
+      "analysisResult": "T-012 「서클 상세 + 갤러리」. CircleDetail 에 activity_days/member_count/freshmen_ratio 3 필드 추가 + 더미 30건에 갤러리 4장(buildGallery helper, picsum seed) 추가. 상세 페이지는 RSC + dynamic params Promise + T-011 패턴 본문 Suspense, 구성: 커버 16:9 + 헤더(서클명+카테고리+official_type 뱃지) + 태그 칩 + SummaryGrid 5종 + 개요 + CircleGallery(모바일 swipe / 데스크탑 Dialog) + ContactSection(임시 inline 버튼, T-014 후 모달 교체). not-found.tsx 로 404 처리. lucide ExternalLink 사용(브랜드 아이콘 부재 회피). pb-24 로 T-013 액션 바 자리 확보. BottomNav 는 이미 자동 hidden. 변경 범위: lib/types/domain.ts, lib/dummy/circles.ts, components/circles/circle-gallery.tsx, app/circles/[id]/{page,not-found}.tsx, tests/unit/dummy-circles.test.ts + tests/e2e/circle-detail.spec.ts."
+    },
+    {
+      "id": "9dcf00cb-d407-4495-87c1-2d5db006195b",
+      "name": "T-012b CircleGallery + 상세 페이지 본 디자인",
+      "description": "components/circles/circle-gallery.tsx (Client) 신설 — props={images: CircleImage[], circleName: string}. 모바일(md 미만): 가로 swipe `overflow-x-auto snap-x snap-mandatory`, 각 이미지 `snap-start aspect-[16/9] w-[85%] flex-shrink-0`. 데스크탑(md+): 3열 그리드 + 클릭 시 shadcn Dialog 전체화면. useState openIndex 로 Dialog 제어. next/image fill + 부모 relative+aspect-ratio. 이미지 0개면 null. app/circles/[id]/page.tsx 본 디자인 — RSC + dynamic params Promise + T-011 패턴 본문 전체 Suspense + async CircleDetailContent. 구성: 커버 16:9(next/image priority) + 헤더(서클명 + 카테고리/official_type 뱃지) + 태그 칩 5개 + SummaryGrid 5종(활동빈도/연회비/요일/회원수/신입생비율) + 개요(description, whitespace-pre-line) + CircleGallery + ContactSection(Instagram/X/LINE inline 버튼 + ExternalLink 아이콘). pb-24 md:pb-12 로 T-013 액션 바 자리 확보.",
+      "notes": "next/image Dialog 안 사용 시 부모에 relative+aspect-ratio 명시. ContactSection 의 channels.length===0 일 때는 section 자체 skip. CircleGallery 의 Dialog 는 SheetTitle 대신 DialogTitle sr-only 로 a11y. 헤더의 description 줄바꿈 보존을 위해 whitespace-pre-line.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b004d755-a5de-42b7-b3c5-87e4c4725dca"
+        }
+      ],
+      "createdAt": "2026-05-14T08:34:54.716Z",
+      "updatedAt": "2026-05-14T08:34:54.716Z",
+      "relatedFiles": [
+        {
+          "path": "components/circles/circle-gallery.tsx",
+          "type": "CREATE",
+          "description": "Client 갤러리 (모바일 swipe + 데스크탑 Dialog)"
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "ComingSoon → KCircle 본 디자인"
+        },
+        {
+          "path": "lib/dummy/circles.ts",
+          "type": "DEPENDENCY",
+          "description": "getCircleById (T-012a 보강)"
+        },
+        {
+          "path": "lib/types/domain.ts",
+          "type": "DEPENDENCY",
+          "description": "CircleDetail (T-012a 보강)"
+        },
+        {
+          "path": "components/ui/dialog.tsx",
+          "type": "DEPENDENCY",
+          "description": "shadcn Dialog"
+        },
+        {
+          "path": "lib/constants/activity-frequency.ts",
+          "type": "DEPENDENCY",
+          "description": "ACTIVITY_FREQUENCY_LABELS"
+        },
+        {
+          "path": "lib/constants/category.ts",
+          "type": "DEPENDENCY",
+          "description": "CATEGORY_LABELS"
+        },
+        {
+          "path": "lib/constants/official-type.ts",
+          "type": "DEPENDENCY",
+          "description": "OFFICIAL_TYPE_LABELS"
+        }
+      ],
+      "implementationGuide": "STEP1: components/circles/circle-gallery.tsx 'use client'. import useState, Image from next/image, Dialog, DialogContent, DialogTitle, DialogHeader from shadcn. interface { images: CircleImage[]; circleName: string }. images.length===0 시 return null. 모바일 div className='md:hidden -mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4'. 각 이미지: <div className='snap-start aspect-[16/9] w-[85%] flex-shrink-0 relative'><Image src={img.image_url} alt={`${circleName} の写真 ${i+1}`} fill sizes='90vw' className='object-cover rounded-md' /></div>. 데스크탑 div className='hidden md:grid grid-cols-3 gap-2'. 각 이미지: button onClick={() => setOpenIndex(i)} className='aspect-[16/9] relative rounded-md overflow-hidden hover:opacity-90'><Image src=... fill sizes='30vw' alt=... /></button>. Dialog open={openIndex !== null} onOpenChange={(o)=>!o&&setOpenIndex(null)}, DialogContent className='max-w-4xl': <DialogTitle className='sr-only'>{circleName} 갤러리</DialogTitle><div className='relative aspect-[3/2]'><Image src={openIndex !== null ? images[openIndex].image_url : ''} fill sizes='80vw' alt=... className='object-contain' /></div>. STEP2: app/circles/[id]/page.tsx 전체 재작성. export default function (params: Promise<{id: string}>) → <main className='pb-24 md:pb-12'><Suspense fallback={<DetailFallback/>}><CircleDetailContent params={params} /></Suspense></main>. async CircleDetailContent: const {id} = await params; const circle = await getCircleById(id); if(!circle) notFound(); return article. 구성: 커버(div relative aspect-[16/9] md:aspect-[21/9] -mt-3 mx-auto max-w-6xl, Image fill priority + sizes='100vw'), 헤더(container px-4 py-4 max-w-6xl: 카테고리/official_type 뱃지 row + h1 text-2xl font-bold + 태그 칩 row), SummaryGrid(grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 5개 카드 ItemLabel/Value with border rounded-md p-3), Description(prose-sm whitespace-pre-line), CircleGallery, ContactSection. STEP3: ContactSection — channels 배열 build, button asChild variant='outline' size='sm' for each, a target='_blank' rel='noopener noreferrer' href={url} 라벨+ExternalLink. STEP4: DetailFallback — 커버 Skeleton + 헤더 Skeleton + 5 카드 Skeleton. STEP5: npm run lint+build 통과 확인.",
+      "verificationCriteria": "(1) components/circles/circle-gallery.tsx Client, 모바일 swipe / 데스크탑 Dialog. (2) app/circles/[id]/page.tsx RSC + Suspense + dynamic params + getCircleById + notFound. (3) 헤더+요약 5종+개요+갤러리+연락처 노출. (4) pb-24 md:pb-12 적용. (5) lint+build 통과.",
+      "analysisResult": "T-012 「서클 상세 + 갤러리」. CircleDetail 에 activity_days/member_count/freshmen_ratio 3 필드 추가 + 더미 30건에 갤러리 4장(buildGallery helper, picsum seed) 추가. 상세 페이지는 RSC + dynamic params Promise + T-011 패턴 본문 Suspense, 구성: 커버 16:9 + 헤더(서클명+카테고리+official_type 뱃지) + 태그 칩 + SummaryGrid 5종 + 개요 + CircleGallery(모바일 swipe / 데스크탑 Dialog) + ContactSection(임시 inline 버튼, T-014 후 모달 교체). not-found.tsx 로 404 처리. lucide ExternalLink 사용(브랜드 아이콘 부재 회피). pb-24 로 T-013 액션 바 자리 확보. BottomNav 는 이미 자동 hidden. 변경 범위: lib/types/domain.ts, lib/dummy/circles.ts, components/circles/circle-gallery.tsx, app/circles/[id]/{page,not-found}.tsx, tests/unit/dummy-circles.test.ts + tests/e2e/circle-detail.spec.ts."
+    },
+    {
+      "id": "dc872649-f4f7-4e02-bd85-4dc03fb13dec",
+      "name": "T-012c not-found + E2E + ROADMAP T-012 완료",
+      "description": "app/circles/[id]/not-found.tsx 신설 — 「サークルが見つかりません」 h1 + 설명문 + 「サークル一覧に戻る」 Button asChild Link. RSC, fetch 없음. tests/e2e/circle-detail.spec.ts 신설 — (1) 홈에서 첫 카드 클릭 → /circles/UUID 진입 + h1 서클명 visible, (2) 요약 카드 5종 라벨(活動頻度/年会費/活動曜日/会員数/新入生比率) visible, (3) /circles/00000000-0000-4000-8000-999999999999(존재하지않는) → 「サークルが見つかりません」 visible. mobile+desktop 양쪽 회귀. ROADMAP.md T-012 행 ✅ + 완료 요약 4단계.",
+      "notes": "test1 의 카드 클릭 동작은 BottomNav 가 자동 hidden 되는지도 자연 검증(이미 별도 test 존재). E2E 의 viewport 분기는 page.viewportSize() 로 모바일/데스크탑 구분 불필요 — 본 spec 의 검증은 둘 다 동일하게 통과해야 함.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "9dcf00cb-d407-4495-87c1-2d5db006195b"
+        }
+      ],
+      "createdAt": "2026-05-14T08:34:54.716Z",
+      "updatedAt": "2026-05-14T08:34:54.716Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/not-found.tsx",
+          "type": "CREATE",
+          "description": "RSC 404 UI"
+        },
+        {
+          "path": "tests/e2e/circle-detail.spec.ts",
+          "type": "CREATE",
+          "description": "카드 클릭/요약 5종/not-found mobile+desktop"
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-012 ✅ + 완료 요약"
+        }
+      ],
+      "implementationGuide": "STEP1: app/circles/[id]/not-found.tsx — RSC. <main className='container mx-auto flex min-h-[60vh] flex-col items-center justify-center px-4 text-center'><h1 className='text-2xl font-bold'>サークルが見つかりません</h1><p className='text-muted-foreground mt-2 mb-6'>該当する団体は存在しないか、削除されました。</p><Button asChild><Link href='/circles'>サークル一覧に戻る</Link></Button></main>. STEP2: tests/e2e/circle-detail.spec.ts. test1 'circle detail from home card': await page.goto('/'); const firstCard = page.locator('a[href^=\"/circles/00000000-\"]').first(); const href = await firstCard.getAttribute('href'); await firstCard.click(); await expect(page).toHaveURL(href); await expect(page.getByRole('heading', {level: 1})).toBeVisible();. test2 'summary 5 labels': await page.goto('/circles/00000000-0000-4000-8000-000000000001'); for each label of ['活動頻度','年会費','活動曜日','会員数','新入生比率']: await expect(page.getByText(label).first()).toBeVisible();. test3 'not-found for invalid id': await page.goto('/circles/00000000-0000-4000-8000-999999999999'); await expect(page.getByText('サークルが見つかりません')).toBeVisible(); await expect(page.getByRole('link', {name: 'サークル一覧に戻る'})).toBeVisible();. STEP3: docs/ROADMAP.md T-012 행 status pending→completed + ✅. 세부 설명 마지막에 '**완료 (2026-05-14)**: (a) CircleDetail 3 필드 추가 + 더미 30건 보강 + 단위 테스트 35건 PASS. (b) CircleGallery Client(모바일 swipe + 데스크탑 Dialog). (c) app/circles/[id]/page.tsx 본 디자인. (d) not-found.tsx + E2E 3건 × mobile+desktop = 6 PASS. lint+build+test+test:e2e 통과.' 한 줄. STEP4: 전체 검증 npm run lint+build+test+test:e2e.",
+      "verificationCriteria": "(1) app/circles/[id]/not-found.tsx 가 404 메시지 + 리스트 이동 Link. (2) tests/e2e/circle-detail.spec.ts 3 test × mobile+desktop = 6 PASS. (3) ROADMAP T-012 ✅ + 완료 요약. (4) 전체 lint+build+test+test:e2e 통과.",
+      "analysisResult": "T-012 「서클 상세 + 갤러리」. CircleDetail 에 activity_days/member_count/freshmen_ratio 3 필드 추가 + 더미 30건에 갤러리 4장(buildGallery helper, picsum seed) 추가. 상세 페이지는 RSC + dynamic params Promise + T-011 패턴 본문 Suspense, 구성: 커버 16:9 + 헤더(서클명+카테고리+official_type 뱃지) + 태그 칩 + SummaryGrid 5종 + 개요 + CircleGallery(모바일 swipe / 데스크탑 Dialog) + ContactSection(임시 inline 버튼, T-014 후 모달 교체). not-found.tsx 로 404 처리. lucide ExternalLink 사용(브랜드 아이콘 부재 회피). pb-24 로 T-013 액션 바 자리 확보. BottomNav 는 이미 자동 hidden. 변경 범위: lib/types/domain.ts, lib/dummy/circles.ts, components/circles/circle-gallery.tsx, app/circles/[id]/{page,not-found}.tsx, tests/unit/dummy-circles.test.ts + tests/e2e/circle-detail.spec.ts."
+    }
+  ]
 }
