@@ -1,3 +1,103 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "06ac32f6-3000-4068-a26d-a9095bda64ea",
+      "name": "T-004a Vitest 단위 테스트 도입",
+      "description": "Vitest + jsdom + vite-tsconfig-paths + @testing-library 군을 devDependencies 에 추가하고, vitest.config.ts / vitest.setup.ts 를 신설하여 jsdom 환경 + `@/*` alias + jest-dom 확장을 구성한다. tests/unit/ 디렉토리 신설하고 T-003 산출물(lib/constants/*) 의 매핑 정합성을 검증하는 단위 테스트 1개를 작성 — 학생 단체 통합 정책의 OfficialType 5종 명문화 포함. package.json 에 test / test:watch / test:ui 스크립트 추가. npm run test PASS 가 수락 기준.",
+      "notes": "단위 테스트 대상은 Phase 1.0 에서는 순수 export(constants) 만. 컴포넌트 테스트는 Phase 1.1 이후 결정. Vitest 의 React 19 / RSC 호환성은 본 작업 영향 없음.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-14T07:23:59.093Z",
+      "updatedAt": "2026-05-14T07:23:59.093Z",
+      "relatedFiles": [
+        {
+          "path": "package.json",
+          "type": "TO_MODIFY",
+          "description": "devDependencies + scripts 추가"
+        },
+        {
+          "path": "vitest.config.ts",
+          "type": "CREATE",
+          "description": "Vitest jsdom + vite-tsconfig-paths 설정"
+        },
+        {
+          "path": "vitest.setup.ts",
+          "type": "CREATE",
+          "description": "@testing-library/jest-dom 확장 import"
+        },
+        {
+          "path": "tests/unit/constants.test.ts",
+          "type": "CREATE",
+          "description": "T-003 의 lib/constants/* 매핑 검증"
+        },
+        {
+          "path": "lib/constants/category.ts",
+          "type": "DEPENDENCY",
+          "description": "8종 카테고리 검증 대상"
+        },
+        {
+          "path": "lib/constants/official-type.ts",
+          "type": "DEPENDENCY",
+          "description": "5종 학생 단체 분류 검증 대상"
+        },
+        {
+          "path": "tsconfig.json",
+          "type": "REFERENCE",
+          "description": "paths @/* 설정 — vite-tsconfig-paths 가 자동 인식"
+        }
+      ],
+      "implementationGuide": "STEP1: npm i -D vitest @vitest/ui @testing-library/react @testing-library/jest-dom jsdom vite-tsconfig-paths. STEP2: vitest.config.ts 생성 — defineConfig({ plugins: [tsconfigPaths()], test: { environment: 'jsdom', setupFiles: ['./vitest.setup.ts'], include: ['tests/unit/**/*.test.ts'] } }). STEP3: vitest.setup.ts 생성 — import '@testing-library/jest-dom'. STEP4: package.json scripts 에 test/test:watch/test:ui 3개 추가. STEP5: tests/unit/constants.test.ts 작성 — describe 'category constants'(CATEGORIES.length===8, 각 키에 LABELS 있음) + 'official type constants'(OFFICIAL_TYPES.length===5 학생 단체 통합 정책 반영, 각 키에 LABELS 있음). STEP6: npm run lint + npm run build + npm run test 모두 통과 확인.",
+      "verificationCriteria": "(1) package.json 의 devDependencies 에 vitest, @vitest/ui, @testing-library/react, @testing-library/jest-dom, jsdom, vite-tsconfig-paths 추가. (2) vitest.config.ts + vitest.setup.ts 신규 파일 존재. (3) tests/unit/constants.test.ts 에 CATEGORIES 8종 + OFFICIAL_TYPES 5종 검증 test 존재. (4) npm run test 통과 (4건 이상 it PASS). (5) npm run build + lint 영향 없음.",
+      "analysisResult": "T-004 「Vitest + Playwright 테스트 러너 도입」. Vitest(jsdom + vite-tsconfig-paths) 단위 테스트 + Playwright(Chromium, Mobile+Desktop projects) E2E 분리 도입. 단위 테스트는 T-003 의 lib/constants/* 매핑 검증으로 회귀 가드 + 학생 단체 5종 정책 명문화. E2E 는 헤더 「KCircle」 로고 노출 스모크 1건으로 시작. tsconfig paths(`@/*`) 는 Vitest 에서 vite-tsconfig-paths 로 처리, Playwright spec 은 alias import 회피로 단순화. 모바일 퍼스트 viewport(Pixel 5 393px) + Desktop Chrome 2 projects 로 자동 회귀. 변경 범위: package.json, vitest.config.ts, vitest.setup.ts, playwright.config.ts, tests/unit/constants.test.ts, tests/e2e/smoke.spec.ts, .gitignore, docs/ROADMAP.md. T-004a → T-004b 순차 (devDep 충돌 회피)."
+    },
+    {
+      "id": "b2753cf1-af63-42a4-8fdd-8ba1ff6fa627",
+      "name": "T-004b Playwright E2E + ROADMAP T-004 완료",
+      "description": "@playwright/test 를 devDependencies 에 추가하고 Chromium 만 설치(--with-deps). playwright.config.ts 신설하여 baseURL http://localhost:3000, webServer(npm run dev) 자동 기동, projects 2종(Mobile Chrome devices['Pixel 5'] + Desktop Chrome)을 모바일 퍼스트 회귀 가드로 구성. tests/e2e/smoke.spec.ts 작성 — 홈 페이지 200 응답 + 헤더 KCircle 로고 visible 검증(getByRole link). package.json 에 test:e2e / test:e2e:ui 스크립트, .gitignore 에 playwright-report/ + test-results/ 추가. 마지막으로 docs/ROADMAP.md 의 T-004 행 ✅ + 완료 요약 1줄.",
+      "notes": "Playwright Chromium 다운로드가 처음에는 시간이 걸림(약 200MB). 동기적으로 진행하되 실패 시 사용자에게 `npx playwright install chromium` 수동 안내. webServer 의 reuseExistingServer 옵션으로 기존 dev server 와 충돌 회피.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "06ac32f6-3000-4068-a26d-a9095bda64ea"
+        }
+      ],
+      "createdAt": "2026-05-14T07:23:59.093Z",
+      "updatedAt": "2026-05-14T07:23:59.093Z",
+      "relatedFiles": [
+        {
+          "path": "package.json",
+          "type": "TO_MODIFY",
+          "description": "@playwright/test devDep + scripts 추가"
+        },
+        {
+          "path": "playwright.config.ts",
+          "type": "CREATE",
+          "description": "Playwright Chromium + Mobile/Desktop projects + webServer"
+        },
+        {
+          "path": "tests/e2e/smoke.spec.ts",
+          "type": "CREATE",
+          "description": "홈 페이지 200 + KCircle 로고 스모크"
+        },
+        {
+          "path": ".gitignore",
+          "type": "TO_MODIFY",
+          "description": "playwright-report/, test-results/ 추가"
+        },
+        {
+          "path": "components/layout/header.tsx",
+          "type": "REFERENCE",
+          "description": "KCircle 로고 selector anchor"
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-004 행 ✅ + 완료 요약"
+        }
+      ],
+      "implementationGuide": "STEP1: npm i -D @playwright/test. STEP2: npx playwright install --with-deps chromium (네트워크 ~200MB 다운로드, 실패 시 사용자에게 수동 안내). STEP3: playwright.config.ts 생성 — defineConfig({ testDir: './tests/e2e', fullyParallel: true, retries: process.env.CI ? 2 : 0, use: { baseURL: 'http://localhost:3000', trace: 'on-first-retry' }, projects: [{ name: 'mobile', use: { ...devices['Pixel 5'] } }, { name: 'desktop', use: { ...devices['Desktop Chrome'] } }], webServer: { command: 'npm run dev', url: 'http://localhost:3000', reuseExistingServer: !process.env.CI, timeout: 120_000 } }). STEP4: tests/e2e/smoke.spec.ts 작성 — test('home page renders with KCircle header')에서 response.status()===200 + getByRole('link', { name: 'KCircle' }).toBeVisible(). STEP5: package.json scripts 에 test:e2e + test:e2e:ui 추가. STEP6: .gitignore 에 playwright-report/ + test-results/ 추가 (coverage/ 는 이미 있음). STEP7: docs/ROADMAP.md T-004 행 상태 pending → completed + ✅, 세부 설명에 완료 1줄(Vitest/Playwright 도입 + 모바일/데스크탑 2 projects + 스모크 PASS). STEP8: npm run test:e2e 통과 확인 (mobile + desktop 양쪽 PASS).",
+      "verificationCriteria": "(1) package.json devDep 에 @playwright/test. (2) playwright.config.ts 에 mobile + desktop projects 2종 + webServer 'npm run dev'. (3) tests/e2e/smoke.spec.ts 에 홈 페이지 200 + KCircle getByRole 검증. (4) .gitignore 에 playwright-report/ + test-results/. (5) npm run test:e2e 통과 (mobile + desktop 양쪽 PASS, 총 2 test). (6) ROADMAP.md T-004 라인에 ✅.",
+      "analysisResult": "T-004 「Vitest + Playwright 테스트 러너 도입」. Vitest(jsdom + vite-tsconfig-paths) 단위 테스트 + Playwright(Chromium, Mobile+Desktop projects) E2E 분리 도입. 단위 테스트는 T-003 의 lib/constants/* 매핑 검증으로 회귀 가드 + 학생 단체 5종 정책 명문화. E2E 는 헤더 「KCircle」 로고 노출 스모크 1건으로 시작. tsconfig paths(`@/*`) 는 Vitest 에서 vite-tsconfig-paths 로 처리, Playwright spec 은 alias import 회피로 단순화. 모바일 퍼스트 viewport(Pixel 5 393px) + Desktop Chrome 2 projects 로 자동 회귀. 변경 범위: package.json, vitest.config.ts, vitest.setup.ts, playwright.config.ts, tests/unit/constants.test.ts, tests/e2e/smoke.spec.ts, .gitignore, docs/ROADMAP.md. T-004a → T-004b 순차 (devDep 충돌 회피)."
+    }
+  ]
 }
