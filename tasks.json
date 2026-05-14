@@ -8,7 +8,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T07:39:54.151Z",
-      "updatedAt": "2026-05-14T07:42:45.716Z",
+      "updatedAt": "2026-05-14T07:46:16.747Z",
       "relatedFiles": [
         {
           "path": "lib/dummy/circles.ts",
@@ -43,7 +43,8 @@
       ],
       "implementationGuide": "STEP1: lib/dummy/circles.ts 작성. 상단에 DUMMY_CIRCLES_DISTRIBUTION 선언 (category/official_type 각 expected 개수). DUMMY_CIRCLES: CircleDetail[] 30건 — id 는 고정 UUID(예: '00000000-0000-4000-8000-00000000XXXX' 30개), cover_image_url 은 `https://picsum.photos/seed/${id}/800/450`, description 일본어 1-2줄, contact_instagram/x/line 중 1개 이상. 태그 slug 는 PRD 시드 10종(beginner_ok/kenser_ok/yurui/gachi/low_drinking/has_camp/women_many/men_many/once_a_week/low_fee) 에서 3-5개. view_count/inquiry_count 는 30-500 범위 랜덤 고정값. STEP2: export async function getPopularCircles(limit=6): Promise<CircleSummary[]> (view_count 내림차순) / getCircleById(id) / getCirclesByCategory(category). STEP3: tests/unit/dummy-circles.test.ts — DUMMY_CIRCLES.length===30, 각 카테고리/official_type 분포가 DUMMY_CIRCLES_DISTRIBUTION 과 일치, 모든 단체 연락처 1개 이상, 태그 3-5. STEP4: npm run test 통과 확인.",
       "verificationCriteria": "(1) lib/dummy/circles.ts 에 DUMMY_CIRCLES(30건) + DUMMY_CIRCLES_DISTRIBUTION + 3 async helper 존재. (2) 모든 단체 id 가 고유 UUID, cover_image_url 이 picsum.photos seed 패턴. (3) 카테고리/official_type 분포가 DUMMY_CIRCLES_DISTRIBUTION 과 정확히 일치. (4) 모든 단체에 연락처 1개 이상 + 태그 3-5. (5) npm run test 통과 (분포 검증 포함 5건 이상 신규 테스트).",
-      "analysisResult": "T-010 「서클 카드 + 상위 페이지」. Phase 1.1 「화면을 먼저 만든다」 첫 작업. lib/dummy/circles.ts 의 DUMMY_CIRCLES 30건을 CircleDetail[] 로 작성하여 T-012/T-018 재사용. picsum.photos seed 기반 결정론적 이미지 + async helper 3개로 T-009 와이어업 시 시그니처 유지. CircleCard 는 RSC props=CircleSummary, 하트는 placeholder(T-013 에서 button 교체). app/page.tsx 본문을 KCircle 트プ 디자인으로 교체 — sticky 검색바+카테고리 탭 8종+인기 6개+CTA. 모바일 1열/sm 2열/md 3열 그리드, sticky top-14(헤더 56px 보정), 카테고리 탭 snap-x mandatory. 분해 3개 atomic task — 데이터(T-010a) → 카드(T-010b) → 페이지+E2E(T-010c)."
+      "analysisResult": "T-010 「서클 카드 + 상위 페이지」. Phase 1.1 「화면을 먼저 만든다」 첫 작업. lib/dummy/circles.ts 의 DUMMY_CIRCLES 30건을 CircleDetail[] 로 작성하여 T-012/T-018 재사용. picsum.photos seed 기반 결정론적 이미지 + async helper 3개로 T-009 와이어업 시 시그니처 유지. CircleCard 는 RSC props=CircleSummary, 하트는 placeholder(T-013 에서 button 교체). app/page.tsx 본문을 KCircle 트プ 디자인으로 교체 — sticky 검색바+카테고리 탭 8종+인기 6개+CTA. 모바일 1열/sm 2열/md 3열 그리드, sticky top-14(헤더 56px 보정), 카테고리 탭 snap-x mandatory. 분해 3개 atomic task — 데이터(T-010a) → 카드(T-010b) → 페이지+E2E(T-010c).",
+      "summary": "lib/dummy/circles.ts 작성 — DUMMY_CIRCLES 30건 CircleDetail[] + DUMMY_CIRCLES_DISTRIBUTION 객체(category/official_type expected) + async helper 3종(getPopularCircles, getCircleById, getCirclesByCategory). 모든 단체에 고정 UUID(`00000000-0000-4000-8000-XXXXXXXXXXXX`), picsum.photos seed 기반 결정론적 이미지, 연락처 1개 이상, 태그 3~5개, status='approved'. 카테고리 분포 sports5/culture_art4/music4/academic4/international4/event3/volunteer3/media3, official_type 분포 athletics3/official12/unofficial9/intercollegiate4/other2 (학생 단체 통합 정책 반영). tests/unit/dummy-circles.test.ts 13건 신규 — 기본 무결성(4) + 분포(3) + 연락처/태그(2) + helper(4). 첫 실행에서 id 17(법률연구연맹)과 id 21(중국학생연맹) 의 태그가 2개여서 실패 → 각각 once_a_week, low_fee 추가하여 해결. 최종 npm run test 23건 모두 PASS, lint 통과."
     },
     {
       "id": "40279eac-277b-450a-95d4-1ff418d6540e",
