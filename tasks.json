@@ -59,7 +59,7 @@
         }
       ],
       "createdAt": "2026-05-14T07:39:54.151Z",
-      "updatedAt": "2026-05-14T07:46:27.619Z",
+      "updatedAt": "2026-05-14T07:47:23.512Z",
       "relatedFiles": [
         {
           "path": "components/circles/circle-card.tsx",
@@ -104,7 +104,8 @@
       ],
       "implementationGuide": "STEP1: components/circles/circle-card.tsx (RSC). 'use client' 없음. interface CircleCardProps { circle: CircleSummary }. STEP2: 구조 — <Link href={`/circles/${circle.id}`} className='group block'> <Card className='overflow-hidden transition-shadow hover:shadow-md'> <div className='relative aspect-[16/9] bg-muted'> {circle.cover_image_url ? <Image src=... fill sizes='(min-width: 768px) 33vw, (min-width: 640px) 50vw, 100vw' alt={circle.name} className='object-cover' /> : <Construction />} <span className='absolute right-2 top-2'><Heart /></span> </div> <CardContent className='space-y-2 p-3'> <div className='flex flex-wrap gap-1'><Badge variant='secondary'>{CATEGORY_LABELS[category]}</Badge><Badge variant='outline'>{OFFICIAL_TYPE_LABELS[official_type]}</Badge></div> <h3 className='line-clamp-1 font-semibold'>{name}</h3> <div className='flex flex-wrap gap-1'>{tags.slice(0,5).map(t => <Badge key={t} variant='outline' className='text-xs'>{t}</Badge>)}</div> <p className='text-xs text-muted-foreground'>{ACTIVITY_FREQUENCY_LABELS[activity_frequency]}</p> </CardContent> </Card> </Link>. STEP3: next.config.ts 의 NextConfig 에 images: { remotePatterns: [{ protocol: 'https', hostname: 'picsum.photos' }] } 추가. STEP4: npm run lint + npm run build 통과 확인 (CircleCard 가 어디서도 import 되지 않아도 빌드 OK — tree-shake).",
       "verificationCriteria": "(1) components/circles/circle-card.tsx 가 props=CircleSummary, RSC. (2) Link 전체로 감쌈 + next/image 16:9 (aspect-[16/9] + fill + sizes). (3) 카테고리·official_type 뱃지 + 태그 5개 + 활동빈도 표시. (4) cover_image_url null fallback (Construction 아이콘). (5) next.config.ts 에 picsum.photos remotePattern. (6) npm run build + lint 통과.",
-      "analysisResult": "T-010 「서클 카드 + 상위 페이지」. Phase 1.1 「화면을 먼저 만든다」 첫 작업. lib/dummy/circles.ts 의 DUMMY_CIRCLES 30건을 CircleDetail[] 로 작성하여 T-012/T-018 재사용. picsum.photos seed 기반 결정론적 이미지 + async helper 3개로 T-009 와이어업 시 시그니처 유지. CircleCard 는 RSC props=CircleSummary, 하트는 placeholder(T-013 에서 button 교체). app/page.tsx 본문을 KCircle 트プ 디자인으로 교체 — sticky 검색바+카테고리 탭 8종+인기 6개+CTA. 모바일 1열/sm 2열/md 3열 그리드, sticky top-14(헤더 56px 보정), 카테고리 탭 snap-x mandatory. 분해 3개 atomic task — 데이터(T-010a) → 카드(T-010b) → 페이지+E2E(T-010c)."
+      "analysisResult": "T-010 「서클 카드 + 상위 페이지」. Phase 1.1 「화면을 먼저 만든다」 첫 작업. lib/dummy/circles.ts 의 DUMMY_CIRCLES 30건을 CircleDetail[] 로 작성하여 T-012/T-018 재사용. picsum.photos seed 기반 결정론적 이미지 + async helper 3개로 T-009 와이어업 시 시그니처 유지. CircleCard 는 RSC props=CircleSummary, 하트는 placeholder(T-013 에서 button 교체). app/page.tsx 본문을 KCircle 트プ 디자인으로 교체 — sticky 검색바+카테고리 탭 8종+인기 6개+CTA. 모바일 1열/sm 2열/md 3열 그리드, sticky top-14(헤더 56px 보정), 카테고리 탭 snap-x mandatory. 분해 3개 atomic task — 데이터(T-010a) → 카드(T-010b) → 페이지+E2E(T-010c).",
+      "summary": "components/circles/circle-card.tsx 신설 — RSC, props=CircleSummary. shadcn Card 안에 (1) 16:9 커버 이미지 영역 (next/image fill + sizes='(min-width:768px) 33vw, (min-width:640px) 50vw, 100vw' + bg-muted, cover_image_url null fallback 은 Construction 아이콘), (2) 우상단 하트 placeholder (span + Heart 아이콘, T-013 에서 button 교체 예정, aria-hidden), (3) CardContent 에 카테고리/official_type 뱃지 + 서클명(line-clamp-1) + 태그 칩 최대 5개(slice 0,5) + 활동빈도(text-xs). 카드 전체를 Link href=/circles/{id} 로 감싸고 focus ring 적용. next.config.ts 에 images.remotePatterns 로 picsum.photos 허용 (Supabase Storage URL 은 T-008 에서 추가 예정). npm run build (23페이지 PPR 정상) + npm run lint 모두 통과. CircleCard 가 아직 import 되지 않아도 tree-shake 로 빌드 영향 0."
     },
     {
       "id": "4d441b0e-dd46-4a8f-a589-565a00886e46",
