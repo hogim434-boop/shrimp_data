@@ -62,14 +62,14 @@
       "name": "T-011b FilterPanel + FilterTrigger 컴포넌트",
       "description": "components/circles/filter-panel.tsx (Client) — props={initial: CirclesSearchParams, mode: 'sheet'|'sidebar', onApply?: () => void}. useState 로 draft 보관, 4종 필터(frequency 체크 / officialType 체크 / tags 체크 / fee_max select) + 검색어 input. 「適用」 클릭 시 router.push(buildCirclesUrl({...draft, page: undefined})) + onApply?.(). 「リセット」 → router.push('/circles'). hydration 동기화는 호출 측 key={JSON.stringify(initial)}. components/circles/filter-trigger.tsx (Client) — 모바일 전용 wrapper, shadcn Sheet side='bottom', SheetTrigger 버튼 「フィルター ({appliedCount})」, SheetContent 안에 <FilterPanel mode='sheet' onApply={() => setOpen(false)} />. 데스크탑 lg:hidden.",
       "notes": "TagSlug 10종은 PRD 시드 그대로 하드코딩 (beginner_ok, kenser_ok, yurui, gachi, low_drinking, has_camp, women_many, men_many, once_a_week, low_fee). Phase 1.2 T-009 와이어업 후 tags 마스터 fetch 로 교체 가능. shadcn Slider 미설치라 연회비는 Select 4단계(제한없음/5000/10000/30000). FilterPanel/Trigger 둘 다 Client — 호출 측 page.tsx 는 RSC, key 리마운트로 동기화.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "235e1512-c05d-4dd5-8c2f-249f78e371e7"
         }
       ],
       "createdAt": "2026-05-14T08:15:02.994Z",
-      "updatedAt": "2026-05-14T08:15:02.994Z",
+      "updatedAt": "2026-05-14T08:18:53.393Z",
       "relatedFiles": [
         {
           "path": "components/circles/filter-panel.tsx",
