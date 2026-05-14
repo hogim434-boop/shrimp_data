@@ -78,14 +78,14 @@
       "name": "T-013c CircleActions + 상세 페이지 통합 + E2E + ROADMAP T-013 완료",
       "description": "components/circles/circle-actions.tsx (Client) 신설 — props={circle: CircleDetail, layout: 'mobile'|'desktop'}. 'mobile': fixed bottom md:hidden + safe-area-inset-bottom + flex gap-3 + FavoriteToggleButton variant='action-bar' + Button size='lg' className='flex-1 bg-keio-navy' onClick={handleJoin} '参加する'. 'desktop': hidden md:flex inline + 동일 컴포넌트. handleJoin 은 placeholder console.info (T-014 anchor). app/circles/[id]/page.tsx Header 안에 <CircleActions layout='desktop' /> 추가, CircleDetailContent 끝에 <CircleActions layout='mobile' /> 추가. tests/e2e/favorites.spec.ts 신설 — 카드 하트 클릭/aria-pressed/페이지 새로고침 영속 mobile+desktop. ROADMAP T-013 ✅ + 완료 요약.",
       "notes": "handleJoin 의 console.info 는 T-014 에서 실제 모달 open 호출로 교체. layout 분기 시 mobile 은 fixed bottom 으로 일반 컨테이너 plow 외부, desktop 은 Header 안 인라인. ContactSection 은 그대로 유지(T-014 후 채널 모달이 본 영역 통합 검토). E2E 의 카드 하트 검증은 visible 한 카드만 매칭(첫 카드).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "31632e4c-f2a4-4a4a-a9dc-1f4f872aa1da"
         }
       ],
       "createdAt": "2026-05-14T08:51:24.175Z",
-      "updatedAt": "2026-05-14T08:51:24.175Z",
+      "updatedAt": "2026-05-14T08:56:25.923Z",
       "relatedFiles": [
         {
           "path": "components/circles/circle-actions.tsx",
