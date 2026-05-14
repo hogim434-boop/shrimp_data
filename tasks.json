@@ -80,14 +80,14 @@
       "name": "T-014c e2e 시나리오 3 추가 + 최종 검증",
       "description": "tests/e2e/circle-detail.spec.ts 에 모달 동작 검증 3 케이스 추가. (1) 「参加する」 클릭 시 모달 열림 + SheetTitle 「参加方法を選んでください」 visible. (2) テニス部 단체에서 등록된 채널만 노출 (Instagram + X visible, LINE 부재). (3) 채널 link 의 target=_blank + rel 에 noopener·noreferrer 포함. mobile+desktop projects 양쪽 자동 실행 → 총 6 PASS 추가 (34→40). 마지막에 lint/build/test/test:e2e 전체 검증.",
       "notes": "テニス部 더미 데이터는 contact_instagram + contact_x 두 채널 (확인됨 — 더미 line 121-123). 셀렉터에서 .first() 가 viewport 분기로 자동 처리. shadcn SheetContent 가 role=dialog 로 노출되어 getByRole('dialog') 사용 가능.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "8e4ced36-5b83-4eaf-aeeb-877dddf13f76"
         }
       ],
       "createdAt": "2026-05-14T14:22:44.885Z",
-      "updatedAt": "2026-05-14T14:22:44.885Z",
+      "updatedAt": "2026-05-14T14:27:59.711Z",
       "relatedFiles": [
         {
           "path": "tests/e2e/circle-detail.spec.ts",
