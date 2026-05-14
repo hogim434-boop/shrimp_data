@@ -168,14 +168,14 @@
       "name": "T-002d proxy.ts 화이트리스트 함수화 + next 파라미터 + ROADMAP T-002 완료 처리",
       "description": "lib/supabase/proxy.ts 의 미인증 통과 조건을 isPublicPath(pathname: string): boolean 함수로 추출. /circles 와 /circles/[id] 는 미인증 통과, /circles/new 는 명시적 블랙리스트. /favorites, /compare, /mypage, /admin/* 등 그 외 라우트는 기존대로 인증 강제. 리디렉션 시 ?next={pathname} 파라미터 부여하여 로그인 후 복귀 동선을 표준화(PRD F012 의 next 패턴과 일관). 마지막으로 docs/ROADMAP.md 의 T-002 행과 세부 설명에 ✅ + 완료 요약 한 줄 추가.",
       "notes": "단위 테스트는 T-004 (Vitest 도입) 이후 별도 작업으로 추가. 본 작업에서는 분기 로직 정확성만 코드 리뷰로 확인. ROADMAP 의 Phase 1.0 헤더에는 ✅ 부여 안 함(T-003, T-004 남음).",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "a2a7b8bd-d0eb-4ccb-b760-58347fe2cb07"
         }
       ],
       "createdAt": "2026-05-14T06:28:21.730Z",
-      "updatedAt": "2026-05-14T06:38:21.647Z",
+      "updatedAt": "2026-05-14T06:38:21.709Z",
       "relatedFiles": [
         {
           "path": "lib/supabase/proxy.ts",
@@ -193,7 +193,8 @@
       "implementationGuide": "STEP1: lib/supabase/proxy.ts 수정 — updateSession 함수 안에 isPublicPath 함수 추출. 매칭 규칙: pathname==='/' OR startsWith('/auth') OR startsWith('/login') OR pathname==='/circles' OR (startsWith('/circles/') AND pathname!=='/circles/new'). STEP2: 미인증 시 url.searchParams.set('next', request.nextUrl.pathname) 추가. STEP3: docs/ROADMAP.md 의 T-002 표 행에 ✅ + status 를 completed 로 변경. T-002 세부 설명 마지막에 '**완료 (2026-05-14)**: components/layout/* 4종 + 빈 셸 8개 + proxy.ts isPublicPath 함수화 + next 파라미터 표준화 + app/page.tsx 자체 nav 제거. 빌드/린트 통과.' 한 줄 추가. STEP4: npm run build + lint. STEP5: dev server 로 미로그인 상태에서 /favorites 접속 → /auth/login?next=/favorites 리디렉션 확인, /circles 접속 → 200 확인.",
       "verificationCriteria": "(1) lib/supabase/proxy.ts 에 isPublicPath 함수 존재. (2) /circles 와 /circles/[id] 미인증 통과, /circles/new 와 /favorites 등 미인증 시 /auth/login?next=... 리디렉션. (3) docs/ROADMAP.md 의 T-002 라인에 ✅ 마크. (4) npm run build + lint 모두 통과. (5) dev server 에서 위 동작 시각 확인.",
       "analysisResult": "T-002 「공통 레이아웃·헤더·내비게이션 골격」. app/page.tsx 의 자체 nav 를 공통 Header 로 끌어올리고 PRD 메뉴 구조(サークルを探す/お気に入り/サークル登録/マイページ/承認管理)를 데스크탑 가로 nav + 모바일 햄버거 Sheet 패턴으로 구현. 인증 상태별 분기 + role='admin' 조건부 노출. proxy.ts 화이트리스트를 명시 함수로 추출하면서 /circles, /circles/[id] 미인증 통과 + /circles/new, /favorites, /mypage, /admin/* 인증 강제 + ?next= 파라미터 표준화. 빈 셸 페이지 8개를 ComingSoon 공통 컴포넌트로 통일. 신규 디렉토리 components/layout/. 기존 auth-button.tsx 는 라벨 일본어화 + Avatar + DropdownMenu 로 리팩토링하여 재사용. 변경 범위는 components/layout/*, components/auth-button.tsx, app/layout.tsx, app/page.tsx, app/{circles,favorites,compare,mypage,admin}/*, lib/supabase/proxy.ts, docs/ROADMAP.md 로 제한.",
-      "summary": "lib/supabase/proxy.ts 갱신 — (1) isPublicPath(pathname) 함수 추출: /, /auth/*, /login*, /circles, /circles/* (단 /circles/new 명시 블랙리스트) 를 미인증 통과. (2) 미인증 리디렉션 시 url.searchParams.set('next', request.nextUrl.pathname) 으로 next 파라미터 부여 → PRD F012 의 「未로그인 → /auth/login?next=...」 패턴과 일관성 확보. docs/ROADMAP.md 갱신 — T-002 표 행 status를 pending → completed, ✅ 마크 추가. 세부 설명에 7가지 완료 항목(layout/* 5종, auth-button/logout-button 갱신, 빈 셸 8개, layout Suspense 래핑, page.tsx nav 제거, proxy.ts isPublicPath, ROADMAP) 한 줄 요약 추가. 최종 npm run build (23 페이지 모두 정상) + npm run lint 통과. Phase 1.0 헤더에는 ✅ 미부여(T-003, T-004 남음)."
+      "summary": "lib/supabase/proxy.ts 갱신 — (1) isPublicPath(pathname) 함수 추출: /, /auth/*, /login*, /circles, /circles/* (단 /circles/new 명시 블랙리스트) 를 미인증 통과. (2) 미인증 리디렉션 시 url.searchParams.set('next', request.nextUrl.pathname) 으로 next 파라미터 부여 → PRD F012 의 「未로그인 → /auth/login?next=...」 패턴과 일관성 확보. docs/ROADMAP.md 갱신 — T-002 표 행 status를 pending → completed, ✅ 마크 추가. 세부 설명에 7가지 완료 항목(layout/* 5종, auth-button/logout-button 갱신, 빈 셸 8개, layout Suspense 래핑, page.tsx nav 제거, proxy.ts isPublicPath, ROADMAP) 한 줄 요약 추가. 최종 npm run build (23 페이지 모두 정상) + npm run lint 통과. Phase 1.0 헤더에는 ✅ 미부여(T-003, T-004 남음).",
+      "completedAt": "2026-05-14T06:38:21.708Z"
     }
   ]
 }
