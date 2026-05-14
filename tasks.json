@@ -57,14 +57,14 @@
       "name": "T-004b Playwright E2E + ROADMAP T-004 완료",
       "description": "@playwright/test 를 devDependencies 에 추가하고 Chromium 만 설치(--with-deps). playwright.config.ts 신설하여 baseURL http://localhost:3000, webServer(npm run dev) 자동 기동, projects 2종(Mobile Chrome devices['Pixel 5'] + Desktop Chrome)을 모바일 퍼스트 회귀 가드로 구성. tests/e2e/smoke.spec.ts 작성 — 홈 페이지 200 응답 + 헤더 KCircle 로고 visible 검증(getByRole link). package.json 에 test:e2e / test:e2e:ui 스크립트, .gitignore 에 playwright-report/ + test-results/ 추가. 마지막으로 docs/ROADMAP.md 의 T-004 행 ✅ + 완료 요약 1줄.",
       "notes": "Playwright Chromium 다운로드가 처음에는 시간이 걸림(약 200MB). 동기적으로 진행하되 실패 시 사용자에게 `npx playwright install chromium` 수동 안내. webServer 의 reuseExistingServer 옵션으로 기존 dev server 와 충돌 회피.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "06ac32f6-3000-4068-a26d-a9095bda64ea"
         }
       ],
       "createdAt": "2026-05-14T07:23:59.093Z",
-      "updatedAt": "2026-05-14T07:23:59.093Z",
+      "updatedAt": "2026-05-14T07:27:53.399Z",
       "relatedFiles": [
         {
           "path": "package.json",
