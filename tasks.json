@@ -49,7 +49,7 @@
         }
       ],
       "createdAt": "2026-05-14T06:09:17.240Z",
-      "updatedAt": "2026-05-14T06:12:29.194Z",
+      "updatedAt": "2026-05-14T06:13:38.331Z",
       "relatedFiles": [
         {
           "path": "app/layout.tsx",
@@ -71,7 +71,8 @@
       ],
       "implementationGuide": "STEP1: app/layout.tsx 에 Noto_Sans_JP import 추가. const notoJp = Noto_Sans_JP({variable:'--font-noto-jp', subsets:['latin'], weight:['400','500','700'], display:'swap'}). STEP2: body className 에 ${notoJp.variable} 추가. STEP3: ThemeProvider 내부 children 다음에 <Toaster richColors closeButton /> 추가 (import { Toaster } from '@/components/ui/sonner'). STEP4: app/globals.css 의 @theme inline 안에 --font-sans: var(--font-geist-sans), var(--font-noto-jp), ui-sans-serif, system-ui, 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif; 추가. STEP5: html lang='en' 을 html lang='ja' 로 변경 검토(PRD가 일본 사용자 대상). STEP6: npm run build 검증.",
       "verificationCriteria": "(1) app/layout.tsx 에 Noto_Sans_JP import 와 Toaster 컴포넌트 존재. (2) globals.css 의 @theme 안에 --font-sans 정의됨. (3) npm run build 성공 + lint 통과. (4) dev server 에서 「サークル」 텍스트가 시스템 폴백이 아닌 Noto Sans JP 로 렌더링됨(브라우저 개발자 도구 computed font-family 확인).",
-      "analysisResult": "T-001 「디자인 토큰·shadcn 추가 컴포넌트 도입」. Tailwind v4 마이그레이션 선행 완료로 keio-navy 토큰은 이미 app/globals.css 에 반영됨. 잔여 범위는 (1) PRD 「shadcn 컴포넌트 매핑」 기반 누락 12종 일괄 추가, (2) 일본어 라벨 안정 렌더링을 위한 Noto Sans JP 보조 폰트 + Sonner Toaster Provider 적용, (3) ROADMAP T-001 라인 ✅ 처리. 변경 범위는 components/ui/* (신규 12개), app/layout.tsx, app/globals.css, package.json, docs/ROADMAP.md 로 제한."
+      "analysisResult": "T-001 「디자인 토큰·shadcn 추가 컴포넌트 도입」. Tailwind v4 마이그레이션 선행 완료로 keio-navy 토큰은 이미 app/globals.css 에 반영됨. 잔여 범위는 (1) PRD 「shadcn 컴포넌트 매핑」 기반 누락 12종 일괄 추가, (2) 일본어 라벨 안정 렌더링을 위한 Noto Sans JP 보조 폰트 + Sonner Toaster Provider 적용, (3) ROADMAP T-001 라인 ✅ 처리. 변경 범위는 components/ui/* (신규 12개), app/layout.tsx, app/globals.css, package.json, docs/ROADMAP.md 로 제한.",
+      "summary": "app/layout.tsx 에 Noto_Sans_JP(weight 400/500/700, subsets:['latin'], display:'swap') 추가하여 일본어 글리프 dynamic subsetting 적용. ThemeProvider 내부 children 형제로 <Toaster richColors closeButton /> 배치(다크 모드 자동). html lang='en' → 'ja' 변경 (PRD 가 일본 학생 대상). app/globals.css 의 @theme inline 안에 --font-sans 폴백 체인 정의(Geist → Noto JP → ui-sans-serif/system-ui → Hiragino Kaku Gothic ProN/Yu Gothic/Meiryo → sans-serif). body className 에 ${geistSans.variable} ${notoJp.variable} font-sans 적용. 추가로 metadata title/description 을 KCircle 일본어 카피로 갱신. npm run build (15 페이지 모두 생성) 및 npm run lint 모두 통과."
     },
     {
       "id": "6b8cfa7e-29a5-4d8a-9745-df12c269236e",
