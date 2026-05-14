@@ -5,10 +5,10 @@
       "name": "T-011a filterCircles + searchParams 유틸 + CategoryTabs 추출",
       "description": "lib/dummy/circles.ts 에 filterCircles async helper 추가(페이지네이션 결과 포함). lib/circles/search-params.ts 신설 — CirclesSearchParams 타입, parseCirclesSearchParams(awaited searchParams 파서, fail-safe), buildCirclesUrl(필터→URL). components/circles/category-tabs.tsx 신설(RSC) — props={activeCategory?, baseSearchParams?}, 「すべて」+8 카테고리=9개 Link, 활성 강조. app/page.tsx 의 inline 카테고리 nav 를 <CategoryTabs /> 로 교체(검색바·인기 카드·CTA 보존). tests/unit/filter-circles.test.ts 5건 이상 + tests/e2e/home.spec.ts 의 카테고리 link count 8→9 갱신.",
       "notes": "filterCircles 의 시그니처는 T-009 와이어업 시 Supabase 쿼리(eq/in/overlaps/ilike/lt/range)로 무손실 교체 가능하도록 설계. CategoryTabs 의 「すべて」 옵션이 홈에서도 노출되는 결정 — UX 일관성 + 검색 진입 경로 다양화. 홈 E2E count 동시 갱신.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T08:15:02.994Z",
-      "updatedAt": "2026-05-14T08:15:02.994Z",
+      "updatedAt": "2026-05-14T08:15:54.361Z",
       "relatedFiles": [
         {
           "path": "lib/circles/search-params.ts",
