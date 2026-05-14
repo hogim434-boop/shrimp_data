@@ -5,10 +5,10 @@
       "name": "T-004a Vitest 단위 테스트 도입",
       "description": "Vitest + jsdom + vite-tsconfig-paths + @testing-library 군을 devDependencies 에 추가하고, vitest.config.ts / vitest.setup.ts 를 신설하여 jsdom 환경 + `@/*` alias + jest-dom 확장을 구성한다. tests/unit/ 디렉토리 신설하고 T-003 산출물(lib/constants/*) 의 매핑 정합성을 검증하는 단위 테스트 1개를 작성 — 학생 단체 통합 정책의 OfficialType 5종 명문화 포함. package.json 에 test / test:watch / test:ui 스크립트 추가. npm run test PASS 가 수락 기준.",
       "notes": "단위 테스트 대상은 Phase 1.0 에서는 순수 export(constants) 만. 컴포넌트 테스트는 Phase 1.1 이후 결정. Vitest 의 React 19 / RSC 호환성은 본 작업 영향 없음.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T07:23:59.093Z",
-      "updatedAt": "2026-05-14T07:23:59.093Z",
+      "updatedAt": "2026-05-14T07:24:48.158Z",
       "relatedFiles": [
         {
           "path": "package.json",
