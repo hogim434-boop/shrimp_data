@@ -5,10 +5,10 @@
       "name": "T-013a useFavorites hook + 단위 테스트",
       "description": "lib/circles/use-favorites.ts (Client hook) 신설. sessionStorage 키 'kcircle:favorites' 에 JSON.stringify(string[]) 저장. 반환 { favoriteIds: Set<string>, isFavorite(id), toggle(id), isAuthenticated: boolean | null }. mount 시 useEffect 로 storage 복원 + 모듈 singleton authPromise (createClient().auth.getClaims() 1회) 로 isAuthenticated 동기화. toggle 은 isAuthenticated===false 시 router.push('/auth/login?next='+pathname) 후 return, null/true 시 setFavoriteIds + writeStorage + window.dispatchEvent(CustomEvent 'kcircle:favorites-changed'). 다른 인스턴스는 useEffect 안에서 같은 이벤트 listener 추가하여 readStorage()→setFavoriteIds 동기화. hasEnvVars false 시 isAuthenticated null 유지(storage 토글만). tests/unit/use-favorites.test.ts(jsdom) 5건+ — sessionStorage 복원/toggle 영속/두 인스턴스 동기화.",
       "notes": "모듈 singleton authPromise 는 페이지 navigation 후에도 캐시 — stale 가능하지만 T-013 단계는 단순화 우선. T-015 이후 SWR/Realtime 패턴으로 정식 갱신. CustomEvent broadcast 로 페이지의 카드 6개+액션 바 모두 동기. jsdom 의 supabase auth fetch 는 mock 가능 — 본 테스트는 인증 무관 storage 동작만 검증. router.push 도 next/navigation 모듈 mock 필요 시 vitest mock.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T08:51:24.175Z",
-      "updatedAt": "2026-05-14T08:51:24.175Z",
+      "updatedAt": "2026-05-14T08:53:37.143Z",
       "relatedFiles": [
         {
           "path": "lib/circles/use-favorites.ts",
