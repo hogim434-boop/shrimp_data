@@ -42,14 +42,14 @@
       "name": "일본어 폰트 + Sonner Provider 적용",
       "description": "일본어 라벨(「サークル」「公認」「参加する」 등) 의 안정 렌더링을 위해 Next.js next/font/google 의 Noto Sans JP 를 보조 폰트로 추가하고, 이전 작업에서 도입한 Sonner 의 Toaster Provider 를 app/layout.tsx 에 배치한다. 또한 globals.css 의 @theme 안에 font-sans fallback 체인을 정의하여 Geist → Noto JP → 시스템 일본어 폰트(Hiragino Kaku Gothic ProN, Yu Gothic) 순으로 fallback 되게 한다.",
       "notes": "next/font/google 은 일본어 dynamic subsetting 을 자동 처리. weight 3종이 최소 권장. 다크 모드 색상 자동 적용을 위해 Toaster 는 ThemeProvider 내부에 배치 필수.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "a4e8a565-27a0-4bfe-8494-cafc63c3cb8a"
         }
       ],
       "createdAt": "2026-05-14T06:09:17.240Z",
-      "updatedAt": "2026-05-14T06:09:17.240Z",
+      "updatedAt": "2026-05-14T06:12:29.194Z",
       "relatedFiles": [
         {
           "path": "app/layout.tsx",
