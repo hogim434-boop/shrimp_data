@@ -67,14 +67,14 @@
       "name": "T-002b 헤더 컴포넌트 3종 + AuthButton 일본어 리팩토링",
       "description": "components/layout/ 에 header.tsx(RSC) + main-nav.tsx(Client, usePathname active 강조) + mobile-nav.tsx(Client, Sheet 햄버거) 3개 신설. components/auth-button.tsx 기존 파일을 리팩토링: 라벨을 ログイン/新規登録/ログアウト 일본어화 + 로그인 시 [Avatar + DropdownMenu(マイページ/ログアウト)] 패턴, role 정보를 호출자(Header) 가 받을 수 있도록 user/role 반환 구조로. main-nav 와 mobile-nav 는 role='admin' 프롭으로 受け取り 「承認管理」 메뉴 조건부 노출. EnvVarWarning 은 헤더의 인증 영역 분기에 그대로 활용.",
       "notes": "profiles 테이블 아직 없으므로 role 은 항상 undefined 일 것 — 코드 분기 자체는 작성하되 실제 테스트는 T-006 이후. user.app_metadata.role 같은 임시 경로 사용 가능. AuthButton 의 LogoutButton 은 기존 components/logout-button.tsx 재사용.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "05d5ce1c-4f05-451c-884e-b28cb579582d"
         }
       ],
       "createdAt": "2026-05-14T06:28:21.730Z",
-      "updatedAt": "2026-05-14T06:28:21.730Z",
+      "updatedAt": "2026-05-14T06:31:40.223Z",
       "relatedFiles": [
         {
           "path": "components/auth-button.tsx",
