@@ -113,14 +113,14 @@
       "name": "T-010c app/page.tsx KCircle 본 디자인 + E2E + ROADMAP T-010 완료",
       "description": "app/page.tsx 본문을 KCircle 트プ 디자인으로 교체 — sticky top-14 검색바 + 가로 스크롤 카테고리 탭 8종(snap-x) + 인기 서클 6개 카드 그리드(getPopularCircles(6)) + 「サークルを探す」 CTA(bg-keio-navy). Suspense 경계로 PopularCircles 영역 래핑. 스타터킷 잔재(Hero/SignUpUserSteps/ConnectSupabaseSteps) import 제거, footer 의 Supabase 광고도 제거(빈 placeholder 만, 면책 문구는 별도 작업). tests/e2e/home.spec.ts 신설하여 mobile+desktop 양쪽에서 카드 6개·카테고리 8개·CTA 검증. 마지막으로 ROADMAP T-010 ✅ + 완료 요약.",
       "notes": "기존 components/hero.tsx, components/next-logo.tsx, components/supabase-logo.tsx, components/deploy-button.tsx, components/tutorial/* 는 삭제하지 않음(나중에 안전 정리). app/page.tsx 의 import 만 제거하면 자동 dead code → 빌드에서 제외. 푸터 면책 문구는 본 작업 범위 밖 — 별도 mini task 권장.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "40279eac-277b-450a-95d4-1ff418d6540e"
         }
       ],
       "createdAt": "2026-05-14T07:39:54.151Z",
-      "updatedAt": "2026-05-14T07:39:54.151Z",
+      "updatedAt": "2026-05-14T07:47:33.647Z",
       "relatedFiles": [
         {
           "path": "app/page.tsx",
