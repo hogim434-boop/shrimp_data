@@ -123,14 +123,14 @@
       "name": "T-011c app/circles/page.tsx 통합 + 페이지네이션 + E2E + ROADMAP T-011 완료",
       "description": "app/circles/page.tsx ComingSoon 셸 → KCircle 본 디자인 교체. searchParams Promise await → parseCirclesSearchParams → filterCircles. StickyTopArea(검색바 + CategoryTabs + FilterTrigger 모바일) + grid lg:grid-cols-[260px_1fr]: aside (hidden lg:block) 의 FilterPanel mode='sidebar' + section 의 결과 카운트 + CardGrid (grid-cols-1 sm:grid-cols-2 xl:grid-cols-3) + Pagination(前へ/X/次へ) + 빈 결과 fallback(該当するサークルがありません + リセット Link). Suspense 경계로 결과 영역 스트리밍. tests/e2e/circles.spec.ts 신설 — 카테고리 클릭/필터 적용/빈 결과 mobile+desktop. ROADMAP T-011 ✅.",
       "notes": "appliedCount 계산은 params 의 frequency/officialType/tags 길이 + (feeMax?1:0) + (q?1:0). 단순 sum. Sheet 안의 FilterPanel 은 mode='sheet' 라 sticky 적용 버튼이 하단에. Suspense key 는 제거(분석 결과 결정) — fallback 만으로 충분. E2E 시 단위 검증: 모바일 viewport 분기는 page.viewportSize() 로 확인.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "80263d79-6f62-46e7-82dc-6bcf902baaa9"
         }
       ],
       "createdAt": "2026-05-14T08:15:02.994Z",
-      "updatedAt": "2026-05-14T08:15:02.994Z",
+      "updatedAt": "2026-05-14T08:20:44.610Z",
       "relatedFiles": [
         {
           "path": "app/circles/page.tsx",
