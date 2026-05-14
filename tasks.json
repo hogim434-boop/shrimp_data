@@ -62,14 +62,14 @@
       "name": "T-011b FilterPanel + FilterTrigger 컴포넌트",
       "description": "components/circles/filter-panel.tsx (Client) — props={initial: CirclesSearchParams, mode: 'sheet'|'sidebar', onApply?: () => void}. useState 로 draft 보관, 4종 필터(frequency 체크 / officialType 체크 / tags 체크 / fee_max select) + 검색어 input. 「適用」 클릭 시 router.push(buildCirclesUrl({...draft, page: undefined})) + onApply?.(). 「リセット」 → router.push('/circles'). hydration 동기화는 호출 측 key={JSON.stringify(initial)}. components/circles/filter-trigger.tsx (Client) — 모바일 전용 wrapper, shadcn Sheet side='bottom', SheetTrigger 버튼 「フィルター ({appliedCount})」, SheetContent 안에 <FilterPanel mode='sheet' onApply={() => setOpen(false)} />. 데스크탑 lg:hidden.",
       "notes": "TagSlug 10종은 PRD 시드 그대로 하드코딩 (beginner_ok, kenser_ok, yurui, gachi, low_drinking, has_camp, women_many, men_many, once_a_week, low_fee). Phase 1.2 T-009 와이어업 후 tags 마스터 fetch 로 교체 가능. shadcn Slider 미설치라 연회비는 Select 4단계(제한없음/5000/10000/30000). FilterPanel/Trigger 둘 다 Client — 호출 측 page.tsx 는 RSC, key 리마운트로 동기화.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "235e1512-c05d-4dd5-8c2f-249f78e371e7"
         }
       ],
       "createdAt": "2026-05-14T08:15:02.994Z",
-      "updatedAt": "2026-05-14T08:20:33.250Z",
+      "updatedAt": "2026-05-14T08:20:33.315Z",
       "relatedFiles": [
         {
           "path": "components/circles/filter-panel.tsx",
@@ -115,7 +115,8 @@
       "implementationGuide": "STEP1: components/circles/filter-panel.tsx 'use client'. import useRouter, useState, Checkbox, Select, Input, Button, Label, buildCirclesUrl, ACTIVITY_FREQUENCIES + LABELS, OFFICIAL_TYPES + LABELS, TAG_KIND 시드 10종(beginner_ok 등). props={initial, mode, onApply}. const [draft, setDraft] = useState(initial). 섹션 5종(검색어 input / 활동빈도 체크 / 公認 구분 체크 / 태그 체크 / 연회비 select). 「適用」 onClick={() => { router.push(buildCirclesUrl({...draft, page: undefined})); onApply?.(); }}. 「リセット」 router.push('/circles'). mode==='sheet' 시 버튼 sticky bottom + 풀폭, mode==='sidebar' 시 인라인. STEP2: components/circles/filter-trigger.tsx 'use client'. shadcn Sheet open/setOpen useState. SheetTrigger: Button 'フィルター ({count})' 가 검색바 옆 또는 상단 sticky. SheetContent side='bottom' className='h-[80vh]'. SheetTitle 'フィルター'. 안에 <FilterPanel initial={initial} mode='sheet' onApply={() => setOpen(false)} />. lg:hidden. STEP3: npm run lint+build 통과 확인 (두 컴포넌트가 아직 import 안 되어 tree-shake).",
       "verificationCriteria": "(1) components/circles/filter-panel.tsx 가 4종 필터 + 검색어 input + 適用/リセット 버튼 노출. (2) components/circles/filter-trigger.tsx 가 Sheet bottom + SheetTrigger 버튼(적용 개수 뱃지). (3) router.push(buildCirclesUrl({...draft, page: undefined})) 로 URL 갱신. (4) lint+build 통과 (컴포넌트 미사용 상태에서도 tree-shake OK).",
       "analysisResult": "T-011 「서클 목록 페이지 + 카테고리 탭 + 필터」. filterCircles helper(페이지네이션 포함) + searchParams 파서 유틸 + CategoryTabs 추출(홈/목록 공통) + FilterPanel/Trigger(모바일 Sheet + 데스크탑 사이드바) + 페이지네이션 + 빈 결과. URL 파라미터 표준화(콤마 구분 다중값). FilterPanel 은 key 기반 hydration 동기화, 「適用」 시 page 자동 리셋. Next.js 16 Promise searchParams 처리 + Suspense 경계. 카드 그리드 1/2/x3열(사이드바 등장 후 본문 2열). CategoryTabs 에 「すべて」 옵션 추가 → 홈 카운트 8→9. 변경 범위: lib/dummy/circles.ts(filterCircles 추가), lib/circles/search-params.ts(신규), components/circles/{category-tabs,filter-panel,filter-trigger}.tsx, app/{page,circles/page}.tsx, tests/unit/filter-circles.test.ts, tests/e2e/circles.spec.ts + home.spec.ts(count 갱신).",
-      "summary": "components/circles/filter-panel.tsx (Client) 신설 — props={initial, mode, onApply}. useState 로 draft 보관, 5개 섹션(키워드 input / 활동빈도 3 체크 / 団体 구분 5 체크 / 태그 10 체크 grid 2열 / 연회비 select 4 옵션). PRD 태그 시드 10종(beginner_ok 등) + label_ja 매핑을 컴포넌트 내부 TAG_SEEDS 상수로 정의(T-009 후 tags 테이블 fetch 로 교체). 「適用」 클릭 → router.push(buildCirclesUrl({...draft, page: undefined})) + onApply?(). 「リセット」 → router.push('/circles'). mode='sheet' 시 버튼 sticky bottom + border-t. shadcn Select 의 빈 문자열 미허용 회피로 FEE_MAX_ANY='all' sentinel. components/circles/filter-trigger.tsx (Client, lg:hidden) — shadcn Sheet side='bottom' h-[85vh], SheetTrigger 「フィルター ({count})」 + SlidersHorizontal 아이콘 + 적용 개수 Badge(secondary, text-[10px]). FilterPanel 을 key={JSON.stringify(initial)} 로 리마운트하여 외부 URL 변경 시 draft state 동기화. lint+build 통과 (두 컴포넌트 미사용 상태에서도 tree-shake)."
+      "summary": "components/circles/filter-panel.tsx (Client) 신설 — props={initial, mode, onApply}. useState 로 draft 보관, 5개 섹션(키워드 input / 활동빈도 3 체크 / 団体 구분 5 체크 / 태그 10 체크 grid 2열 / 연회비 select 4 옵션). PRD 태그 시드 10종(beginner_ok 등) + label_ja 매핑을 컴포넌트 내부 TAG_SEEDS 상수로 정의(T-009 후 tags 테이블 fetch 로 교체). 「適用」 클릭 → router.push(buildCirclesUrl({...draft, page: undefined})) + onApply?(). 「リセット」 → router.push('/circles'). mode='sheet' 시 버튼 sticky bottom + border-t. shadcn Select 의 빈 문자열 미허용 회피로 FEE_MAX_ANY='all' sentinel. components/circles/filter-trigger.tsx (Client, lg:hidden) — shadcn Sheet side='bottom' h-[85vh], SheetTrigger 「フィルター ({count})」 + SlidersHorizontal 아이콘 + 적용 개수 Badge(secondary, text-[10px]). FilterPanel 을 key={JSON.stringify(initial)} 로 리마운트하여 외부 URL 변경 시 draft state 동기화. lint+build 통과 (두 컴포넌트 미사용 상태에서도 tree-shake).",
+      "completedAt": "2026-05-14T08:20:33.312Z"
     },
     {
       "id": "892a0ac0-7619-472b-9214-f7df0a3935b6",
