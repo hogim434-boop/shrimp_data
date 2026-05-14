@@ -80,14 +80,14 @@
       "name": "T-014c e2e 시나리오 3 추가 + 최종 검증",
       "description": "tests/e2e/circle-detail.spec.ts 에 모달 동작 검증 3 케이스 추가. (1) 「参加する」 클릭 시 모달 열림 + SheetTitle 「参加方法を選んでください」 visible. (2) テニス部 단체에서 등록된 채널만 노출 (Instagram + X visible, LINE 부재). (3) 채널 link 의 target=_blank + rel 에 noopener·noreferrer 포함. mobile+desktop projects 양쪽 자동 실행 → 총 6 PASS 추가 (34→40). 마지막에 lint/build/test/test:e2e 전체 검증.",
       "notes": "テニス部 더미 데이터는 contact_instagram + contact_x 두 채널 (확인됨 — 더미 line 121-123). 셀렉터에서 .first() 가 viewport 분기로 자동 처리. shadcn SheetContent 가 role=dialog 로 노출되어 getByRole('dialog') 사용 가능.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "8e4ced36-5b83-4eaf-aeeb-877dddf13f76"
         }
       ],
       "createdAt": "2026-05-14T14:22:44.885Z",
-      "updatedAt": "2026-05-14T14:29:45.754Z",
+      "updatedAt": "2026-05-14T14:29:45.821Z",
       "relatedFiles": [
         {
           "path": "tests/e2e/circle-detail.spec.ts",
@@ -115,7 +115,8 @@
       "implementationGuide": "Pseudo (Edit — 기존 file 끝에 추가):\\n\\ntests/e2e/circle-detail.spec.ts 에 추가:\\n\\ntest('「参加する」 클릭 시 채널 모달이 열린다', async ({ page }) => {\\n  await page.goto('/circles/00000000-0000-4000-8000-000000000001')\\n  const joinButton = page.getByRole('button', { name: '参加する' }).first()\\n  await joinButton.click()\\n  await expect(page.getByRole('heading', { name: '参加方法を選んでください' })).toBeVisible()\\n})\\n\\ntest('등록된 채널만 모달에 노출된다', async ({ page }) => {\\n  // テニス部 = id(1): contact_instagram + contact_x (LINE null)\\n  await page.goto('/circles/00000000-0000-4000-8000-000000000001')\\n  await page.getByRole('button', { name: '参加する' }).first().click()\\n  const dialog = page.getByRole('dialog')\\n  await expect(dialog.getByRole('link', { name: /Instagram/ })).toBeVisible()\\n  await expect(dialog.getByRole('link', { name: /X .Twitter./ })).toBeVisible()\\n  await expect(dialog.getByRole('link', { name: /LINE/ })).toHaveCount(0)\\n})\\n\\ntest('채널 link 가 새 탭 + noopener rel 속성을 가진다', async ({ page }) => {\\n  await page.goto('/circles/00000000-0000-4000-8000-000000000001')\\n  await page.getByRole('button', { name: '参加する' }).first().click()\\n  const igLink = page.getByRole('link', { name: /Instagram/ })\\n  await expect(igLink).toHaveAttribute('target', '_blank')\\n  await expect(igLink).toHaveAttribute('rel', /noopener/)\\n  await expect(igLink).toHaveAttribute('rel', /noreferrer/)\\n})\\n\\n최종 검증 명령:\\nnpm run lint\\nnpm run build\\nnpm run test\\nnpm run test:e2e\\n\\n각 단계 실패 시 즉시 fix. lint 실패 시 _var 회피 트릭 금지.",
       "verificationCriteria": "npm run lint PASS. npm run build PASS (23 routes). npm run test PASS (54건 변동 없음). npm run test:e2e PASS (34 + 6 신규 = 40건 모두 PASS, mobile+desktop 양쪽). 신규 3 케이스가 mobile 과 desktop 양쪽에서 모두 통과. ROADMAP.md 의 T-014 행을 completed ✅ + 완료 요약 한 줄 추가.",
       "analysisResult": "T-014 「参加する」 채널 모달 UI. 서클 상세 페이지의 「参加する」 우측 메인 CTA 클릭 시 단체의 contact_instagram/contact_x/contact_line 중 입력된 채널만 풀폭 버튼으로 노출하는 shadcn Sheet side=bottom 모달을 띄우고, 채널 선택 시 anchor 의 native target=_blank rel=noopener noreferrer 로 새 탭 오픈. RPC increment_inquiry_count 호출은 console.info '[T-009 anchor]' placeholder 로만 남기고 본 작업은 UI 만 처리. 미로그인 동선은 JSDoc anchor 만 (T-015 이전이라 실제 리다이렉트 미구현). 직전 T-013 작업으로 circle-actions.tsx 의 handleJoin 이 이미 placeholder anchor 로 박혀 있어 본 task 는 그 자리 교체 + 새 모달 컴포넌트 신설 + e2e 보강. 검증은 lint/build/test 영향 없음 + e2e 3 신규 케이스 PASS (mobile+desktop 양쪽 자동 = 총 6 PASS 추가).",
-      "summary": "e2e 3 케이스 추가 완료. (1) 「参加する」 클릭 시 SheetTitle visible, (2) テニス部 Instagram+X visible·LINE toHaveCount(0), (3) Instagram link target=\"_blank\" + rel=/noopener/+/noreferrer/ — mobile+desktop 양쪽 6건 PASS(34→40). npm run lint PASS, npm run build PASS(23 routes), npm run test PASS(54건), npm run test:e2e PASS(40건 전체). docs/ROADMAP.md T-014 행 pending→completed ✅ + 완료 요약 bullet 추가."
+      "summary": "e2e 3 케이스 추가 완료. (1) 「参加する」 클릭 시 SheetTitle visible, (2) テニス部 Instagram+X visible·LINE toHaveCount(0), (3) Instagram link target=\"_blank\" + rel=/noopener/+/noreferrer/ — mobile+desktop 양쪽 6건 PASS(34→40). npm run lint PASS, npm run build PASS(23 routes), npm run test PASS(54건), npm run test:e2e PASS(40건 전체). docs/ROADMAP.md T-014 행 pending→completed ✅ + 완료 요약 bullet 추가.",
+      "completedAt": "2026-05-14T14:29:45.820Z"
     }
   ]
 }
