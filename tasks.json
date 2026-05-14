@@ -5,10 +5,10 @@
       "name": "T-014a JoinChannelModal 컴포넌트 신설",
       "description": "components/circles/join-channel-modal.tsx 신규 Client 컴포넌트 작성. shadcn Sheet side=bottom 단일 패턴으로 모바일·데스크탑 일관. props는 { circle: CircleDetail, open: boolean, onOpenChange: (v: boolean) => void }. CHANNEL_META 객체로 instagram/x/line 의 label·Icon 매핑(lucide Instagram, Twitter, MessageCircle, ExternalLink). 입력된 채널만 channels 배열에 push 후 채널 0개는 「連絡先が登録されていません」 EmptyState + 「閉じる」 버튼, 1개 이상은 Button asChild + a target=_blank rel=noopener noreferrer 로 풀폭 노출. handleChannelClick 안에서 console.info '[T-009 anchor] incrementInquiryCount' + onOpenChange(false) 처리. 미로그인 동선은 JSDoc anchor 주석만(// T-015 anchor:). SheetContent에 mx-auto max-w-md 로 데스크탑에서도 너무 넓지 않게 제한. 한국어 JSDoc + 일본어 UI 라벨(参加方法を選んでください 등) + WCAG aria-label.",
       "notes": "lucide-react v0.511 에 Instagram/Twitter/MessageCircle/ExternalLink 모두 존재 확인. 없는 경우만 Camera fallback. 모달 안 button 의 h-12 (48px) 는 WCAG 통과.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-14T14:22:44.885Z",
-      "updatedAt": "2026-05-14T14:22:44.885Z",
+      "updatedAt": "2026-05-14T14:25:46.687Z",
       "relatedFiles": [
         {
           "path": "components/circles/join-channel-modal.tsx",
