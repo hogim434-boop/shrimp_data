@@ -1,3 +1,271 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "ca766ae9-0cec-43e2-b003-e1085b82b644",
+      "name": "기반 인프라: /shuffle 라우트 + 셔플 유틸 + 글로벌 UI hide",
+      "description": "`/shuffle` 경로의 빈 RSC 페이지를 만들고, Fisher-Yates 셔플 유틸을 별도 파일로 추가하며, 글로벌 UI 4곳(헤더·헤더 클라이언트 게이트·BottomNav·RegisterFloatingCTA)이 `/shuffle` 경로에서 자동 숨김되도록 분기 추가. 이 단계만으로도 빈 페이지가 정상 진입되고 글로벌 UI가 모두 사라지는지 검증 가능.",
+      "notes": "기존 `/search`, `/circles/[id]` hide 패턴 정규식 그대로 따름. 새 의존성 없음. 빈 페이지지만 다음 task 의존성 차단 안 되도록 컴파일 가능한 최소 마크업 유지.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-15T11:17:56.568Z",
+      "updatedAt": "2026-05-15T11:17:56.568Z",
+      "relatedFiles": [
+        {
+          "path": "lib/utils/shuffle.ts",
+          "type": "CREATE",
+          "description": "Fisher-Yates 셔플 유틸 (제너릭, 새 배열 반환)"
+        },
+        {
+          "path": "app/shuffle/page.tsx",
+          "type": "CREATE",
+          "description": "RSC + Suspense 빈 페이지 (다음 task 에서 SwipeDeck 마운트)"
+        },
+        {
+          "path": "components/layout/header.tsx",
+          "type": "TO_MODIFY",
+          "description": "/shuffle 경로 hide 분기 추가",
+          "lineStart": 22,
+          "lineEnd": 34
+        },
+        {
+          "path": "components/layout/header-client-gate.tsx",
+          "type": "TO_MODIFY",
+          "description": "client-side hide 분기 추가"
+        },
+        {
+          "path": "components/layout/bottom-nav.tsx",
+          "type": "TO_MODIFY",
+          "description": "/shuffle 경로 hide 분기 추가",
+          "lineStart": 30,
+          "lineEnd": 40
+        },
+        {
+          "path": "components/layout/register-floating-cta.tsx",
+          "type": "TO_MODIFY",
+          "description": "/shuffle 경로 hide 분기 추가",
+          "lineStart": 30,
+          "lineEnd": 45
+        },
+        {
+          "path": "app/circles/page.tsx",
+          "type": "REFERENCE",
+          "description": "RSC + Suspense 패턴 참고",
+          "lineStart": 37,
+          "lineEnd": 52
+        }
+      ],
+      "implementationGuide": "1) `lib/utils/shuffle.ts` 신규: `export function fisherYates<T>(arr: T[]): T[]` — 5줄짜리 in-place 알고리즘을 새 배열에 적용.\\n2) `app/shuffle/page.tsx` 신규: RSC + Suspense 패턴 (`app/circles/page.tsx:37-40` 동일). 현재는 자리표시로 빈 본문 (`<main className='min-h-dvh'>{...}</main>`) 또는 임시 '셔플 화면 준비 중' 텍스트.\\n3) 4개 파일에 `/shuffle` 분기 추가:\\n   - `components/layout/header.tsx:24-28` 부근: `const isShuffle = pathname === '/shuffle'; if (isCircleDetail || isSearch || isShuffle) return null;`\\n   - `components/layout/header-client-gate.tsx` 동일\\n   - `components/layout/bottom-nav.tsx:32-36` 부근: `const isShuffle = pathname === '/shuffle'; if (isCircleDetail || isShuffle) return null;`\\n   - `components/layout/register-floating-cta.tsx:36-40` 부근 동일",
+      "verificationCriteria": "브라우저로 `/shuffle` 진입 시: (a) 페이지가 200 OK 로드, (b) 글로벌 헤더 미노출, (c) BottomNav 미노출, (d) 우하단 등록 CTA 미노출. 다른 경로(/circles 등)는 영향 없음. `npm run lint` 0 에러.",
+      "analysisResult": "KCircle (Next.js 15 App Router + Supabase + Tailwind v4 + motion v12.38 + shadcn/ui new-york) 에 Tinder/Hinge 스타일 swipe deck 디스커버리 페이지 `/shuffle` 신설. 사용자 결정: 별도 페이지 / 우→「気になる」(useFavorites.toggle) / 좌→「次へ」 / Hinge 풍부형 카드 / 데스크탑은 마우스 drag+좌우 버튼+키보드 ←/→. 신규 의존성 없음. 30건 더미 사클을 Fisher-Yates 셔플 → 풀스크린 1:1 발견. iOS easing [0.32, 0.72, 0, 1] 톤 일관성, prefers-reduced-motion (WCAG SC 2.3.3) 대응. 기존 자산 재사용: useFavorites, CircleSummary, filterCircles, CATEGORY_LABELS/OFFICIAL_TYPE_LABELS/ACTIVITY_FREQUENCY_LABELS, Emoji 래퍼, Toaster(sonner)."
+    },
+    {
+      "id": "0b1ad5f4-84f1-4fb2-804c-2ac417c6b014",
+      "name": "SwipeCard 정적 레이아웃 (Hinge 풍부형)",
+      "description": "풀스크린 swipe deck 용 단일 카드 컴포넌트의 정적 레이아웃(gesture 없이)을 만든다. Cover image 60% + 하단 정보 패널(이름·카테고리·공인유형·活動頻度·年会費·태그 3개·「もっと詳しく」 링크). 기존 grid 용 `CircleCard` 는 디자인 컨텍스트가 달라 재사용하지 않고 신규 컴포넌트 작성. props 로 CircleSummary 하나 받음.",
+      "notes": "Image priority={true} 로 LCP 최적화. cover_image_url null 인 경우 placeholder (lucide Construction 또는 Emoji sparkles). 일본어 UI 텍스트(年会費, もっと詳しく).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "ca766ae9-0cec-43e2-b003-e1085b82b644"
+        }
+      ],
+      "createdAt": "2026-05-15T11:17:56.568Z",
+      "updatedAt": "2026-05-15T11:17:56.568Z",
+      "relatedFiles": [
+        {
+          "path": "components/shuffle/swipe-card.tsx",
+          "type": "CREATE",
+          "description": "Hinge 스타일 풍부형 카드 (정적, 다음 task 에서 motion 추가)"
+        },
+        {
+          "path": "lib/types/domain.ts",
+          "type": "REFERENCE",
+          "description": "CircleSummary 타입",
+          "lineStart": 15,
+          "lineEnd": 27
+        },
+        {
+          "path": "lib/constants/category.ts",
+          "type": "REFERENCE",
+          "description": "CATEGORY_LABELS 매핑"
+        },
+        {
+          "path": "lib/constants/official-type.ts",
+          "type": "REFERENCE",
+          "description": "OFFICIAL_TYPE_LABELS 매핑"
+        },
+        {
+          "path": "lib/constants/activity-frequency.ts",
+          "type": "REFERENCE",
+          "description": "ACTIVITY_FREQUENCY_LABELS 매핑"
+        },
+        {
+          "path": "components/ui/emoji.tsx",
+          "type": "DEPENDENCY",
+          "description": "Fluent 3D Emoji 래퍼"
+        },
+        {
+          "path": "components/circles/circle-card.tsx",
+          "type": "REFERENCE",
+          "description": "기존 grid 용 카드 — 정보 표시 패턴만 참고"
+        }
+      ],
+      "implementationGuide": "1) `components/shuffle/swipe-card.tsx` 신규 (`\"use client\"` 선언 — 다음 task 에서 motion 추가될 예정).\\n2) Props: `{ circle: CircleSummary; stackPosition: number; onSwipe?: (dir: 'left'|'right') => void }` — gesture 는 다음 task. stackPosition 만 우선 깊이감 스타일링 위해 받음.\\n3) 레이아웃:\\n   - 외곽: `absolute inset-0 rounded-3xl overflow-hidden bg-card shadow-2xl`\\n   - 상단 60%: Next.js Image fill cover, sizes responsive\\n   - 이미지 위 좌상단 absolute: 카테고리 배지 + 공인유형 배지 (Emoji + CATEGORY_LABELS[circle.category])\\n   - 하단 40% 패널: 단체명(text-2xl font-bold) + ACTIVITY_FREQUENCY_LABELS[circle.activity_frequency] + 「年会費 ¥{annual_fee_yen}」 + 태그 칩 3개(circle.tags.slice(0,3)) + 「もっと詳しく →」 Link to /circles/{id}\\n4) stackPosition 기반 깊이감: 0 = 일반 / 1 = scale-95 opacity-50 / 2 = scale-90 opacity-20 (Tailwind class 또는 inline style)",
+      "verificationCriteria": "개발 도구 또는 Storybook 없이도 mock CircleSummary props 로 카드 렌더 → 모바일 viewport 에서 풀스크린에 가깝게 표시, cover 이미지·이름·태그 3개·링크 모두 표시. stackPosition=1 시 scale-95+opacity-50 으로 뒤에 깔린 효과.",
+      "analysisResult": "KCircle (Next.js 15 App Router + Supabase + Tailwind v4 + motion v12.38 + shadcn/ui new-york) 에 Tinder/Hinge 스타일 swipe deck 디스커버리 페이지 `/shuffle` 신설. 사용자 결정: 별도 페이지 / 우→「気になる」(useFavorites.toggle) / 좌→「次へ」 / Hinge 풍부형 카드 / 데스크탑은 마우스 drag+좌우 버튼+키보드 ←/→. 신규 의존성 없음. 30건 더미 사클을 Fisher-Yates 셔플 → 풀스크린 1:1 발견. iOS easing [0.32, 0.72, 0, 1] 톤 일관성, prefers-reduced-motion (WCAG SC 2.3.3) 대응. 기존 자산 재사용: useFavorites, CircleSummary, filterCircles, CATEGORY_LABELS/OFFICIAL_TYPE_LABELS/ACTIVITY_FREQUENCY_LABELS, Emoji 래퍼, Toaster(sonner)."
+    },
+    {
+      "id": "b3457891-776a-4cd8-a4a7-0ce7a7af11d9",
+      "name": "SwipeCard motion drag + transform",
+      "description": "이전 task 에서 만든 정적 SwipeCard 에 motion drag gesture, 회전·오버레이 transform, 임계 기반 fly-out 또는 spring-back 로직을 추가한다. tap vs drag 명확히 구분.",
+      "notes": "isTop = stackPosition === 0. 뒤 카드는 drag 비활성. LazyMotion 은 페이지 루트가 아니라 SwipeDeck 에서 한 번만 감싸도 OK (다음 task 에서 처리).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "0b1ad5f4-84f1-4fb2-804c-2ac417c6b014"
+        }
+      ],
+      "createdAt": "2026-05-15T11:17:56.568Z",
+      "updatedAt": "2026-05-15T11:17:56.568Z",
+      "relatedFiles": [
+        {
+          "path": "components/shuffle/swipe-card.tsx",
+          "type": "TO_MODIFY",
+          "description": "motion drag + transform + onTap 추가"
+        },
+        {
+          "path": "components/layout/register-floating-cta.tsx",
+          "type": "REFERENCE",
+          "description": "motion + useReducedMotion 사용 패턴 참고"
+        },
+        {
+          "path": "app/circles/[id]/template.tsx",
+          "type": "REFERENCE",
+          "description": "iOS easing [0.32, 0.72, 0, 1] 사용 예"
+        }
+      ],
+      "implementationGuide": "1) import: `LazyMotion, domAnimation, m, useMotionValue, useTransform, useReducedMotion, animate` from 'motion/react'.\\n2) 외곽을 `<m.div>` 로 교체:\\n   - drag={isTop && !reducedMotion ? 'x' : false}\\n   - dragSnapToOrigin (임계 미만 spring-back 자동 처리)\\n   - style={{ x, rotate }} — `const x = useMotionValue(0); const rotate = useTransform(x, [-200,0,200], [-15,0,15]);`\\n3) 오버레이 2장 (좌상단·우상단 absolute):\\n   - `<m.div style={{ opacity: likeOpacity }}>気になる</m.div>` — green tone\\n   - `<m.div style={{ opacity: skipOpacity }}>次へ</m.div>` — red tone\\n   - likeOpacity = useTransform(x, [50, 150], [0, 1])\\n   - skipOpacity = useTransform(x, [-150, -50], [1, 0])\\n4) onDragEnd:\\n   - const distance = Math.abs(info.offset.x);\\n   - const velocity = Math.abs(info.velocity.x);\\n   - if (distance > 100 || velocity > 500) { const dir = info.offset.x > 0 ? 'right' : 'left'; animate(x, dir === 'right' ? window.innerWidth : -window.innerWidth, { duration: 0.3, ease: [0.32, 0.72, 0, 1] }).then(() => onSwipe?.(dir)); }\\n5) onTap (motion 내장 — drag 미발생 시만 발화): if (Math.abs(x.get()) < 5) router.push(`/circles/${circle.id}`).\\n6) reducedMotion=true 시 drag 비활성, onTap 만 동작.",
+      "verificationCriteria": "isTop 카드 좌/우 drag 시: (a) 회전·오버레이 점진 반영, (b) 임계 미만 spring-back 자연스러움, (c) 임계 이상 fly-out 후 onSwipe 콜백 호출, (d) tap (≤5px 이동) 시 상세 페이지 이동, (e) reduced-motion ON 시 drag 비활성 + tap 만.",
+      "analysisResult": "KCircle (Next.js 15 App Router + Supabase + Tailwind v4 + motion v12.38 + shadcn/ui new-york) 에 Tinder/Hinge 스타일 swipe deck 디스커버리 페이지 `/shuffle` 신설. 사용자 결정: 별도 페이지 / 우→「気になる」(useFavorites.toggle) / 좌→「次へ」 / Hinge 풍부형 카드 / 데스크탑은 마우스 drag+좌우 버튼+키보드 ←/→. 신규 의존성 없음. 30건 더미 사클을 Fisher-Yates 셔플 → 풀스크린 1:1 발견. iOS easing [0.32, 0.72, 0, 1] 톤 일관성, prefers-reduced-motion (WCAG SC 2.3.3) 대응. 기존 자산 재사용: useFavorites, CircleSummary, filterCircles, CATEGORY_LABELS/OFFICIAL_TYPE_LABELS/ACTIVITY_FREQUENCY_LABELS, Emoji 래퍼, Toaster(sonner)."
+    },
+    {
+      "id": "1e93f505-b915-4fb5-b6c6-5d9a27c47c8b",
+      "name": "SwipeDeck + 키보드·버튼 + useFavorites 연동",
+      "description": "카드 스택 관리·좌우 액션 버튼·키보드 ←/→ 핸들러·useFavorites 연동·토스트 피드백을 갖춘 SwipeDeck 컴포넌트를 작성하고, `/shuffle` 페이지에 마운트해 데이터를 prefetch 한다.",
+      "notes": "toast import: import { toast } from 'sonner'. Toaster 는 이미 app/layout.tsx 마운트됨. ✕/❤️ 아이콘은 lucide X/Heart 사용 (Emoji 사용도 가능하나 액션 버튼은 단색이 적절).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b3457891-776a-4cd8-a4a7-0ce7a7af11d9"
+        }
+      ],
+      "createdAt": "2026-05-15T11:17:56.568Z",
+      "updatedAt": "2026-05-15T11:17:56.568Z",
+      "relatedFiles": [
+        {
+          "path": "components/shuffle/swipe-deck.tsx",
+          "type": "CREATE",
+          "description": "카드 스택 + 좌우 버튼 + 키보드 + 즐겨찾기 연동"
+        },
+        {
+          "path": "app/shuffle/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "SwipeDeck 마운트 + filterCircles 데이터 prefetch"
+        },
+        {
+          "path": "lib/circles/use-favorites.ts",
+          "type": "DEPENDENCY",
+          "description": "toggle(id) 메서드 호출"
+        },
+        {
+          "path": "lib/dummy/circles.ts",
+          "type": "DEPENDENCY",
+          "description": "filterCircles({pageSize:100})"
+        },
+        {
+          "path": "lib/utils/shuffle.ts",
+          "type": "DEPENDENCY",
+          "description": "fisherYates 유틸"
+        },
+        {
+          "path": "components/ui/sonner.tsx",
+          "type": "REFERENCE",
+          "description": "이미 Toaster 마운트됨"
+        },
+        {
+          "path": "components/circles/filter-panel.tsx",
+          "type": "REFERENCE",
+          "description": "props 로 initial 데이터 받는 패턴"
+        }
+      ],
+      "implementationGuide": "1) `components/shuffle/swipe-deck.tsx` 신규 (\"use client\").\\n2) Props: `{ circles: CircleSummary[] }`.\\n3) State:\\n   - const shuffled = useMemo(() => fisherYates([...circles]), [circles]);\\n   - const [currentIndex, setCurrentIndex] = useState(0);\\n   - const { toggle } = useFavorites();\\n4) handleSwipe = (dir) => { setCurrentIndex(i => i + 1); if (dir === 'right') { toggle(shuffled[currentIndex].id); toast.success('気になるに追加しました'); } };\\n   - 함수형 setState 로 race condition 회피.\\n   - useFavorites 의 토글이 미인증 시 /auth/login redirect 처리 — 기존 hook 동작 그대로.\\n5) 키보드: ref 패턴으로 한 번만 등록\\n   - const handlerRef = useRef(handleSwipe); useEffect(() => { handlerRef.current = handleSwipe; });\\n   - useEffect(() => { const onKey = e => { if (e.key === 'ArrowLeft') handlerRef.current('left'); if (e.key === 'ArrowRight') handlerRef.current('right'); }; window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey); }, []);\\n6) 카드 스택: const stack = shuffled.slice(currentIndex, currentIndex + 3); reverse() 후 map → 뒤 카드부터 렌더 (z-index 자연 처리).\\n7) ActionButtons (인라인 정의): 좌측 ✕(Skip) + 우측 ❤️(Like). aria-label 일본어. 클릭 시 handleSwipe 호출.\\n8) 레이아웃: relative + h-dvh 컨테이너 안에 카드 스택 (absolute inset-x-4 inset-y-8 max-w-md mx-auto) + 하단 ActionButtons (fixed bottom-8 모바일·md+에서는 카드 좌우).\\n9) `app/shuffle/page.tsx` 수정: const result = await filterCircles({ pageSize: 100 }); <SwipeDeck circles={result.items} /> (Suspense 안에서).\\n10) LazyMotion features={domAnimation} 으로 SwipeDeck 전체 wrap.",
+      "verificationCriteria": "`/shuffle` 진입 시: (a) 30건 사클 셔플된 순서로 카드 등장, (b) 우 swipe/❤️ 버튼/→ 키 → 다음 카드 + 토스트, (c) 좌 swipe/✕ 버튼/← 키 → 다음 카드 (즐겨찾기 추가 X), (d) 빠른 더블 swipe 시 currentIndex 정확히 +2, (e) sessionStorage 에 favorites 추가 확인 (DevTools).",
+      "analysisResult": "KCircle (Next.js 15 App Router + Supabase + Tailwind v4 + motion v12.38 + shadcn/ui new-york) 에 Tinder/Hinge 스타일 swipe deck 디스커버리 페이지 `/shuffle` 신설. 사용자 결정: 별도 페이지 / 우→「気になる」(useFavorites.toggle) / 좌→「次へ」 / Hinge 풍부형 카드 / 데스크탑은 마우스 drag+좌우 버튼+키보드 ←/→. 신규 의존성 없음. 30건 더미 사클을 Fisher-Yates 셔플 → 풀스크린 1:1 발견. iOS easing [0.32, 0.72, 0, 1] 톤 일관성, prefers-reduced-motion (WCAG SC 2.3.3) 대응. 기존 자산 재사용: useFavorites, CircleSummary, filterCircles, CATEGORY_LABELS/OFFICIAL_TYPE_LABELS/ACTIVITY_FREQUENCY_LABELS, Emoji 래퍼, Toaster(sonner)."
+    },
+    {
+      "id": "6849b3a9-903d-4ad2-b953-79fce56ff8cc",
+      "name": "FinishedView + 戻る 진입점",
+      "description": "30건 모두 본 후 「全部見ました!」 빈 상태 화면을 표시하고, 재셔플·一覧 진입 버튼·헤더 영역 戻る 버튼을 추가한다.",
+      "notes": "FinishedView 의 톤은 차분·친근 (응원 카피). 戻る 버튼은 너무 두드러지지 않게 (text-muted-foreground bg-background/80 backdrop-blur 정도).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "1e93f505-b915-4fb5-b6c6-5d9a27c47c8b"
+        }
+      ],
+      "createdAt": "2026-05-15T11:17:56.568Z",
+      "updatedAt": "2026-05-15T11:17:56.568Z",
+      "relatedFiles": [
+        {
+          "path": "components/shuffle/swipe-deck.tsx",
+          "type": "TO_MODIFY",
+          "description": "FinishedView 분기 + 戻る 버튼 + 재셔플 키 상태 추가"
+        },
+        {
+          "path": "components/ui/emoji.tsx",
+          "type": "REFERENCE",
+          "description": "sparkles 이모지"
+        },
+        {
+          "path": "components/layout/coming-soon.tsx",
+          "type": "REFERENCE",
+          "description": "빈 상태 디자인 톤 참고"
+        }
+      ],
+      "implementationGuide": "1) `components/shuffle/swipe-deck.tsx` 수정:\\n   - if (currentIndex >= shuffled.length) return <FinishedView onReshuffle={() => setCurrentIndex(0)} />;\\n   - 재셔플 시 같은 shuffled 배열을 재사용할지 새 셔플할지: 새 셔플 권장 (useState<number>(0) + reshuffleKey 증가로 useMemo 재계산 트리거).\\n2) FinishedView 인라인 정의:\\n   - 중앙 정렬, Emoji sparkles 큼지막, h2 「全部見ました!」, p 「気になるサークルは「お気に入り」で確認」\\n   - 「もう一度シャッフル」 primary 버튼 → onReshuffle\\n   - 「一覧で見る →」 secondary Link → /circles\\n3) 戻る 진입점: SwipeDeck 컨테이너 좌상단 absolute (safe-area-inset-top 패딩) 작은 버튼 (lucide X 아이콘, aria-label='シャッフルを終了') → router.push('/circles'). FinishedView 와 카드 스택 둘 다에서 노출.\\n4) 재셔플 로직: useState<number>(0) reshuffleKey + useMemo(() => fisherYates([...circles]), [circles, reshuffleKey])로 갱신.",
+      "verificationCriteria": "30건 모두 swipe 후: (a) 「全部見ました!」 화면 표시, (b) 「もう一度シャッフル」 클릭 → currentIndex=0 + 새 셔플 순서로 첫 카드 등장, (c) 「一覧で見る」 클릭 → /circles 이동, (d) 카드 스택 또는 FinishedView 모두에서 좌상단 戻る 버튼 동작 (/circles 이동).",
+      "analysisResult": "KCircle (Next.js 15 App Router + Supabase + Tailwind v4 + motion v12.38 + shadcn/ui new-york) 에 Tinder/Hinge 스타일 swipe deck 디스커버리 페이지 `/shuffle` 신설. 사용자 결정: 별도 페이지 / 우→「気になる」(useFavorites.toggle) / 좌→「次へ」 / Hinge 풍부형 카드 / 데스크탑은 마우스 drag+좌우 버튼+키보드 ←/→. 신규 의존성 없음. 30건 더미 사클을 Fisher-Yates 셔플 → 풀스크린 1:1 발견. iOS easing [0.32, 0.72, 0, 1] 톤 일관성, prefers-reduced-motion (WCAG SC 2.3.3) 대응. 기존 자산 재사용: useFavorites, CircleSummary, filterCircles, CATEGORY_LABELS/OFFICIAL_TYPE_LABELS/ACTIVITY_FREQUENCY_LABELS, Emoji 래퍼, Toaster(sonner)."
+    },
+    {
+      "id": "fecd99ca-16e5-48ad-8898-40359a802a46",
+      "name": "/circles 진입 카드 + lint·build 최종 검증",
+      "description": "`/circles` 디스커버 모드 최상단에 「🎲 シャッフルで探す」 큰 진입 카드를 추가하고, lint·build 전체 검증.",
+      "notes": "진입 카드는 한 줄짜리 단순 Link. NEW 배지 등 추가 차별화는 추후 작업.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "6849b3a9-903d-4ad2-b953-79fce56ff8cc"
+        }
+      ],
+      "createdAt": "2026-05-15T11:17:56.568Z",
+      "updatedAt": "2026-05-15T11:17:56.568Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "DiscoverContent 함수에 진입 카드 1개 추가",
+          "lineStart": 58,
+          "lineEnd": 67
+        },
+        {
+          "path": "components/ui/emoji.tsx",
+          "type": "DEPENDENCY",
+          "description": "party-popper 이모지"
+        }
+      ],
+      "implementationGuide": "1) `app/circles/page.tsx` 의 `DiscoverContent` 함수 수정:\\n   - HorizontalCircleStrip 두 개 위에 <Link href='/shuffle'> 진입 카드 추가\\n   - 디자인: rounded-2xl + bg-keio-navy + text-keio-navy-foreground + p-5 + flex items-center gap-3\\n   - 좌측 Emoji name='party-popper' size={32}\\n   - 우측 h2 「シャッフルで探す」 (text-lg font-semibold) + p 「気軽にサークルを発見」 (text-sm opacity-80)\\n   - 우측 끝 ChevronRight 또는 → 화살표 작게\\n2) 검증:\\n   - npm run lint → 0 에러 0 경고\\n   - npm run build → 모든 라우트 prerender 성공 (특히 /shuffle 추가됨 확인)\\n3) 골든 패스 dev 테스트:\\n   - 모바일 viewport (375×667): /circles 진입 카드 클릭 → /shuffle → 카드 swipe → 우 swipe → toast → 30건 끝까지 → 재셔플\\n   - 데스크탑 (≥md): 마우스 drag, 좌우 ✕/❤️ 버튼, 키보드 ←/→ 모두 동작 확인\\n   - prefers-reduced-motion ON → drag 비활성, 버튼·키보드만으로 진행 가능",
+      "verificationCriteria": "(a) /circles 진입 시 최상단 「シャッフルで探す」 카드 표시 + 클릭 → /shuffle 이동, (b) npm run lint 0 에러 0 경고, (c) npm run build 25+ 라우트 prerender 성공 (/shuffle 포함), (d) 모바일·데스크탑 골든 패스 동작, (e) reduced-motion 사용자도 버튼·키보드로 발견 동선 완수 가능.",
+      "analysisResult": "KCircle (Next.js 15 App Router + Supabase + Tailwind v4 + motion v12.38 + shadcn/ui new-york) 에 Tinder/Hinge 스타일 swipe deck 디스커버리 페이지 `/shuffle` 신설. 사용자 결정: 별도 페이지 / 우→「気になる」(useFavorites.toggle) / 좌→「次へ」 / Hinge 풍부형 카드 / 데스크탑은 마우스 drag+좌우 버튼+키보드 ←/→. 신규 의존성 없음. 30건 더미 사클을 Fisher-Yates 셔플 → 풀스크린 1:1 발견. iOS easing [0.32, 0.72, 0, 1] 톤 일관성, prefers-reduced-motion (WCAG SC 2.3.3) 대응. 기존 자산 재사용: useFavorites, CircleSummary, filterCircles, CATEGORY_LABELS/OFFICIAL_TYPE_LABELS/ACTIVITY_FREQUENCY_LABELS, Emoji 래퍼, Toaster(sonner)."
+    }
+  ]
 }
