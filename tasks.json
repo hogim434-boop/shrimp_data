@@ -610,14 +610,14 @@
       "name": "T-009-2: lib/supabase/queries 모듈 신설 (circles + activity-reports)",
       "description": "RSC 에서 호출할 fetch 함수 모음. lib/supabase/queries/circles.ts (getPopularCircles/getNewCircles/getCircleById/getCirclesByCategory/filterCircles/getFavorites/isFavorited) + activity-reports.ts (getReportsByCircle/getReportById). 모두 async, server.ts createClient 사용, JOIN 으로 tags/images 함께 fetch.",
       "notes": "Supabase JS join 결과 shape 는 nested object 라 mapping 필요 (예: circle.circle_tags = [{tags: {slug: 'x'}}, ...] → tags: string[]). filterCircles 의 q 검색은 name ilike '%q%' 단순 — Phase 2 full-text 확장.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "e157a354-b75e-4775-ac89-39f2728962d0"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:52:08.741Z",
+      "updatedAt": "2026-05-18T15:52:08.806Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/supabase/queries/circles.ts",
@@ -643,7 +643,8 @@
       "implementationGuide": "1. lib/supabase/queries/circles.ts Write:\\n  - getPopularCircles(limit=6): from('circles').select('*, circle_tags(tags(slug))').eq('status','approved').order('view_count',{ascending:false}).limit(limit)\\n  - getNewCircles(limit=10): order('created_at', desc).limit\\n  - getCircleById(id): from('circles').select('*, circle_tags(tags(slug)), circle_images(*), shinkan_events(*)').eq('id',id).maybeSingle() — CircleDetail mapping\\n  - filterCircles(params): 모든 필터를 .eq/.in/.overlaps/.ilike 로 변환 + .range(start,end) pagination + count\\n  - getFavorites(userId): from('favorites').select('circles(*)').eq('user_id', userId)\\n  - isFavorited(userId, circleId): .select('user_id').match({user_id,circle_id}).maybeSingle() not null\\n2. lib/supabase/queries/activity-reports.ts Write:\\n  - getReportsByCircle(circleId, limit?): from('activity_reports').select('*, activity_report_images(*)').eq('circle_id',circleId).order('created_at',desc).limit\\n  - getReportById(reportId): single + JOIN\\n3. 모든 반환 타입: CircleSummary[] / CircleDetail | null / ActivityReport[] / ActivityReport | null (lib/types/domain.ts 일치)\\n4. SELECT 결과를 domain type 으로 mapping 함수 helpers 신설",
       "verificationCriteria": "(1) lib/supabase/queries/circles.ts + activity-reports.ts 존재. (2) export 함수 모두 lib/types/domain.ts 타입 반환. (3) RSC server.ts createClient 호출. (4) tsc 컴파일 통과.",
       "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로.",
-      "summary": "lib/supabase/queries/circles.ts + activity-reports.ts 신설 완료. circles.ts: getPopularCircles/getNewCircles/getCirclesByCategory/getCircleById/filterCircles/getFavorites/isFavorited 7함수 export. activity-reports.ts: getReportsByCircle/getReportById 2함수 export. 모두 server.ts createClient 사용, JOIN으로 tags/images 함께 fetch, lib/types/domain.ts 타입 반환. toCircleSummary/toCircleDetail/toActivityReport 매핑 헬퍼로 Supabase 중첩 객체를 도메인 타입으로 변환. tsc --noEmit 통과."
+      "summary": "lib/supabase/queries/circles.ts + activity-reports.ts 신설 완료. circles.ts: getPopularCircles/getNewCircles/getCirclesByCategory/getCircleById/filterCircles/getFavorites/isFavorited 7함수 export. activity-reports.ts: getReportsByCircle/getReportById 2함수 export. 모두 server.ts createClient 사용, JOIN으로 tags/images 함께 fetch, lib/types/domain.ts 타입 반환. toCircleSummary/toCircleDetail/toActivityReport 매핑 헬퍼로 Supabase 중첩 객체를 도메인 타입으로 변환. tsc --noEmit 통과.",
+      "completedAt": "2026-05-18T15:52:08.805Z"
     },
     {
       "id": "c8a519ce-6ed5-4e4c-8ab4-a56de503cf64",
