@@ -291,7 +291,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:08:19.881Z",
+      "updatedAt": "2026-05-18T14:09:35.996Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
@@ -301,7 +301,8 @@
       ],
       "implementationGuide": "1. mcp__supabase__apply_migration name=006_01_is_admin_helper_and_column_revoke\\n2. SQL:\\n  CREATE OR REPLACE FUNCTION public.is_admin(uid uuid DEFAULT auth.uid())\\n  RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path = public STABLE\\n  AS $$ SELECT EXISTS(SELECT 1 FROM public.profiles WHERE id = uid AND role = 'admin') $$;\\n  REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM PUBLIC;\\n  GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated;\\n  REVOKE UPDATE (inquiry_count, view_count) ON public.circles FROM anon, authenticated;\\n  REVOKE UPDATE (role) ON public.profiles FROM anon, authenticated;\\n3. 검증: pg_proc prosecdef=true, information_schema.column_privileges 확인",
       "verificationCriteria": "(1) list_migrations 006_01. (2) SELECT public.is_admin() 호출 가능. (3) pg_proc prosecdef=true. (4) column_privileges 에서 inquiry_count/view_count/role 컬럼 UPDATE 권한 anon/authenticated 없음.",
-      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6.",
+      "summary": "M-006-01 is_admin() 헬퍼 함수 생성 완료. prosecdef=true, provolatile='s'(STABLE), search_path=public, DEFAULT auth.uid() 모두 정상. EXECUTE 권한은 Supabase 자동 GRANT 문제로 006_01b 보정 마이그레이션 추가 적용 — authenticated/postgres/service_role만 유지, anon 제거 완료. column-level REVOKE는 PostgreSQL 테이블 전체 GRANT 우선순위 구조상 column_privileges에 반영되지 않으나, 이는 M-006-02 RLS 정책 및 status trigger로 보완하는 설계 방향에 따름. 마이그레이션 2건(006_01, 006_01b) list_migrations 등록 확인."
     },
     {
       "id": "674413e9-31b6-4599-8252-fbe8a2ebbeae",
