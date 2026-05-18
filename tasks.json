@@ -310,14 +310,14 @@
       "name": "T-006-3: M-006-02 — 코어 + 위성 RLS 정책 + status trigger",
       "description": "profiles + circles 코어 정책 + circles 위성 (tags/circle_tags/circle_images/favorites/shinkan_events) 정책 + circles status 변경 admin 전용 트리거. 단일 마이그레이션.",
       "notes": "코어 + 위성을 한 마이그에 묶음 (의존성 강함, 분리 시 중간 상태 위험). status trigger 는 RLS 와 별도 — RLS UPDATE 정책은 OLD/NEW 비교 못 함.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "cae2b3e6-814a-48cf-a392-5b3c8268334c"
         }
       ],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:09:40.386Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
