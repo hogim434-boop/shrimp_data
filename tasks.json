@@ -516,14 +516,14 @@
       "name": "T-008-2: lib/storage/strip-exif.ts + next.config + validateUpload 단위 테스트",
       "description": "lib/storage/strip-exif.ts 신규 작성 — validateUpload (size/MIME) + stripImageExif (Canvas) + upload 헬퍼 3종 (cover/gallery/report). next.config.ts images.remotePatterns 에 Supabase Storage URL 추가. validateUpload 단위 테스트 추가 (stripImageExif 는 jsdom 한계로 Playwright 통합 테스트로 미루기, 본 sub-task 는 validate 만).",
       "notes": "stripImageExif 의 jsdom 환경 단위 테스트는 Canvas API 미지원으로 어려움 — Playwright E2E 또는 통합 환경에서 검증. validateUpload 만 단위 테스트로 처리해도 핵심 보안(size/MIME)은 보장. crypto.randomUUID 는 브라우저 + Node.js 모두 지원.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "4ca3ed1a-c816-47d7-9566-b5c3ed323c43"
         }
       ],
       "createdAt": "2026-05-18T14:52:00.287Z",
-      "updatedAt": "2026-05-18T14:57:39.604Z",
+      "updatedAt": "2026-05-18T14:57:39.684Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/storage/strip-exif.ts",
@@ -544,7 +544,8 @@
       "implementationGuide": "1. lib/storage/strip-exif.ts Write — 코드:\\n  export const BUCKET = 'circles-public';\\n  export const MAX_BYTES = 4 * 1024 * 1024;\\n  export const ALLOWED_MIME = ['image/jpeg','image/png','image/webp'] as const;\\n  export function validateUpload(file: File | null | undefined): { ok: true } | { ok: false; error: string } { ... }\\n  export async function stripImageExif(file: File): Promise<File> { ... Canvas drawImage + toBlob('image/jpeg', 0.9) ... }\\n  export async function uploadCoverImage(supabase, circleId, file): Promise<{url:string}|{error:string}> { validate → strip → supabase.storage.from(BUCKET).upload('circles/'+circleId+'/cover.jpg', stripped, {upsert:true, contentType:'image/jpeg'}) → getPublicUrl }\\n  export async function uploadGalleryImage(supabase, circleId, file) { ... 'circles/'+circleId+'/gallery/'+crypto.randomUUID()+'.jpg' ... }\\n  export async function uploadReportImage(supabase, circleId, reportId, file) { ... 'circles/'+circleId+'/reports/'+reportId+'/'+crypto.randomUUID()+'.jpg' ... }\\n2. next.config.ts Edit — images.remotePatterns 에 추가:\\n  { protocol: 'https', hostname: 'wmiaxjgitpahribjrdyh.supabase.co', pathname: '/storage/v1/object/public/circles-public/**' }\\n3. tests/unit/strip-exif.test.ts 작성 (validateUpload 만):\\n  - ok: 1MB jpeg → ok=true\\n  - oversize: 5MB jpeg → ok=false, error 'MB 초과'\\n  - unsupported MIME: image/gif → ok=false, error '허용되지 않은'\\n  - null/undefined → ok=false, error '없습니다'\\n4. npm run lint, npm run build, npm run test 모두 통과",
       "verificationCriteria": "(1) lib/storage/strip-exif.ts 존재 + export validateUpload/stripImageExif/uploadCoverImage/uploadGalleryImage/uploadReportImage. (2) next.config.ts remotePatterns 에 Supabase Storage host 등장. (3) tests/unit/strip-exif.test.ts 4 케이스 모두 PASS. (4) npm run lint/build/test 통과 (기존 51 + 신규 4 = 55+ tests).",
       "analysisResult": "T-008 Storage 인프라. circles-public 퍼블릭 버킷 (4MB, image/jpeg|png|webp) + storage.objects 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin) + path prefix circles/{circle_id}/ 매칭 + 클라이언트 Canvas EXIF strip + 파일 검증 + next.config.ts Storage host 추가. 단위 테스트는 validateUpload 만 (stripImageExif Canvas 는 jsdom 한계로 Playwright 미루기). 3 sub-task 순차. 작업 파일 없음 (T-006/T-007 패턴). is_admin() T-006 재사용.",
-      "summary": "lib/storage/strip-exif.ts 생성 완료 — validateUpload/stripImageExif/uploadCoverImage/uploadGalleryImage/uploadReportImage 5종 export. next.config.ts remotePatterns에 wmiaxjgitpahribjrdyh.supabase.co Storage URL 추가 (picsum.photos 기존 유지). tests/unit/strip-exif.test.ts 작성 — 정상/크기초과/미허용MIME/null 4케이스 validateUpload 전부 PASS. 전체 테스트 55건 PASS (기존 51 + 신규 4). npm run lint 이상 없음, npm run build 성공."
+      "summary": "lib/storage/strip-exif.ts 생성 완료 — validateUpload/stripImageExif/uploadCoverImage/uploadGalleryImage/uploadReportImage 5종 export. next.config.ts remotePatterns에 wmiaxjgitpahribjrdyh.supabase.co Storage URL 추가 (picsum.photos 기존 유지). tests/unit/strip-exif.test.ts 작성 — 정상/크기초과/미허용MIME/null 4케이스 validateUpload 전부 PASS. 전체 테스트 55건 PASS (기존 51 + 신규 4). npm run lint 이상 없음, npm run build 성공.",
+      "completedAt": "2026-05-18T14:57:39.683Z"
     },
     {
       "id": "c7560172-9dae-4353-a978-a383ea842984",
