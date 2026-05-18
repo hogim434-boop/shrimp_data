@@ -411,10 +411,10 @@
       "name": "T-007-1: M-007 RPC 마이그레이션 (inquiry_count + view_count)",
       "description": "두 RPC 를 한 마이그레이션으로 등록. increment_inquiry_count(p_circle_id uuid) SECURITY DEFINER, search_path=public, plpgsql: auth.uid() null → 42501 RAISE, status='approved' 검증 후 inquiry_events INSERT ON CONFLICT DO NOTHING, FOUND 시만 circles.inquiry_count +1. increment_view_count(p_circle_id uuid) SECURITY DEFINER, search_path=public, plpgsql: 단순 UPDATE circles SET view_count = view_count + 1 WHERE status='approved'. 두 함수 REVOKE FROM PUBLIC + 적절 GRANT (inquiry → authenticated, view → anon+authenticated).",
       "notes": "PRD line 417-440 SQL + M-NEW-2 디바운스 통합. status='approved' 검증을 INSERT 전에 두어 pending 시 호출 → inquiry_events 추가 안 되어 추후 approved 후에도 정상 카운트 가능. FOUND keyword 는 INSERT ON CONFLICT DO NOTHING 시 conflict 면 false, 새 row INSERT 면 true.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:29:35.383Z",
-      "updatedAt": "2026-05-18T14:29:35.383Z",
+      "updatedAt": "2026-05-18T14:31:43.198Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/PRD.md",
