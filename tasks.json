@@ -414,7 +414,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:29:35.383Z",
-      "updatedAt": "2026-05-18T14:31:43.198Z",
+      "updatedAt": "2026-05-18T14:33:00.468Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/PRD.md",
@@ -429,7 +429,8 @@
       ],
       "implementationGuide": "1. mcp__supabase__apply_migration name='007_rpc_increment_counts'\\n2. SQL:\\n  CREATE OR REPLACE FUNCTION public.increment_inquiry_count(p_circle_id uuid)\\n  RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public\\n  AS $func$\\n  DECLARE v_user_id uuid := auth.uid();\\n  BEGIN\\n    IF v_user_id IS NULL THEN RAISE EXCEPTION 'unauthorized' USING ERRCODE = '42501'; END IF;\\n    IF NOT EXISTS (SELECT 1 FROM public.circles WHERE id = p_circle_id AND status = 'approved') THEN RETURN; END IF;\\n    INSERT INTO public.inquiry_events (user_id, circle_id, day) VALUES (v_user_id, p_circle_id, CURRENT_DATE) ON CONFLICT (user_id, circle_id, day) DO NOTHING;\\n    IF FOUND THEN UPDATE public.circles SET inquiry_count = inquiry_count + 1 WHERE id = p_circle_id; END IF;\\n  END;\\n  $func$;\\n  REVOKE ALL ON FUNCTION public.increment_inquiry_count(uuid) FROM PUBLIC;\\n  GRANT EXECUTE ON FUNCTION public.increment_inquiry_count(uuid) TO authenticated;\\n  COMMENT ON FUNCTION public.increment_inquiry_count(uuid) IS 'T-007 F012 채널 모달 클릭 디바운스 카운트 (M-NEW-2)';\\n  -- increment_view_count\\n  CREATE OR REPLACE FUNCTION public.increment_view_count(p_circle_id uuid)\\n  RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public\\n  AS $func$\\n  BEGIN\\n    UPDATE public.circles SET view_count = view_count + 1 WHERE id = p_circle_id AND status = 'approved';\\n  END;\\n  $func$;\\n  REVOKE ALL ON FUNCTION public.increment_view_count(uuid) FROM PUBLIC;\\n  GRANT EXECUTE ON FUNCTION public.increment_view_count(uuid) TO anon, authenticated;\\n  COMMENT ON FUNCTION public.increment_view_count(uuid) IS 'T-007 서클 상세 진입 view_count +1 (T-009 세션 디바운스)';\\n3. 검증: pg_proc 에서 prosecdef=true 두 함수, information_schema.routine_privileges 에서 EXECUTE grantee 확인",
       "verificationCriteria": "(1) list_migrations 에 007_rpc_increment_counts. (2) pg_proc 두 함수 모두 prosecdef=true, proconfig='search_path=public'. (3) routine_privileges: inquiry → authenticated, view → anon+authenticated. (4) PUBLIC role 둘 다 EXECUTE 권한 없음.",
-      "analysisResult": "T-007 RPC 등록. increment_inquiry_count (PRD 명세 line 410-466 + inquiry_events 일별 디바운스 통합, authenticated EXECUTE) + increment_view_count (단순 +1, anon+authenticated EXECUTE). 두 함수 모두 SECURITY DEFINER + search_path=public, status='approved' WHERE 절로 영향 범위 제한. column REVOKE (T-006 적용) 와 정합 — SECURITY DEFINER 만 counter 갱신. 작업 파일 없음 (T-006 패턴, ROADMAP 본문이 SSOT). 3 sub-task, 순차 의존."
+      "analysisResult": "T-007 RPC 등록. increment_inquiry_count (PRD 명세 line 410-466 + inquiry_events 일별 디바운스 통합, authenticated EXECUTE) + increment_view_count (단순 +1, anon+authenticated EXECUTE). 두 함수 모두 SECURITY DEFINER + search_path=public, status='approved' WHERE 절로 영향 범위 제한. column REVOKE (T-006 적용) 와 정합 — SECURITY DEFINER 만 counter 갱신. 작업 파일 없음 (T-006 패턴, ROADMAP 본문이 SSOT). 3 sub-task, 순차 의존.",
+      "summary": "007_rpc_increment_counts, 007b_revoke_inquiry_anon_safe 두 마이그레이션 적용 완료. pg_proc: increment_inquiry_count/increment_view_count 모두 prosecdef=true, proconfig=[search_path=public]. 권한: inquiry → authenticated(+postgres+service_role), anon 없음; view → anon+authenticated(+postgres+service_role). Supabase 자동 anon 부여 현상을 007b 보강 마이그로 즉시 제거. 검증 기준 4항 모두 통과."
     },
     {
       "id": "e7c01e69-daf4-4193-850e-1fccfa402d4b",
