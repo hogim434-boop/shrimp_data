@@ -687,14 +687,14 @@
       "name": "T-009-4: Server Action + 비로그인 가드 와이어업",
       "description": "app/circles/[id]/actions.ts (toggleFavorite + incrementInquiryCount) 신설 + lib/circles/use-favorites.ts 갱신 (sessionStorage 제거 + useOptimistic + 비로그인 가드) + components/circles/favorite-toggle-button.tsx + circle-actions.tsx + join-channel-modal.tsx 와이어업.",
       "notes": "useOptimistic 은 React 19+ (Next.js 15) 표준. revalidateTag 보다 revalidatePath 가 단순. isAuthenticated prop drilling 단순화 — Context 불필요. 모달 닫기는 외부 SNS 새 탭 오픈 직후.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T16:07:56.851Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/app/circles/[id]/actions.ts",
