@@ -489,10 +489,10 @@
       "name": "T-008-1: M-008 마이그레이션 — circles-public 버킷 + 4 RLS 정책",
       "description": "storage.buckets 에 circles-public INSERT (public=true, file_size_limit=4MB, allowed_mime_types=[jpeg/png/webp]) + storage.objects 에 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin with path matching). split_part(name, '/', 2) 로 circle_id 추출 후 circles.owner_id=auth.uid() OR is_admin() 검증.",
       "notes": "split_part(name, '/', 1) = 'circles' 검사가 path prefix 강제. activity_reports 갤러리도 같은 정책 (circles/{circle_id}/reports/{report_id}/...) 통과. is_admin() T-006 함수 재사용.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:52:00.287Z",
-      "updatedAt": "2026-05-18T14:52:00.287Z",
+      "updatedAt": "2026-05-18T14:54:13.236Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
