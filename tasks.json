@@ -552,14 +552,14 @@
       "name": "T-008-3: SQL 검증 + advisor + ROADMAP T-008 갱신 + commit",
       "description": "storage.objects RLS 정책 동작 SQL 검증 (anon SELECT OK, anon INSERT fail, auth INSERT 다른 owner circle path → fail, auth INSERT 자신 owner path → ok). get_advisors security 잔여 항목 확인. docs/ROADMAP.md T-008 본문 + Phase 1.2 표 갱신 + 완료 노트. 단일 commit.",
       "notes": "T-006/T-007 패턴 동일. storage.objects fixture 는 service_role 권한으로 INSERT 시 user 컨텍스트 시뮬레이션 어려움 — SET LOCAL ROLE + JWT claims 패턴 사용. ROADMAP 본문이 SSOT (작업 파일 없음).",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "d72ffd90-ba4d-448e-9203-1837df5ddf70"
         }
       ],
       "createdAt": "2026-05-18T14:52:00.287Z",
-      "updatedAt": "2026-05-18T15:04:38.714Z",
+      "updatedAt": "2026-05-18T15:04:38.775Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
@@ -570,7 +570,8 @@
       "implementationGuide": "1. mcp execute_sql 시나리오 (fixture SAVEPOINT/ROLLBACK):\\n  - SAVEPOINT: auth.users user-A INSERT → profiles 자동 (T-005 trigger), circles owner=user-A C1 INSERT\\n  - S1 SET LOCAL ROLE anon; SELECT name FROM storage.objects WHERE bucket_id='circles-public' → 0 행 OK (RLS SELECT 허용)\\n  - S2 SET LOCAL ROLE anon; INSERT INTO storage.objects (bucket_id, name, ...) → expect 42501 (정책 위반)\\n  - S3 SET LOCAL ROLE authenticated + jwt user-B; INSERT path='circles/'+C1_id+'/cover.jpg' → expect 42501 (다른 user 의 circle)\\n  - S4 SET LOCAL ROLE authenticated + jwt user-A; INSERT path='circles/'+C1_id+'/cover.jpg' → success\\n  - S5 SET LOCAL ROLE authenticated + jwt user-A; INSERT path='other-prefix/'+C1_id+'/cover.jpg' → expect 42501 (split_part(name,'/',1) != 'circles')\\n  - ROLLBACK\\n2. mcp__supabase__get_advisors type=security → 기대: 신규 critical 0 (storage 정책 추가됨)\\n3. docs/ROADMAP.md Read T-008 본문\\n4. Edit:\\n  - Phase 1.2 표 T-008 행 pending → completed + ✅\\n  - T-008 본문 헤더 ✅\\n  - 버킷 설정 명시 (이름, public, 4MB, MIME 3종)\\n  - path 구조 (circles/{circle_id}/cover.jpg, gallery/, reports/{report_id}/)\\n  - RLS 4 정책 명시\\n  - EXIF strip 위치: 클라이언트 Canvas (lib/storage/strip-exif.ts)\\n  - upload 헬퍼 3종 (uploadCoverImage/uploadGalleryImage/uploadReportImage)\\n  - next.config.ts remotePatterns 갱신\\n  - 완료 (2026-05-18) 노트: 마이그 1건 + 유틸 + 단위 테스트 + advisor 잔여\\n  - T-018 anchor 명시 (등록 폼에서 upload 헬퍼 호출)\\n5. git add docs/ROADMAP.md lib/storage/strip-exif.ts tests/unit/strip-exif.test.ts next.config.ts\\n6. git commit -m '✨ feat(storage): T-008 circles-public 버킷 + RLS 4 정책 + 클라이언트 EXIF strip'",
       "verificationCriteria": "(1) 5 SQL 시나리오 모두 기대 결과. (2) get_advisors security 신규 critical 0. (3) ROADMAP Phase 1.2 표 T-008 completed + ✅. (4) ROADMAP T-008 본문에 버킷 설정 + path 구조 + RLS 정책 + EXIF strip + 헬퍼 + T-018 anchor 모두 명시. (5) git log commit 등장. (6) git status clean.",
       "analysisResult": "T-008 Storage 인프라. circles-public 퍼블릭 버킷 (4MB, image/jpeg|png|webp) + storage.objects 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin) + path prefix circles/{circle_id}/ 매칭 + 클라이언트 Canvas EXIF strip + 파일 검증 + next.config.ts Storage host 추가. 단위 테스트는 validateUpload 만 (stripImageExif Canvas 는 jsdom 한계로 Playwright 미루기). 3 sub-task 순차. 작업 파일 없음 (T-006/T-007 패턴). is_admin() T-006 재사용.",
-      "summary": "SQL 5 시나리오 전부 PASS (S1 anon SELECT 허용, S2 anon INSERT 42501, S3 user-B INSERT 42501, S4 owner INSERT 성공, S5 wrong prefix 42501). EXISTS 서브쿼리 name 모호성 버그를 M-008b/c/d 3건 보강 마이그로 해소 (헬퍼 함수 SECURITY INVOKER + SET search_path=''). 신규 critical advisor 0건, function_search_path_mutable WARN도 해소. ROADMAP Phase 1.2 표 T-008 completed+✅, T-008 본문 버킷설정·path구조·RLS4정책·EXIF strip·헬퍼3종·T-018 anchor·완료노트 모두 기재. commit 5477f84 clean."
+      "summary": "SQL 5 시나리오 전부 PASS (S1 anon SELECT 허용, S2 anon INSERT 42501, S3 user-B INSERT 42501, S4 owner INSERT 성공, S5 wrong prefix 42501). EXISTS 서브쿼리 name 모호성 버그를 M-008b/c/d 3건 보강 마이그로 해소 (헬퍼 함수 SECURITY INVOKER + SET search_path=''). 신규 critical advisor 0건, function_search_path_mutable WARN도 해소. ROADMAP Phase 1.2 표 T-008 completed+✅, T-008 본문 버킷설정·path구조·RLS4정책·EXIF strip·헬퍼3종·T-018 anchor·완료노트 모두 기재. commit 5477f84 clean.",
+      "completedAt": "2026-05-18T15:04:38.774Z"
     }
   ]
 }
