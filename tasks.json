@@ -578,10 +578,10 @@
       "name": "T-009-1: M-009 시드 마이그레이션 3건 (tags + circles+위성 + activity_reports)",
       "description": "M-009-01 tags 10종 INSERT (lib/circles/filter-labels.ts TAG_SEEDS + PRD 시드 일치) + M-009-02 circles 30건 (owner_id NULL, status='approved', id 고정 UUID) + circle_tags (서클당 3-5 랜덤) + circle_images (서클당 4장 picsum seed URL) + shinkan_events (일부 서클 미래 일정) + M-009-03 activity_reports 100+ (서클당 3-4건) + activity_report_images (리포트당 3-5장). 모두 ON CONFLICT (id) DO UPDATE 로 idempotent.",
       "notes": "service_role 권한 (mcp execute_sql 자동) 으로 RLS bypass. circles_status_admin_check 트리거는 BEFORE UPDATE 이라 INSERT 무관. picsum.photos seed URL 은 lib/dummy 와 동일 — 결정론적 이미지 재현. 시드 SQL 본문이 길어 마이그 3건으로 분할 (각 5000자 이내).",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:50:02.821Z",
+      "updatedAt": "2026-05-18T15:50:02.879Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/dummy/circles.ts",
@@ -602,7 +602,8 @@
       "implementationGuide": "1. mcp__supabase__apply_migration name='009_01_tags_seed' — INSERT INTO public.tags (slug, label_ja, kind) VALUES (...) ON CONFLICT (slug) DO UPDATE SET label_ja=EXCLUDED.label_ja, kind=EXCLUDED.kind\\n2. mcp__supabase__apply_migration name='009_02_circles_satellite_seed' — INSERT 30 circles + circle_tags + circle_images + shinkan_events. owner_id=NULL, status='approved'. id 고정 UUID lib/dummy/circles.ts 와 일치\\n3. mcp__supabase__apply_migration name='009_03_activity_reports_seed' — INSERT 100+ activity_reports + activity_report_images. circle_id FK 유효\\n4. 검증: mcp list_tables rows 카운트 — tags 10, circles 30, circle_tags 100+, circle_images 120, shinkan_events 10+, activity_reports 100+, activity_report_images 400+",
       "verificationCriteria": "(1) list_migrations 에 009_01~03 3건. (2) list_tables rows: tags 10, circles 30, activity_reports 100+. (3) anon SELECT FROM circles WHERE status='approved' → 30 행. (4) 모든 circle 의 cover_image_url 이 picsum.photos seed URL.",
       "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로.",
-      "summary": "3건 마이그레이션 성공 적용 (009_00_tag_kind_enum_extend + 009_01_tags_seed + 009_02_circles_satellite_seed + 009_03_activity_reports_seed). DB 검증: tags 10건, circles 30건(status=approved), circle_tags 93건, circle_images 120건(서클당 4장), shinkan_events 10건, activity_reports 120건(서클당 4건), activity_report_images 360건(리포트당 3장). 모두 ON CONFLICT (id) DO UPDATE로 idempotent. picsum.photos seed URL은 lib/dummy와 동일 패턴. slug 컬럼 추가 발견하여 정상 처리."
+      "summary": "3건 마이그레이션 성공 적용 (009_00_tag_kind_enum_extend + 009_01_tags_seed + 009_02_circles_satellite_seed + 009_03_activity_reports_seed). DB 검증: tags 10건, circles 30건(status=approved), circle_tags 93건, circle_images 120건(서클당 4장), shinkan_events 10건, activity_reports 120건(서클당 4건), activity_report_images 360건(리포트당 3장). 모두 ON CONFLICT (id) DO UPDATE로 idempotent. picsum.photos seed URL은 lib/dummy와 동일 패턴. slug 컬럼 추가 발견하여 정상 처리.",
+      "completedAt": "2026-05-18T15:50:02.878Z"
     },
     {
       "id": "f837af6f-3a6a-43a6-89cd-7319a9476a9b",
