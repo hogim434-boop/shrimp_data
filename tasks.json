@@ -192,7 +192,7 @@
       "name": "T-005-6: M-005-05 마이그레이션 적용 (inquiry_events + app_settings + 인덱스 + RLS enable)",
       "description": "보조 테이블 2종 (inquiry_events, app_settings) + 자주 쓰는 쿼리용 인덱스 4종 + 모든 신규 테이블에 RLS enable (정책 없이, T-006 에서 세분화).",
       "notes": "inquiry_events 의 user_id 는 FK 없이 uuid (anon 디바운스 호환). circles partial index (WHERE status = approved) 는 공개 목록 정렬용. RLS enable 후 anon select 가 모두 차단되어 T-006 까지는 service_role 또는 SECURITY DEFINER 함수로만 접근 가능 — UI 는 더미 데이터 사용 중이라 회귀 없음.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "6721e772-fae1-4aa9-9ebe-359888002942"
@@ -202,7 +202,7 @@
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:47:35.468Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
