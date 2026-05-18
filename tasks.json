@@ -161,14 +161,14 @@
       "name": "T-005-5: M-005-04 마이그레이션 적용 (activity_reports + activity_report_images)",
       "description": "T-034 의존 해소를 위한 활동 리포트 2개 테이블 + (circle_id, created_at DESC) 인덱스 생성. circle_images 패턴 일관성.",
       "notes": "image_url 컬럼은 thumbnail 미러 (images[0] 와 동일하지만 인덱스 / 검색 친화). 별도 테이블 결정 근거: circle_images 패턴 일관성, Storage URL 변경 시 ALTER 쉬움, RLS 분리 깔끔.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "acc9ea4d-fa42-45c8-9fef-d2417b9a650c"
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:46:39.532Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/domain.ts",
