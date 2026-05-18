@@ -367,14 +367,14 @@
       "name": "T-006-5: 4 컨텍스트 SQL 시나리오 테스트",
       "description": "mcp execute_sql 로 anon/authenticated(non-owner)/owner/admin 4 컨텍스트 15-20 시나리오 실행. SAVEPOINT/ROLLBACK 격리. 기대 결과 (성공/실패/빈) 검증.",
       "notes": "mcp execute_sql 은 service_role 으로 실행 — auth.users 직접 INSERT 가능. SET LOCAL ROLE + JWT claims 가 RLS 평가 전제. SAVEPOINT 단위로 fixture 재사용.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "b582fce5-e4c0-4d5e-99db-2b01a5ccf561"
         }
       ],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:12:09.247Z",
       "relatedFiles": [],
       "implementationGuide": "1. test fixture INSERT (service_role 권한): auth.users (admin/normal/owner 3명) + circles (approved/pending 각 1건) + activity_reports + favorites 등 SAVEPOINT 안\\n2. 컨텍스트별 시나리오:\\n  - anon: SELECT count circles 결과 approved 수만 일치, INSERT circles fail (42501), UPDATE/DELETE fail\\n  - authenticated non-owner: SELECT pending 0행, INSERT own owner_id+pending success, INSERT 임의 owner_id fail, INSERT status=approved fail, UPDATE 타인 0행, UPDATE inquiry_count fail (42501 column priv)\\n  - owner: SELECT own all status, UPDATE own success (counter 제외), UPDATE status='approved' fail (trigger RAISE), DELETE own success\\n  - admin: SELECT all, UPDATE status success, DELETE 다른 user circles success\\n3. SET LOCAL ROLE + SET LOCAL request.jwt.claims 패턴\\n4. 각 시나리오 SAVEPOINT/ROLLBACK 으로 격리\\n5. fixture 마지막 ROLLBACK 으로 모두 정리",
       "verificationCriteria": "(1) 15+ 시나리오 실행 + 기대 결과 일치. (2) anon INSERT/UPDATE/DELETE 모두 fail. (3) auth non-owner 가 타인 circles UPDATE 시 0 row. (4) owner UPDATE inquiry_count 시 PERMISSION error. (5) owner UPDATE status 시 RAISE. (6) admin 모든 액션 PASS. (7) 종료 후 fixture 모두 ROLLBACK.",
