@@ -42,10 +42,10 @@
       "name": "T-005-2: M-005-01 마이그레이션 적용 (extensions + 8 enums)",
       "description": "Supabase MCP apply_migration 으로 extensions 스키마에 moddatetime 설치 + public 스키마에 enum 8종 생성. enum 값은 lib/constants/*.ts 의 as const 값과 1:1 일치 (추론 금지, 직접 인용).",
       "notes": "모든 enum 값은 lib/constants 의 string literal 그대로 인용. 한 글자라도 다르면 lib/dummy 의 시드값과 불일치 → INSERT 실패. moddatetime 은 extensions 스키마에 설치 (Supabase 권장).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:42:23.287Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/constants/category.ts",
