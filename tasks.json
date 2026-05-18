@@ -267,7 +267,7 @@
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:53:05.474Z",
+      "updatedAt": "2026-05-18T13:54:33.629Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
@@ -279,7 +279,8 @@
       ],
       "implementationGuide": "1. docs/ROADMAP.md Read (line 218 부근 T-005 본문)\\n2. Edit:\\n  - 「7개 테이블」 → 「10개 테이블 (보조 2 포함)」\\n  - 「8개 enum」 명시 (8종 이름 나열)\\n  - 「circles 신규 5컬럼」 명시\\n  - 「annual_fee_yen 보존, freshmen_ratio 미포함」 정책 박스 참조\\n  - 「activity_reports 추가 (T-034 의존 해소)」\\n  - 「RLS enable, 정책 세분화는 T-006」\\n  - 마지막 줄 「See: docs/tasks/T-005-db-schema-migration.md」 추가\\n3. Phase 1.2 표의 T-005 행 상태 pending → completed + ✅\\n4. 「완료 (YYYY-MM-DD)」 노트 추가 (실제 마이그레이션 적용 결과 요약)\\n5. git add docs/ROADMAP.md docs/tasks/T-005-db-schema-migration.md lib/types/database.ts\\n6. git commit -m \"✨ feat(db): T-005 DB 스키마 마이그레이션 1차 — 10 tables + 8 enums + RLS enable\"",
       "verificationCriteria": "(1) docs/ROADMAP.md T-005 본문에 「10개 테이블」 / 「8 enum」 / 「activity_reports」 / 「See: docs/tasks/T-005-...」 모두 등장. (2) Phase 1.2 표에서 T-005 상태가 completed + ✅. (3) git log 에 본 commit 등장. (4) git status 가 clean (uncommitted 변경 0). (5) ROADMAP 의 다른 T-005 언급들 (line 199 T-034 anchor 등) 과 일관성 유지.",
-      "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh."
+      "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh.",
+      "summary": "ROADMAP T-005 본문 갱신 + commit 완료. (1) Phase 1.2 표의 T-005 행 상태 pending→completed + ✅, 「7개 테이블」 → 「10 테이블 + 8 enum」. (2) T-005 본문 갱신: 10 테이블 (보조 2 포함) 명시, 8 enum 8종 이름 나열 (recruitment_status/activity_time_band/activity_report_type 신규), circles 신규 5컬럼 명시, annual_fee_yen 보존 정책 박스 💴 참조, activity_reports 추가 (T-034 의존 해소), RLS enable + T-006 anchor, 인덱스 5종 명시. (3) 「완료 (2026-05-18)」 노트 추가 — 6건 마이그레이션 적용 + 자동 생성 타입 교체 + lint/build/test 통과 + advisor 잔여 항목 (T-006/T-015 anchor). (4) See 링크: docs/tasks/T-005-db-schema-migration.md. (5) commit c75c4ed (✨ feat(db): T-005...) 등록, working tree clean, origin/main 보다 2 commits 앞섬."
     }
   ]
 }
