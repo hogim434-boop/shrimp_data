@@ -390,7 +390,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:21:11.795Z",
+      "updatedAt": "2026-05-18T14:21:40.251Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
@@ -402,7 +402,8 @@
       ],
       "implementationGuide": "1. mcp__supabase__get_advisors type=security → 결과 확인:\n  - 기대: RLS missing 0 또는 1건 (inquiry_events 의도)\n  - 잔여 OK: Auth Leaked Password Protection WARN (T-015 범위)\n2. docs/ROADMAP.md Read T-006 본문 (line 241~ 부근)\n3. Phase 1.2 표 갱신: T-006 행 pending → completed + ✅\n4. T-006 본문 갱신 — ROADMAP 자체가 SSOT (별도 작업 파일 없음):\n  - 헤더 ✅\n  - 적용 마이그레이션 3건 명시 (006_01 ~ 006_03)\n  - is_admin() 시그니처: public.is_admin(uid uuid DEFAULT auth.uid()) SECURITY DEFINER STABLE search_path=public\n  - column REVOKE 명시: circles(inquiry_count/view_count), profiles(role) FROM anon, authenticated\n  - 정책 매트릭스 요약 (불릿 또는 짧은 표): 11 테이블 별 SELECT/INSERT/UPDATE/DELETE × 4 컨텍스트 (anon/authenticated/owner/admin)\n  - circles status 변경 admin 전용 트리거 명시\n  - inquiry_events 정책 0건 (의도된 deny) + T-007 RPC SECURITY DEFINER 만 INSERT\n  - 「완료 (2026-05-18)」 노트: 3 마이그 + SQL 테스트 (4 컨텍스트 × 15+ 시나리오 PASS) + advisor 잔여 항목\n  - PRD/관련 작업 anchor 보존 (T-007/T-009/T-018/T-019)\n5. git add docs/ROADMAP.md\n6. git commit -m '✨ feat(db): T-006 RLS 정책 분리 + is_admin() 헬퍼 — 18+ policies + status trigger'",
       "verificationCriteria": "(1) get_advisors RLS missing 0~1건. (2) docs/ROADMAP.md Phase 1.2 표 T-006 행 completed + ✅. (3) T-006 본문에 정책 매트릭스 요약 + is_admin() 시그니처 + column REVOKE + status trigger + inquiry_events 의도 deny + 완료 노트 모두 등장 (별도 See 링크 없음 — ROADMAP 자체가 SSOT). (4) git log 에 commit 등장. (5) git status clean. (6) docs/tasks/T-006-rls-policies.md 파일 미생성 확인.",
-      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6.",
+      "summary": "advisor 점검: inquiry_events RLS no policy INFO 1건(의도된 deny), is_admin() anon/authenticated EXECUTE WARN 2건(RLS USING절 평가 필수, 불가피), auth_leaked_password_protection WARN 1건(T-015 범위). check_circles_status_change() 트리거 함수 외부 RPC 호출 차단(006_04 마이그레이션 추가). ROADMAP Phase 1.2 표 T-006 completed+✅ 갱신 완료. T-006 본문에 정책 매트릭스 26개 상세, is_admin() 시그니처, status trigger, inquiry_events 의도 deny, 마이그레이션 5건 목록, SQL 테스트 20건, 잔여 advisor 모두 기재. commit 914dcb7 clean, working tree clean. docs/tasks/T-006-*.md 파일 미생성 확인."
     }
   ]
 }
