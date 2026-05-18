@@ -135,14 +135,14 @@
       "name": "T-005-4: M-005-03 마이그레이션 적용 (circles 위성 5종)",
       "description": "circles 의 위성 테이블 5종 (tags, circle_tags, circle_images, favorites, shinkan_events) 한꺼번에 생성. composite PK / FK CASCADE / sort_order 패턴 일관성 유지.",
       "notes": "FK CASCADE 일관성. tags.id 는 serial (자동 증가), 그 외 PK 는 uuid. shinkan_events 는 Phase 2 T-029 본격 활용 — 본 sub-task 는 DDL 만.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "acc9ea4d-fa42-45c8-9fef-d2417b9a650c"
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:45:35.934Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
