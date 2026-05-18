@@ -465,7 +465,7 @@
         }
       ],
       "createdAt": "2026-05-18T14:29:35.383Z",
-      "updatedAt": "2026-05-18T14:41:04.417Z",
+      "updatedAt": "2026-05-18T14:43:42.672Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
@@ -480,7 +480,8 @@
       ],
       "implementationGuide": "1. mcp__supabase__generate_typescript_types → 결과 받음\\n2. lib/types/database.ts 의 public.Functions 객체 확인 — 신규 2개 (increment_inquiry_count, increment_view_count) Args/Returns 추가됐는지 비교\\n3. 차이 있으면 자동 생성 결과로 lib/types/database.ts 갱신 (헤더 주석 보존, 마지막 동기화 날짜 T-007 로 갱신)\\n4. npm run lint, npm run build, npm run test 실행 → 모두 통과\\n5. mcp__supabase__get_advisors type=security → 잔여 항목 확인 (기대: T-006 잔여 + 새 critical 0)\\n6. docs/ROADMAP.md Read T-007 본문 (line 264 부근), Phase 1.2 표 (line 215)\\n7. Edit:\\n  - Phase 1.2 표 T-007 행 pending → completed + ✅\\n  - T-007 본문 헤더 ✅\\n  - RPC 시그니처 명시 (두 함수)\\n  - 디바운스 동작 명시 (status 검증 → INSERT ON CONFLICT → FOUND 시 카운트)\\n  - PRD 정합 (line 410-466 그대로)\\n  - M-NEW-2 해소 명시\\n  - view_count anon EXECUTE 허용 (ROADMAP T-015 anchor)\\n  - 완료 (2026-05-18) 노트: 마이그 1건 + SQL 테스트 12 PASS + types 동기화 + advisor 잔여\\n  - T-009 anchor 명시 (join-channel-modal Server Action 교체)\\n8. git add docs/ROADMAP.md lib/types/database.ts\\n9. git commit -m '✨ feat(db): T-007 RPC increment_inquiry/view_count + inquiry_events 디바운스'",
       "verificationCriteria": "(1) lib/types/database.ts Functions 에 increment_inquiry_count + increment_view_count 추가. (2) npm run lint/build/test 모두 통과. (3) get_advisors security 신규 critical 0건 (T-006 잔여만). (4) ROADMAP Phase 1.2 표 T-007 completed + ✅. (5) ROADMAP T-007 본문에 RPC 시그니처 + 디바운스 동작 + PRD 정합 + M-NEW-2 해소 + 완료 노트. (6) git log commit. (7) git status clean.",
-      "analysisResult": "T-007 RPC 등록. increment_inquiry_count (PRD 명세 line 410-466 + inquiry_events 일별 디바운스 통합, authenticated EXECUTE) + increment_view_count (단순 +1, anon+authenticated EXECUTE). 두 함수 모두 SECURITY DEFINER + search_path=public, status='approved' WHERE 절로 영향 범위 제한. column REVOKE (T-006 적용) 와 정합 — SECURITY DEFINER 만 counter 갱신. 작업 파일 없음 (T-006 패턴, ROADMAP 본문이 SSOT). 3 sub-task, 순차 의존."
+      "analysisResult": "T-007 RPC 등록. increment_inquiry_count (PRD 명세 line 410-466 + inquiry_events 일별 디바운스 통합, authenticated EXECUTE) + increment_view_count (단순 +1, anon+authenticated EXECUTE). 두 함수 모두 SECURITY DEFINER + search_path=public, status='approved' WHERE 절로 영향 범위 제한. column REVOKE (T-006 적용) 와 정합 — SECURITY DEFINER 만 counter 갱신. 작업 파일 없음 (T-006 패턴, ROADMAP 본문이 SSOT). 3 sub-task, 순차 의존.",
+      "summary": "lib/types/database.ts Functions 객체에 increment_inquiry_count / increment_view_count / is_admin 3개 추가, 동기화 날짜 T-007로 갱신. npm run lint / build(27페이지 정상) / test(51 tests PASS) 모두 통과. get_advisors security 신규 critical 0건 (T-006 잔여 + RPC WARN 4건 의도된 설계). ROADMAP Phase 1.2 표 T-007 completed+✅, T-007 본문 RPC 시그니처/디바운스 동작/PRD 정합/M-NEW-2 해소/T-009 anchor/완료 노트 전부 반영. commit d69b34e 정상."
     }
   ]
 }
