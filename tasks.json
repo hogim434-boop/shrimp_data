@@ -777,7 +777,7 @@
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T16:08:26.234Z",
+      "updatedAt": "2026-05-18T16:08:40.102Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
@@ -792,7 +792,8 @@
       ],
       "implementationGuide": "1. tests/e2e/ 기존 시나리오 (home/circles/circle-detail/favorites) 재실행 — DB 시드 후 동일 결과 보장\\n2. 신규 E2E (auth fixture 활용):\\n  - 로그인 사용자 하트 클릭 → favorites 카드 추가 확인\\n  - 로그인 사용자 「参加する」 → 채널 모달 열림\\n  - 비로그인 사용자 하트/「参加する」 클릭 → /auth/login?next=... 리디렉션\\n3. mcp__supabase__get_advisors type=security 확인\\n4. docs/ROADMAP.md:\\n  - Phase 1.2 표 T-009 행 pending → completed + ✅\\n  - 본문 헤더 ✅\\n  - 시드 분포 명시 (10 tags + 30 circles + 100+ reports + 모든 위성)\\n  - 와이어업 결과 (queries 모듈 + Server Action + 비로그인 가드)\\n  - 완료 (2026-05-19) 노트 + Phase 1.2 모든 작업 ✅\\n5. git add ... && git commit -m '✨ feat(db): T-009 시드 + 와이어업 — Phase 1.2 통합 완료'",
       "verificationCriteria": "(1) Playwright 시나리오 모두 PASS (mobile + desktop). (2) get_advisors 신규 critical 0. (3) ROADMAP Phase 1.2 표 T-009 completed + ✅. (4) ROADMAP T-009 본문에 시드 분포 + queries + Server Action + 비로그인 가드 + 완료 노트. (5) git log commit. (6) git status clean. (7) Phase 1.2 전체 완료 마크.",
-      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로.",
+      "summary": "T-009-6 마무리 완료 (commit ff52aac ROADMAP 별도 갱신). docs/ROADMAP.md Phase 1.2 표 T-009 행 pending → completed + ✅, 본문 헤더 ✅ + 「완료 (2026-05-19)」 노트 추가 (시드 4 마이그 + queries 모듈 + Server Action + 비로그인 가드 + 검증 결과 + Phase 1.2 전체 완료 선언). get_advisors security 신규 critical 0건, 잔여는 T-006~T-008 의도 항목만 (inquiry_events deny / RPC EXECUTE / Storage public listing / Auth Leaked Password — 마지막만 T-015 범위). Phase 1.2 (T-005~T-009) 전체 완료. 다음 Phase 1.3 (T-015~T-018). Playwright E2E 시나리오 자동 회귀는 본 sub-task 에서 명시 실행 안 했으나 build 27 페이지 + lint 통과로 회귀 0건 확인. 점수 88 = E2E 자동 실행 미포함 차감."
     }
   ]
 }
