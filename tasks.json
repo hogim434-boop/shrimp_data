@@ -257,7 +257,7 @@
       "name": "T-005-8: ROADMAP T-005 본문 갱신 + commit",
       "description": "docs/ROADMAP.md 의 T-005 본문을 갱신 (7→10 테이블, 8 enum 명시, 정책 박스 일관성, See 링크 추가) + Task ID 상태 pending→completed + ✅ 마크. 단일 commit 으로 마무리.",
       "notes": "commit 메시지 컨벤션은 최근 ROADMAP backfill commit (📝 docs(roadmap):) 또는 신규 기능 (✨ feat) 중 후자 사용. lint-staged 가 자동 실행됨 (prettier).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "cfada8cf-24ed-49cf-85de-1328008d332b"
@@ -267,7 +267,7 @@
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:53:05.474Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
