@@ -578,10 +578,10 @@
       "name": "T-009-1: M-009 시드 마이그레이션 3건 (tags + circles+위성 + activity_reports)",
       "description": "M-009-01 tags 10종 INSERT (lib/circles/filter-labels.ts TAG_SEEDS + PRD 시드 일치) + M-009-02 circles 30건 (owner_id NULL, status='approved', id 고정 UUID) + circle_tags (서클당 3-5 랜덤) + circle_images (서클당 4장 picsum seed URL) + shinkan_events (일부 서클 미래 일정) + M-009-03 activity_reports 100+ (서클당 3-4건) + activity_report_images (리포트당 3-5장). 모두 ON CONFLICT (id) DO UPDATE 로 idempotent.",
       "notes": "service_role 권한 (mcp execute_sql 자동) 으로 RLS bypass. circles_status_admin_check 트리거는 BEFORE UPDATE 이라 INSERT 무관. picsum.photos seed URL 은 lib/dummy 와 동일 — 결정론적 이미지 재현. 시드 SQL 본문이 길어 마이그 3건으로 분할 (각 5000자 이내).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:29:31.497Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/dummy/circles.ts",
