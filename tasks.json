@@ -284,36 +284,6 @@
       "completedAt": "2026-05-18T13:54:33.702Z"
     },
     {
-      "id": "295d8bdb-d099-4ff9-8772-bc64101f2a2a",
-      "name": "T-006-1: 작업 파일 신설 docs/tasks/T-006-rls-policies.md",
-      "description": "ROADMAP 워크플로우 line 35-42 의 작업 파일 backfill 명세를 따라 T-006 의 상세 명세서 작성. T-005 작업 파일 패턴 그대로 (8개 섹션: 개요/선행/대상/수락기준/구현단계/테스트/위험롤백/참조SSOT). 후속 sub-task 들의 SSOT.",
-      "notes": "T-005 작업 파일 형식 그대로. 정책 매트릭스 표 포함 (11 테이블 × 4 액션 × 4 컨텍스트). SQL 은 pseudocode 만.",
-      "status": "pending",
-      "dependencies": [],
-      "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:03:09.556Z",
-      "relatedFiles": [
-        {
-          "path": "/Users/kiimho/workspace/keio-school-club/docs/tasks/T-005-db-schema-migration.md",
-          "type": "REFERENCE",
-          "description": "작업 파일 형식 참조"
-        },
-        {
-          "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
-          "type": "REFERENCE",
-          "description": "T-006 본문 line 241-246"
-        },
-        {
-          "path": "/Users/kiimho/workspace/keio-school-club/docs/tasks/T-006-rls-policies.md",
-          "type": "CREATE",
-          "description": "신규 작업 파일"
-        }
-      ],
-      "implementationGuide": "1. docs/tasks/T-006-rls-policies.md Write\\n2. 섹션 구성 (T-005 작업 파일 참조):\\n  - 개요/관련 PRD 기능: H-2 대응, F005/F006/F007/F010, T-007/T-009/T-019 anchor\\n  - 선행 작업: T-005\\n  - 변경 대상: 본 파일 신규, MCP apply_migration 3건, ROADMAP T-006 갱신\\n  - 수락 기준: get_advisors RLS missing 0~1건(inquiry_events 의도된 deny), 4 컨텍스트 SQL 테스트 PASS, lint/build/test 통과\\n  - 구현 단계: Step 0~6 (마이그 적용 + 테스트 + advisor + ROADMAP)\\n  - 테스트 체크리스트: 4 컨텍스트별 15-20 시나리오\\n  - 위험/롤백: DROP POLICY 개별, is_admin() CASCADE\\n  - 참조 SSOT: lib/constants/circle-status.ts, lib/types/database.ts profiles.role",
-      "verificationCriteria": "(1) 파일 존재. (2) 8개 섹션 모두 포함 (grep). (3) 정책 매트릭스 11×4×4 표 포함. (4) Step 0~6 체크리스트.",
-      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
-    },
-    {
       "id": "cae2b3e6-814a-48cf-a392-5b3c8268334c",
       "name": "T-006-2: M-006-01 — is_admin() 헬퍼 + column REVOKE",
       "description": "public.is_admin(uid uuid DEFAULT auth.uid()) SECURITY DEFINER STABLE 함수 + REVOKE EXECUTE FROM PUBLIC + GRANT TO authenticated. circles.inquiry_count/view_count, profiles.role 컬럼 UPDATE 권한 REVOKE FROM anon/authenticated.",
