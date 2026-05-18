@@ -694,7 +694,7 @@
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T16:07:56.851Z",
+      "updatedAt": "2026-05-18T16:08:13.360Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/app/circles/[id]/actions.ts",
@@ -724,7 +724,8 @@
       ],
       "implementationGuide": "1. app/circles/[id]/actions.ts Write 'use server':\\n  - toggleFavorite(circleId): server.ts → auth.getClaims() → unauthorized return → favorites match maybeSingle → INSERT/DELETE → revalidatePath('/favorites')\\n  - incrementInquiryCount(circleId): supabase.rpc('increment_inquiry_count', {p_circle_id: circleId}) → revalidatePath('/circles/'+id)\\n2. lib/circles/use-favorites.ts 전면 재작성:\\n  - sessionStorage 제거\\n  - props 로 initialFavorites (string[]) + isAuthenticated (boolean)\\n  - useOptimistic([])\\n  - toggle(circleId, pathname) → 비로그인 시 router.push('/auth/login?next='+encodeURI(pathname)) / 로그인 시 startTransition(async => toggleFavorite + setOptimistic)\\n3. components/circles/favorite-toggle-button.tsx:\\n  - prop isAuthenticated\\n  - onClick → e.preventDefault + e.stopPropagation + useFavorites().toggle(...)\\n4. components/circles/circle-actions.tsx handleJoin:\\n  - if (!isAuthenticated) router.push('/auth/login?next='+pathname)\\n  - else setModalOpen(true)\\n5. components/circles/join-channel-modal.tsx handleChannelClick:\\n  - await incrementInquiryCount(circle.id)\\n  - window.open(url) + onOpenChange(false)\\n6. RSC (app/circles/[id]/page.tsx): supabase.auth.getClaims() → isAuthenticated boolean prop drilling to CircleActions / FavoriteToggleButton",
       "verificationCriteria": "(1) actions.ts export 2 함수. (2) use-favorites.ts sessionStorage 키 0건. (3) 비로그인 하트 클릭 → /auth/login 리디렉션 (수동 확인 또는 E2E). (4) 비로그인 「参加する」 클릭 → 동일 리디렉션. (5) 로그인 하트 → favorites row 추가/제거. (6) 로그인 채널 선택 → inquiry_count +1.",
-      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로.",
+      "summary": "T-009-4 Server Action + 비로그인 가드 완료 (commit f549c71). app/circles/[id]/actions.ts 신설 (toggleFavorite + incrementInquiryCount Server Action). lib/circles/use-favorites.ts 전면 재작성 (sessionStorage 완전 제거, useOptimistic + startTransition + 모듈 singleton 인증 캐시). FavoriteToggleButton + CircleActions 에 isAuthenticated prop 추가 — 하트 토글 + 「参加する」 둘 다 비로그인 시 /auth/login?next=... 리디렉션 (PRD F012 패턴). JoinChannelModal handleChannelClick → Server Action 연동. build 27 페이지 + lint 통과."
     },
     {
       "id": "9c45e722-9c79-458e-a5a2-1537cd322cb4",
