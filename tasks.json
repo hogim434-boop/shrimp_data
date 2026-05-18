@@ -610,14 +610,14 @@
       "name": "T-009-2: lib/supabase/queries 모듈 신설 (circles + activity-reports)",
       "description": "RSC 에서 호출할 fetch 함수 모음. lib/supabase/queries/circles.ts (getPopularCircles/getNewCircles/getCircleById/getCirclesByCategory/filterCircles/getFavorites/isFavorited) + activity-reports.ts (getReportsByCircle/getReportById). 모두 async, server.ts createClient 사용, JOIN 으로 tags/images 함께 fetch.",
       "notes": "Supabase JS join 결과 shape 는 nested object 라 mapping 필요 (예: circle.circle_tags = [{tags: {slug: 'x'}}, ...] → tags: string[]). filterCircles 의 q 검색은 name ilike '%q%' 단순 — Phase 2 full-text 확장.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "e157a354-b75e-4775-ac89-39f2728962d0"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:50:09.659Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/supabase/queries/circles.ts",
