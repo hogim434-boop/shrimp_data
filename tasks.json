@@ -310,14 +310,14 @@
       "name": "T-006-3: M-006-02 — 코어 + 위성 RLS 정책 + status trigger",
       "description": "profiles + circles 코어 정책 + circles 위성 (tags/circle_tags/circle_images/favorites/shinkan_events) 정책 + circles status 변경 admin 전용 트리거. 단일 마이그레이션.",
       "notes": "코어 + 위성을 한 마이그에 묶음 (의존성 강함, 분리 시 중간 상태 위험). status trigger 는 RLS 와 별도 — RLS UPDATE 정책은 OLD/NEW 비교 못 함.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "cae2b3e6-814a-48cf-a392-5b3c8268334c"
         }
       ],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:10:45.732Z",
+      "updatedAt": "2026-05-18T14:10:45.799Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
@@ -333,7 +333,8 @@
       "implementationGuide": "1. mcp__supabase__apply_migration name=006_02_profiles_circles_satellite_policies\\n2. SQL 주요 항목:\\n  - profiles_select_own_or_admin, profiles_update_own, profiles_delete_admin (INSERT는 trigger 가 SECURITY DEFINER 처리)\\n  - circles_select_public_or_owner_or_admin (TO anon, authenticated, USING status='approved' OR owner_id=auth.uid() OR is_admin())\\n  - circles_insert_authenticated (WITH CHECK owner_id=auth.uid() AND status='pending')\\n  - circles_update_owner_or_admin, circles_delete_owner_or_admin\\n  - status change admin trigger: BEFORE UPDATE ON circles, NEW.status DISTINCT FROM OLD.status AND NOT is_admin() → RAISE EXCEPTION\\n  - tags: SELECT all, write admin\\n  - circle_tags/circle_images/shinkan_events: SELECT EXISTS(circles WHERE status='approved' OR owner OR admin), write EXISTS(circles WHERE owner OR admin)\\n  - favorites: SELECT/INSERT/DELETE own (user_id=auth.uid())\\n3. 검증: pg_policies 18+ 정책, pg_trigger 'circles_status_admin_check' 존재",
       "verificationCriteria": "(1) list_migrations 006_02. (2) pg_policies 에서 profiles 3, circles 4, tags 2, circle_tags/circle_images/shinkan_events 각 2, favorites 3 = 18+. (3) trigger circles_status_admin_check 존재. (4) anon JWT INSERT circles 권한 거부.",
       "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6.",
-      "summary": "M-006-02 단일 마이그레이션으로 18개 RLS 정책 + status 트리거 적용 완료. profiles 3개(select_own_or_admin/update_own/delete_admin), circles 4개(select_public_or_owner_or_admin/insert_authenticated/update_owner_or_admin/delete_owner_or_admin), tags 2개(select_all/write_admin), circle_tags 2개, circle_images 2개, shinkan_events 2개, favorites 3개(select/insert/delete _own). circles_status_admin_check BEFORE UPDATE 트리거 활성화 확인(tgenabled=O). anon은 status=approved 서클만 조회, INSERT 불가, status 변경 불가 설계 완료."
+      "summary": "M-006-02 단일 마이그레이션으로 18개 RLS 정책 + status 트리거 적용 완료. profiles 3개(select_own_or_admin/update_own/delete_admin), circles 4개(select_public_or_owner_or_admin/insert_authenticated/update_owner_or_admin/delete_owner_or_admin), tags 2개(select_all/write_admin), circle_tags 2개, circle_images 2개, shinkan_events 2개, favorites 3개(select/insert/delete _own). circles_status_admin_check BEFORE UPDATE 트리거 활성화 확인(tgenabled=O). anon은 status=approved 서클만 조회, INSERT 불가, status 변경 불가 설계 완료.",
+      "completedAt": "2026-05-18T14:10:45.798Z"
     },
     {
       "id": "b582fce5-e4c0-4d5e-99db-2b01a5ccf561",
