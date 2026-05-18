@@ -282,6 +282,154 @@
       "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh.",
       "summary": "ROADMAP T-005 본문 갱신 + commit 완료. (1) Phase 1.2 표의 T-005 행 상태 pending→completed + ✅, 「7개 테이블」 → 「10 테이블 + 8 enum」. (2) T-005 본문 갱신: 10 테이블 (보조 2 포함) 명시, 8 enum 8종 이름 나열 (recruitment_status/activity_time_band/activity_report_type 신규), circles 신규 5컬럼 명시, annual_fee_yen 보존 정책 박스 💴 참조, activity_reports 추가 (T-034 의존 해소), RLS enable + T-006 anchor, 인덱스 5종 명시. (3) 「완료 (2026-05-18)」 노트 추가 — 6건 마이그레이션 적용 + 자동 생성 타입 교체 + lint/build/test 통과 + advisor 잔여 항목 (T-006/T-015 anchor). (4) See 링크: docs/tasks/T-005-db-schema-migration.md. (5) commit c75c4ed (✨ feat(db): T-005...) 등록, working tree clean, origin/main 보다 2 commits 앞섬.",
       "completedAt": "2026-05-18T13:54:33.702Z"
+    },
+    {
+      "id": "295d8bdb-d099-4ff9-8772-bc64101f2a2a",
+      "name": "T-006-1: 작업 파일 신설 docs/tasks/T-006-rls-policies.md",
+      "description": "ROADMAP 워크플로우 line 35-42 의 작업 파일 backfill 명세를 따라 T-006 의 상세 명세서 작성. T-005 작업 파일 패턴 그대로 (8개 섹션: 개요/선행/대상/수락기준/구현단계/테스트/위험롤백/참조SSOT). 후속 sub-task 들의 SSOT.",
+      "notes": "T-005 작업 파일 형식 그대로. 정책 매트릭스 표 포함 (11 테이블 × 4 액션 × 4 컨텍스트). SQL 은 pseudocode 만.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/tasks/T-005-db-schema-migration.md",
+          "type": "REFERENCE",
+          "description": "작업 파일 형식 참조"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
+          "type": "REFERENCE",
+          "description": "T-006 본문 line 241-246"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/tasks/T-006-rls-policies.md",
+          "type": "CREATE",
+          "description": "신규 작업 파일"
+        }
+      ],
+      "implementationGuide": "1. docs/tasks/T-006-rls-policies.md Write\\n2. 섹션 구성 (T-005 작업 파일 참조):\\n  - 개요/관련 PRD 기능: H-2 대응, F005/F006/F007/F010, T-007/T-009/T-019 anchor\\n  - 선행 작업: T-005\\n  - 변경 대상: 본 파일 신규, MCP apply_migration 3건, ROADMAP T-006 갱신\\n  - 수락 기준: get_advisors RLS missing 0~1건(inquiry_events 의도된 deny), 4 컨텍스트 SQL 테스트 PASS, lint/build/test 통과\\n  - 구현 단계: Step 0~6 (마이그 적용 + 테스트 + advisor + ROADMAP)\\n  - 테스트 체크리스트: 4 컨텍스트별 15-20 시나리오\\n  - 위험/롤백: DROP POLICY 개별, is_admin() CASCADE\\n  - 참조 SSOT: lib/constants/circle-status.ts, lib/types/database.ts profiles.role",
+      "verificationCriteria": "(1) 파일 존재. (2) 8개 섹션 모두 포함 (grep). (3) 정책 매트릭스 11×4×4 표 포함. (4) Step 0~6 체크리스트.",
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+    },
+    {
+      "id": "cae2b3e6-814a-48cf-a392-5b3c8268334c",
+      "name": "T-006-2: M-006-01 — is_admin() 헬퍼 + column REVOKE",
+      "description": "public.is_admin(uid uuid DEFAULT auth.uid()) SECURITY DEFINER STABLE 함수 + REVOKE EXECUTE FROM PUBLIC + GRANT TO authenticated. circles.inquiry_count/view_count, profiles.role 컬럼 UPDATE 권한 REVOKE FROM anon/authenticated.",
+      "notes": "is_admin() 시그니처에 DEFAULT auth.uid() 로 정책 호출 시 자동 평가. SECURITY DEFINER + search_path=public 가 search_path 인젝션 방어. column REVOKE 는 PG ACL — RLS 평가 전 차단.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
+          "type": "REFERENCE",
+          "description": "profiles.role CHECK, circles 카운터 컬럼"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration name=006_01_is_admin_helper_and_column_revoke\\n2. SQL:\\n  CREATE OR REPLACE FUNCTION public.is_admin(uid uuid DEFAULT auth.uid())\\n  RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path = public STABLE\\n  AS $$ SELECT EXISTS(SELECT 1 FROM public.profiles WHERE id = uid AND role = 'admin') $$;\\n  REVOKE EXECUTE ON FUNCTION public.is_admin(uuid) FROM PUBLIC;\\n  GRANT EXECUTE ON FUNCTION public.is_admin(uuid) TO authenticated;\\n  REVOKE UPDATE (inquiry_count, view_count) ON public.circles FROM anon, authenticated;\\n  REVOKE UPDATE (role) ON public.profiles FROM anon, authenticated;\\n3. 검증: pg_proc prosecdef=true, information_schema.column_privileges 확인",
+      "verificationCriteria": "(1) list_migrations 006_01. (2) SELECT public.is_admin() 호출 가능. (3) pg_proc prosecdef=true. (4) column_privileges 에서 inquiry_count/view_count/role 컬럼 UPDATE 권한 anon/authenticated 없음.",
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+    },
+    {
+      "id": "674413e9-31b6-4599-8252-fbe8a2ebbeae",
+      "name": "T-006-3: M-006-02 — 코어 + 위성 RLS 정책 + status trigger",
+      "description": "profiles + circles 코어 정책 + circles 위성 (tags/circle_tags/circle_images/favorites/shinkan_events) 정책 + circles status 변경 admin 전용 트리거. 단일 마이그레이션.",
+      "notes": "코어 + 위성을 한 마이그에 묶음 (의존성 강함, 분리 시 중간 상태 위험). status trigger 는 RLS 와 별도 — RLS UPDATE 정책은 OLD/NEW 비교 못 함.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "cae2b3e6-814a-48cf-a392-5b3c8268334c"
+        }
+      ],
+      "createdAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
+          "type": "REFERENCE",
+          "description": "Tables 정의"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/constants/circle-status.ts",
+          "type": "REFERENCE",
+          "description": "approved literal SSOT"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration name=006_02_profiles_circles_satellite_policies\\n2. SQL 주요 항목:\\n  - profiles_select_own_or_admin, profiles_update_own, profiles_delete_admin (INSERT는 trigger 가 SECURITY DEFINER 처리)\\n  - circles_select_public_or_owner_or_admin (TO anon, authenticated, USING status='approved' OR owner_id=auth.uid() OR is_admin())\\n  - circles_insert_authenticated (WITH CHECK owner_id=auth.uid() AND status='pending')\\n  - circles_update_owner_or_admin, circles_delete_owner_or_admin\\n  - status change admin trigger: BEFORE UPDATE ON circles, NEW.status DISTINCT FROM OLD.status AND NOT is_admin() → RAISE EXCEPTION\\n  - tags: SELECT all, write admin\\n  - circle_tags/circle_images/shinkan_events: SELECT EXISTS(circles WHERE status='approved' OR owner OR admin), write EXISTS(circles WHERE owner OR admin)\\n  - favorites: SELECT/INSERT/DELETE own (user_id=auth.uid())\\n3. 검증: pg_policies 18+ 정책, pg_trigger 'circles_status_admin_check' 존재",
+      "verificationCriteria": "(1) list_migrations 006_02. (2) pg_policies 에서 profiles 3, circles 4, tags 2, circle_tags/circle_images/shinkan_events 각 2, favorites 3 = 18+. (3) trigger circles_status_admin_check 존재. (4) anon JWT INSERT circles 권한 거부.",
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+    },
+    {
+      "id": "b582fce5-e4c0-4d5e-99db-2b01a5ccf561",
+      "name": "T-006-4: M-006-03 — 활동 리포트 + 보조 RLS 정책",
+      "description": "T-034 신규 테이블 (activity_reports/activity_report_images) 정책 + inquiry_events 의도된 deny (정책 0건, T-007 RPC SECURITY DEFINER만 INSERT) + app_settings 정책.",
+      "notes": "activity_report_images 2단계 EXISTS (report JOIN circle) — 성능은 30~수백 건 규모 OK. inquiry_events 의도된 deny → get_advisors INFO 1건 잔여 가능 (의도).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "674413e9-31b6-4599-8252-fbe8a2ebbeae"
+        }
+      ],
+      "createdAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
+          "type": "REFERENCE",
+          "description": "activity_reports/activity_report_images/inquiry_events/app_settings"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration name=006_03_activity_reports_misc_policies\\n2. SQL 주요 항목:\\n  - activity_reports_select_public (EXISTS circles status='approved' OR owner OR admin)\\n  - activity_reports_insert/update/delete_owner_or_admin (EXISTS circles owner OR admin)\\n  - activity_report_images_select_public (2단계 EXISTS: activity_reports JOIN circles)\\n  - activity_report_images_write_owner_or_admin (FOR ALL, 2단계 EXISTS)\\n  - inquiry_events: 의도된 deny (정책 0건) + COMMENT ON TABLE 명시 'RLS deny by default, T-007 RPC SECURITY DEFINER만 INSERT'\\n  - app_settings_select_all (TO anon/authenticated USING true)\\n  - app_settings_write_admin (FOR ALL, USING+WITH CHECK is_admin())\\n3. 검증: pg_policies activity_reports 4, activity_report_images 2, app_settings 2 = 8 추가",
+      "verificationCriteria": "(1) list_migrations 006_03. (2) pg_policies 활동 리포트 + app_settings = 8개 추가. (3) inquiry_events 정책 0건 (의도). (4) anon SELECT activity_reports 시 status='approved' 부모만.",
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+    },
+    {
+      "id": "e74af643-1590-46dd-aeba-1e5d89d1b065",
+      "name": "T-006-5: 4 컨텍스트 SQL 시나리오 테스트",
+      "description": "mcp execute_sql 로 anon/authenticated(non-owner)/owner/admin 4 컨텍스트 15-20 시나리오 실행. SAVEPOINT/ROLLBACK 격리. 기대 결과 (성공/실패/빈) 검증.",
+      "notes": "mcp execute_sql 은 service_role 으로 실행 — auth.users 직접 INSERT 가능. SET LOCAL ROLE + JWT claims 가 RLS 평가 전제. SAVEPOINT 단위로 fixture 재사용.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b582fce5-e4c0-4d5e-99db-2b01a5ccf561"
+        }
+      ],
+      "createdAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "relatedFiles": [],
+      "implementationGuide": "1. test fixture INSERT (service_role 권한): auth.users (admin/normal/owner 3명) + circles (approved/pending 각 1건) + activity_reports + favorites 등 SAVEPOINT 안\\n2. 컨텍스트별 시나리오:\\n  - anon: SELECT count circles 결과 approved 수만 일치, INSERT circles fail (42501), UPDATE/DELETE fail\\n  - authenticated non-owner: SELECT pending 0행, INSERT own owner_id+pending success, INSERT 임의 owner_id fail, INSERT status=approved fail, UPDATE 타인 0행, UPDATE inquiry_count fail (42501 column priv)\\n  - owner: SELECT own all status, UPDATE own success (counter 제외), UPDATE status='approved' fail (trigger RAISE), DELETE own success\\n  - admin: SELECT all, UPDATE status success, DELETE 다른 user circles success\\n3. SET LOCAL ROLE + SET LOCAL request.jwt.claims 패턴\\n4. 각 시나리오 SAVEPOINT/ROLLBACK 으로 격리\\n5. fixture 마지막 ROLLBACK 으로 모두 정리",
+      "verificationCriteria": "(1) 15+ 시나리오 실행 + 기대 결과 일치. (2) anon INSERT/UPDATE/DELETE 모두 fail. (3) auth non-owner 가 타인 circles UPDATE 시 0 row. (4) owner UPDATE inquiry_count 시 PERMISSION error. (5) owner UPDATE status 시 RAISE. (6) admin 모든 액션 PASS. (7) 종료 후 fixture 모두 ROLLBACK.",
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
+    },
+    {
+      "id": "399fb257-0f37-4a62-a15a-7704a255b4c1",
+      "name": "T-006-6: advisor 점검 + ROADMAP 갱신 + commit",
+      "description": "mcp get_advisors security → RLS policy missing 0~1건 (inquiry_events 의도 deny). docs/ROADMAP.md T-006 본문 갱신 (정책 매트릭스 요약 + 완료 노트 + See 링크) + Phase 1.2 표 상태 pending→completed + ✅. 단일 commit.",
+      "notes": "T-005-8 동일 패턴. lint-staged prettier 자동. commit prefix ✨ feat(db).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "295d8bdb-d099-4ff9-8772-bc64101f2a2a"
+        },
+        {
+          "taskId": "e74af643-1590-46dd-aeba-1e5d89d1b065"
+        }
+      ],
+      "createdAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-006 본문 + Phase 1.2 표"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__get_advisors type=security → 결과:\\n  - 기대: RLS missing 0 또는 1건 (inquiry_events 의도)\\n  - 잔여: Auth Leaked Password Protection WARN (T-015 범위)\\n2. docs/ROADMAP.md Read T-006 본문\\n3. Edit:\\n  - Phase 1.2 표 T-006 행: pending → completed + ✅\\n  - 본문 헤더 ✅\\n  - 정책 매트릭스 요약 (11 테이블 × 4 액션 × 4 컨텍스트)\\n  - is_admin() 시그니처 명시\\n  - column REVOKE (inquiry_count/view_count/role) 명시\\n  - status change admin trigger 명시\\n  - inquiry_events 의도된 deny 명시\\n  - 완료 (2026-05-18) 노트 (3 마이그 + SQL 테스트 PASS + advisor 잔여 항목)\\n  - See: docs/tasks/T-006-rls-policies.md\\n4. git add docs/ROADMAP.md docs/tasks/T-006-rls-policies.md\\n5. git commit -m '✨ feat(db): T-006 RLS 정책 분리 + is_admin() 헬퍼 — 18+ policies + status trigger'",
+      "verificationCriteria": "(1) get_advisors RLS missing 0~1건. (2) T-006 행 completed + ✅. (3) 본문에 정책 매트릭스 + is_admin() + column REVOKE + status trigger + inquiry_events deny + See 링크. (4) git log commit. (5) git status clean.",
+      "analysisResult": "T-006 RLS 정책 분리 + is_admin() 헬퍼. T-005 11 신규 테이블의 RLS 정책 빈 상태 → select/insert/update/delete 명시 분리. 4 컨텍스트(anon/authenticated/owner/admin) 안전 동작. column REVOKE (inquiry_count/view_count/role) 로 RPC SECURITY DEFINER만 갱신. is_admin() public schema SECURITY DEFINER search_path=public STABLE. 정책 명명 {table}_{action}_{scope}. 3건 마이그레이션 + SQL 테스트 + ROADMAP 갱신. 의존성: 1∥2→3→4→5→6."
     }
   ]
 }
