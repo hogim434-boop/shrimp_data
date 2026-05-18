@@ -341,14 +341,14 @@
       "name": "T-006-4: M-006-03 — 활동 리포트 + 보조 RLS 정책",
       "description": "T-034 신규 테이블 (activity_reports/activity_report_images) 정책 + inquiry_events 의도된 deny (정책 0건, T-007 RPC SECURITY DEFINER만 INSERT) + app_settings 정책.",
       "notes": "activity_report_images 2단계 EXISTS (report JOIN circle) — 성능은 30~수백 건 규모 OK. inquiry_events 의도된 deny → get_advisors INFO 1건 잔여 가능 (의도).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "674413e9-31b6-4599-8252-fbe8a2ebbeae"
         }
       ],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:10:50.946Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
