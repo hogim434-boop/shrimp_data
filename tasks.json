@@ -99,14 +99,14 @@
       "name": "T-005-3: M-005-02 마이그레이션 적용 (profiles + circles + 트리거)",
       "description": "profiles + circles 두 핵심 테이블 + auth.users insert 트리거 + circles updated_at moddatetime 트리거 + CHECK 제약(connect_* 1개 이상 NOT NULL) 을 한 마이그레이션으로 적용.",
       "notes": "annual_fee_yen 보존 (정책 박스 💴), freshmen_ratio 컬럼 만들지 않음. owner_id 는 nullable (T-009 시드 위험 완화). slug UNIQUE 인덱스 자동 생성.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "5b484b48-1a9f-4564-b372-7f6d12f2a176"
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:43:34.098Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
