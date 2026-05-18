@@ -651,14 +651,14 @@
       "name": "T-009-3: 페이지별 RSC fetch 와이어업 (Discover/Results/상세/리포트)",
       "description": "app/circles/page.tsx (DiscoverContent + SearchResults 분기), app/circles/[id]/page.tsx (+ supabase.rpc('increment_view_count') 호출), app/circles/[id]/reports/[reportId]/page.tsx 의 더미 import → queries 모듈 교체. lib/dummy/* import 제거 (E2E mock 용도라 파일은 보존, 페이지에서만 제거).",
       "notes": "increment_view_count RPC 는 anon EXECUTE 허용 (T-007) — RSC server.ts (anon key) 에서 직접 호출 가능. fire-and-forget 패턴 으로 페이지 렌더 블로킹 안 함.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T16:07:34.160Z",
+      "updatedAt": "2026-05-18T16:07:34.229Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/app/circles/page.tsx",
@@ -679,7 +679,8 @@
       "implementationGuide": "1. app/circles/page.tsx:\\n  - DiscoverContent: getPopularCircles, getNewCircles, getCirclesByCategory 등으로 교체\\n  - SearchResults: filterCircles(parseCirclesSearchParams(searchParams))\\n2. app/circles/[id]/page.tsx:\\n  - getCircleById(id) → CircleDetail | null\\n  - notFound() 분기 유지\\n  - 본문 끝에 fire-and-forget incrementViewCount RPC 호출 (await supabase.rpc('increment_view_count', {p_circle_id: id}))\\n3. app/circles/[id]/reports/[reportId]/page.tsx:\\n  - getReportById(reportId) → ActivityReport | null\\n  - circle_id 무결성 검증 유지 (report.circle_id !== params.id → notFound())\\n4. 더미 import 제거 (lib/dummy 파일 자체는 보존)\\n5. npm run build 통과 확인",
       "verificationCriteria": "(1) 3 페이지 lib/dummy import 제거. (2) lib/supabase/queries 모듈 import. (3) /circles 와 /circles/[id] anon 접근 시 30 카드 + 상세 정상 렌더. (4) /circles/[id] 진입 후 DB 의 view_count 증가.",
       "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로.",
-      "summary": "T-009-3 페이지 RSC 와이어업 완료 (commit f549c71). app/circles/page.tsx + circles/[id]/page.tsx + circles/[id]/reports/[reportId]/page.tsx 의 더미 import → lib/supabase/queries 모듈 교체. circles 상세 진입 시 fire-and-forget supabase.rpc('increment_view_count') 호출 추가. build 27 페이지 PPR 통과."
+      "summary": "T-009-3 페이지 RSC 와이어업 완료 (commit f549c71). app/circles/page.tsx + circles/[id]/page.tsx + circles/[id]/reports/[reportId]/page.tsx 의 더미 import → lib/supabase/queries 모듈 교체. circles 상세 진입 시 fire-and-forget supabase.rpc('increment_view_count') 호출 추가. build 27 페이지 PPR 통과.",
+      "completedAt": "2026-05-18T16:07:34.228Z"
     },
     {
       "id": "a5aa78f0-020d-4755-8753-5335f65db604",
