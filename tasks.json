@@ -572,6 +572,217 @@
       "analysisResult": "T-008 Storage 인프라. circles-public 퍼블릭 버킷 (4MB, image/jpeg|png|webp) + storage.objects 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin) + path prefix circles/{circle_id}/ 매칭 + 클라이언트 Canvas EXIF strip + 파일 검증 + next.config.ts Storage host 추가. 단위 테스트는 validateUpload 만 (stripImageExif Canvas 는 jsdom 한계로 Playwright 미루기). 3 sub-task 순차. 작업 파일 없음 (T-006/T-007 패턴). is_admin() T-006 재사용.",
       "summary": "SQL 5 시나리오 전부 PASS (S1 anon SELECT 허용, S2 anon INSERT 42501, S3 user-B INSERT 42501, S4 owner INSERT 성공, S5 wrong prefix 42501). EXISTS 서브쿼리 name 모호성 버그를 M-008b/c/d 3건 보강 마이그로 해소 (헬퍼 함수 SECURITY INVOKER + SET search_path=''). 신규 critical advisor 0건, function_search_path_mutable WARN도 해소. ROADMAP Phase 1.2 표 T-008 completed+✅, T-008 본문 버킷설정·path구조·RLS4정책·EXIF strip·헬퍼3종·T-018 anchor·완료노트 모두 기재. commit 5477f84 clean.",
       "completedAt": "2026-05-18T15:04:38.774Z"
+    },
+    {
+      "id": "e157a354-b75e-4775-ac89-39f2728962d0",
+      "name": "T-009-1: M-009 시드 마이그레이션 3건 (tags + circles+위성 + activity_reports)",
+      "description": "M-009-01 tags 10종 INSERT (lib/circles/filter-labels.ts TAG_SEEDS + PRD 시드 일치) + M-009-02 circles 30건 (owner_id NULL, status='approved', id 고정 UUID) + circle_tags (서클당 3-5 랜덤) + circle_images (서클당 4장 picsum seed URL) + shinkan_events (일부 서클 미래 일정) + M-009-03 activity_reports 100+ (서클당 3-4건) + activity_report_images (리포트당 3-5장). 모두 ON CONFLICT (id) DO UPDATE 로 idempotent.",
+      "notes": "service_role 권한 (mcp execute_sql 자동) 으로 RLS bypass. circles_status_admin_check 트리거는 BEFORE UPDATE 이라 INSERT 무관. picsum.photos seed URL 은 lib/dummy 와 동일 — 결정론적 이미지 재현. 시드 SQL 본문이 길어 마이그 3건으로 분할 (각 5000자 이내).",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/dummy/circles.ts",
+          "type": "REFERENCE",
+          "description": "30건 ground truth"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/dummy/activity-reports.ts",
+          "type": "REFERENCE",
+          "description": "100+ 활동 리포트"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/circles/filter-labels.ts",
+          "type": "REFERENCE",
+          "description": "TAG_SEEDS 7종"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration name='009_01_tags_seed' — INSERT INTO public.tags (slug, label_ja, kind) VALUES (...) ON CONFLICT (slug) DO UPDATE SET label_ja=EXCLUDED.label_ja, kind=EXCLUDED.kind\\n2. mcp__supabase__apply_migration name='009_02_circles_satellite_seed' — INSERT 30 circles + circle_tags + circle_images + shinkan_events. owner_id=NULL, status='approved'. id 고정 UUID lib/dummy/circles.ts 와 일치\\n3. mcp__supabase__apply_migration name='009_03_activity_reports_seed' — INSERT 100+ activity_reports + activity_report_images. circle_id FK 유효\\n4. 검증: mcp list_tables rows 카운트 — tags 10, circles 30, circle_tags 100+, circle_images 120, shinkan_events 10+, activity_reports 100+, activity_report_images 400+",
+      "verificationCriteria": "(1) list_migrations 에 009_01~03 3건. (2) list_tables rows: tags 10, circles 30, activity_reports 100+. (3) anon SELECT FROM circles WHERE status='approved' → 30 행. (4) 모든 circle 의 cover_image_url 이 picsum.photos seed URL.",
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+    },
+    {
+      "id": "f837af6f-3a6a-43a6-89cd-7319a9476a9b",
+      "name": "T-009-2: lib/supabase/queries 모듈 신설 (circles + activity-reports)",
+      "description": "RSC 에서 호출할 fetch 함수 모음. lib/supabase/queries/circles.ts (getPopularCircles/getNewCircles/getCircleById/getCirclesByCategory/filterCircles/getFavorites/isFavorited) + activity-reports.ts (getReportsByCircle/getReportById). 모두 async, server.ts createClient 사용, JOIN 으로 tags/images 함께 fetch.",
+      "notes": "Supabase JS join 결과 shape 는 nested object 라 mapping 필요 (예: circle.circle_tags = [{tags: {slug: 'x'}}, ...] → tags: string[]). filterCircles 의 q 검색은 name ilike '%q%' 단순 — Phase 2 full-text 확장.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "e157a354-b75e-4775-ac89-39f2728962d0"
+        }
+      ],
+      "createdAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/supabase/queries/circles.ts",
+          "type": "CREATE",
+          "description": "RSC fetch 모음"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/supabase/queries/activity-reports.ts",
+          "type": "CREATE",
+          "description": "활동 리포트 fetch"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/types/domain.ts",
+          "type": "REFERENCE",
+          "description": "CircleSummary/CircleDetail/ActivityReport 타입"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/circles/search-params.ts",
+          "type": "REFERENCE",
+          "description": "CirclesSearchParams 타입"
+        }
+      ],
+      "implementationGuide": "1. lib/supabase/queries/circles.ts Write:\\n  - getPopularCircles(limit=6): from('circles').select('*, circle_tags(tags(slug))').eq('status','approved').order('view_count',{ascending:false}).limit(limit)\\n  - getNewCircles(limit=10): order('created_at', desc).limit\\n  - getCircleById(id): from('circles').select('*, circle_tags(tags(slug)), circle_images(*), shinkan_events(*)').eq('id',id).maybeSingle() — CircleDetail mapping\\n  - filterCircles(params): 모든 필터를 .eq/.in/.overlaps/.ilike 로 변환 + .range(start,end) pagination + count\\n  - getFavorites(userId): from('favorites').select('circles(*)').eq('user_id', userId)\\n  - isFavorited(userId, circleId): .select('user_id').match({user_id,circle_id}).maybeSingle() not null\\n2. lib/supabase/queries/activity-reports.ts Write:\\n  - getReportsByCircle(circleId, limit?): from('activity_reports').select('*, activity_report_images(*)').eq('circle_id',circleId).order('created_at',desc).limit\\n  - getReportById(reportId): single + JOIN\\n3. 모든 반환 타입: CircleSummary[] / CircleDetail | null / ActivityReport[] / ActivityReport | null (lib/types/domain.ts 일치)\\n4. SELECT 결과를 domain type 으로 mapping 함수 helpers 신설",
+      "verificationCriteria": "(1) lib/supabase/queries/circles.ts + activity-reports.ts 존재. (2) export 함수 모두 lib/types/domain.ts 타입 반환. (3) RSC server.ts createClient 호출. (4) tsc 컴파일 통과.",
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+    },
+    {
+      "id": "c8a519ce-6ed5-4e4c-8ab4-a56de503cf64",
+      "name": "T-009-3: 페이지별 RSC fetch 와이어업 (Discover/Results/상세/리포트)",
+      "description": "app/circles/page.tsx (DiscoverContent + SearchResults 분기), app/circles/[id]/page.tsx (+ supabase.rpc('increment_view_count') 호출), app/circles/[id]/reports/[reportId]/page.tsx 의 더미 import → queries 모듈 교체. lib/dummy/* import 제거 (E2E mock 용도라 파일은 보존, 페이지에서만 제거).",
+      "notes": "increment_view_count RPC 는 anon EXECUTE 허용 (T-007) — RSC server.ts (anon key) 에서 직접 호출 가능. fire-and-forget 패턴 으로 페이지 렌더 블로킹 안 함.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
+        }
+      ],
+      "createdAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/app/circles/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "Discover/Results 분기 RSC fetch"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "상세 fetch + view_count RPC"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/app/circles/[id]/reports/[reportId]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "리포트 상세 fetch"
+        }
+      ],
+      "implementationGuide": "1. app/circles/page.tsx:\\n  - DiscoverContent: getPopularCircles, getNewCircles, getCirclesByCategory 등으로 교체\\n  - SearchResults: filterCircles(parseCirclesSearchParams(searchParams))\\n2. app/circles/[id]/page.tsx:\\n  - getCircleById(id) → CircleDetail | null\\n  - notFound() 분기 유지\\n  - 본문 끝에 fire-and-forget incrementViewCount RPC 호출 (await supabase.rpc('increment_view_count', {p_circle_id: id}))\\n3. app/circles/[id]/reports/[reportId]/page.tsx:\\n  - getReportById(reportId) → ActivityReport | null\\n  - circle_id 무결성 검증 유지 (report.circle_id !== params.id → notFound())\\n4. 더미 import 제거 (lib/dummy 파일 자체는 보존)\\n5. npm run build 통과 확인",
+      "verificationCriteria": "(1) 3 페이지 lib/dummy import 제거. (2) lib/supabase/queries 모듈 import. (3) /circles 와 /circles/[id] anon 접근 시 30 카드 + 상세 정상 렌더. (4) /circles/[id] 진입 후 DB 의 view_count 증가.",
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+    },
+    {
+      "id": "a5aa78f0-020d-4755-8753-5335f65db604",
+      "name": "T-009-4: Server Action + 비로그인 가드 와이어업",
+      "description": "app/circles/[id]/actions.ts (toggleFavorite + incrementInquiryCount) 신설 + lib/circles/use-favorites.ts 갱신 (sessionStorage 제거 + useOptimistic + 비로그인 가드) + components/circles/favorite-toggle-button.tsx + circle-actions.tsx + join-channel-modal.tsx 와이어업.",
+      "notes": "useOptimistic 은 React 19+ (Next.js 15) 표준. revalidateTag 보다 revalidatePath 가 단순. isAuthenticated prop drilling 단순화 — Context 불필요. 모달 닫기는 외부 SNS 새 탭 오픈 직후.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
+        }
+      ],
+      "createdAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/app/circles/[id]/actions.ts",
+          "type": "CREATE",
+          "description": "Server Action 2종"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/circles/use-favorites.ts",
+          "type": "TO_MODIFY",
+          "description": "sessionStorage 제거 + useOptimistic"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/components/circles/favorite-toggle-button.tsx",
+          "type": "TO_MODIFY",
+          "description": "비로그인 가드 + Server Action"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/components/circles/circle-actions.tsx",
+          "type": "TO_MODIFY",
+          "description": "handleJoin 비로그인 가드"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/components/circles/join-channel-modal.tsx",
+          "type": "TO_MODIFY",
+          "description": "handleChannelClick Server Action"
+        }
+      ],
+      "implementationGuide": "1. app/circles/[id]/actions.ts Write 'use server':\\n  - toggleFavorite(circleId): server.ts → auth.getClaims() → unauthorized return → favorites match maybeSingle → INSERT/DELETE → revalidatePath('/favorites')\\n  - incrementInquiryCount(circleId): supabase.rpc('increment_inquiry_count', {p_circle_id: circleId}) → revalidatePath('/circles/'+id)\\n2. lib/circles/use-favorites.ts 전면 재작성:\\n  - sessionStorage 제거\\n  - props 로 initialFavorites (string[]) + isAuthenticated (boolean)\\n  - useOptimistic([])\\n  - toggle(circleId, pathname) → 비로그인 시 router.push('/auth/login?next='+encodeURI(pathname)) / 로그인 시 startTransition(async => toggleFavorite + setOptimistic)\\n3. components/circles/favorite-toggle-button.tsx:\\n  - prop isAuthenticated\\n  - onClick → e.preventDefault + e.stopPropagation + useFavorites().toggle(...)\\n4. components/circles/circle-actions.tsx handleJoin:\\n  - if (!isAuthenticated) router.push('/auth/login?next='+pathname)\\n  - else setModalOpen(true)\\n5. components/circles/join-channel-modal.tsx handleChannelClick:\\n  - await incrementInquiryCount(circle.id)\\n  - window.open(url) + onOpenChange(false)\\n6. RSC (app/circles/[id]/page.tsx): supabase.auth.getClaims() → isAuthenticated boolean prop drilling to CircleActions / FavoriteToggleButton",
+      "verificationCriteria": "(1) actions.ts export 2 함수. (2) use-favorites.ts sessionStorage 키 0건. (3) 비로그인 하트 클릭 → /auth/login 리디렉션 (수동 확인 또는 E2E). (4) 비로그인 「参加する」 클릭 → 동일 리디렉션. (5) 로그인 하트 → favorites row 추가/제거. (6) 로그인 채널 선택 → inquiry_count +1.",
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+    },
+    {
+      "id": "9c45e722-9c79-458e-a5a2-1537cd322cb4",
+      "name": "T-009-5: /search, /shuffle 와이어업",
+      "description": "app/search/page.tsx 의 「N件のサークルを見る」 count 미리보기를 queries.filterCircles 결과 count 로 교체. app/shuffle/page.tsx 의 30건 더미 → status='approved' 전체 DB fetch.",
+      "notes": "search count 는 best-effort UX — 서버 round-trip 비용 vs 정확도 trade-off. MVP 는 dummy 기반 추정 유지 OK. shuffle 은 30건 전체 prefetch → 클라이언트 Fisher-Yates shuffle.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
+        }
+      ],
+      "createdAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/app/search/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "count 미리보기 처리"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/app/shuffle/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "30건 DB fetch"
+        }
+      ],
+      "implementationGuide": "1. app/search/page.tsx:\\n  - ApplyButton 안 count 계산 = await queries.filterCircles(draft) 결과 count 사용\\n  - 단 RSC props 가 아닌 client state 라 별도 처리 필요 — client 측 fetch hook 또는 서버 액션으로 count fetch\\n  - 단순화: 본 페이지에서 클라 측 count 추정 (lib/dummy 의 filterCircles 그대로 유지) → /circles 진입 후 실제 결과 노출\\n  - 또는 서버 API route 신설 /api/search-count?... → fetch → display\\n  - 결정: 일단 lib/dummy 의 filterCircles 그대로 유지 (count 미리보기는 best-effort, 실제 결과는 /circles)\\n2. app/shuffle/page.tsx:\\n  - lib/dummy/circles.ts → lib/supabase/queries/circles.ts.filterCircles({page:1, sort:undefined, all:true}) 또는 단순 select status='approved'\\n  - SwipeDeck 에 결과 prop 전달\\n3. npm run build 통과",
+      "verificationCriteria": "(1) /search 페이지 더미 import 사용 가능 (count 추정). (2) /shuffle anon 접근 시 30 카드 노출. (3) npm run build 통과.",
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
+    },
+    {
+      "id": "8b692a9a-1033-4a34-aae0-f0ae5fac818d",
+      "name": "T-009-6: E2E 회귀 + advisor + ROADMAP 갱신 + commit",
+      "description": "Playwright 시나리오 기존 PASS 회귀 + 신규 (auth fixture: 하트 토글, 참가 모달, 비로그인 리디렉션). get_advisors security 잔여 항목 확인. ROADMAP T-009 본문 + Phase 1.2 표 갱신 (✅ + 완료 노트). 단일 commit. Phase 1.2 전체 완료.",
+      "notes": "E2E auth fixture 가 없으면 supabase.auth.admin.createUser 로 테스트 user 생성. Phase 1.2 전체 완료 (T-005~T-009) → Phase 1.3 (T-015~T-018) 가 다음 단계.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c8a519ce-6ed5-4e4c-8ab4-a56de503cf64"
+        },
+        {
+          "taskId": "a5aa78f0-020d-4755-8753-5335f65db604"
+        },
+        {
+          "taskId": "9c45e722-9c79-458e-a5a2-1537cd322cb4"
+        }
+      ],
+      "createdAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-009 본문 + Phase 1.2 표"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/tests/e2e/",
+          "type": "TO_MODIFY",
+          "description": "E2E 시나리오 회귀 + 신규"
+        }
+      ],
+      "implementationGuide": "1. tests/e2e/ 기존 시나리오 (home/circles/circle-detail/favorites) 재실행 — DB 시드 후 동일 결과 보장\\n2. 신규 E2E (auth fixture 활용):\\n  - 로그인 사용자 하트 클릭 → favorites 카드 추가 확인\\n  - 로그인 사용자 「参加する」 → 채널 모달 열림\\n  - 비로그인 사용자 하트/「参加する」 클릭 → /auth/login?next=... 리디렉션\\n3. mcp__supabase__get_advisors type=security 확인\\n4. docs/ROADMAP.md:\\n  - Phase 1.2 표 T-009 행 pending → completed + ✅\\n  - 본문 헤더 ✅\\n  - 시드 분포 명시 (10 tags + 30 circles + 100+ reports + 모든 위성)\\n  - 와이어업 결과 (queries 모듈 + Server Action + 비로그인 가드)\\n  - 완료 (2026-05-19) 노트 + Phase 1.2 모든 작업 ✅\\n5. git add ... && git commit -m '✨ feat(db): T-009 시드 + 와이어업 — Phase 1.2 통합 완료'",
+      "verificationCriteria": "(1) Playwright 시나리오 모두 PASS (mobile + desktop). (2) get_advisors 신규 critical 0. (3) ROADMAP Phase 1.2 표 T-009 completed + ✅. (4) ROADMAP T-009 본문에 시드 분포 + queries + Server Action + 비로그인 가드 + 완료 노트. (5) git log commit. (6) git status clean. (7) Phase 1.2 전체 완료 마크.",
+      "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로."
     }
   ]
 }
