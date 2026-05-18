@@ -651,14 +651,14 @@
       "name": "T-009-3: 페이지별 RSC fetch 와이어업 (Discover/Results/상세/리포트)",
       "description": "app/circles/page.tsx (DiscoverContent + SearchResults 분기), app/circles/[id]/page.tsx (+ supabase.rpc('increment_view_count') 호출), app/circles/[id]/reports/[reportId]/page.tsx 의 더미 import → queries 모듈 교체. lib/dummy/* import 제거 (E2E mock 용도라 파일은 보존, 페이지에서만 제거).",
       "notes": "increment_view_count RPC 는 anon EXECUTE 허용 (T-007) — RSC server.ts (anon key) 에서 직접 호출 가능. fire-and-forget 패턴 으로 페이지 렌더 블로킹 안 함.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T15:52:13.043Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/app/circles/page.tsx",
