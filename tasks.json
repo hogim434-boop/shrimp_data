@@ -288,10 +288,10 @@
       "name": "T-006-2: M-006-01 — is_admin() 헬퍼 + column REVOKE",
       "description": "public.is_admin(uid uuid DEFAULT auth.uid()) SECURITY DEFINER STABLE 함수 + REVOKE EXECUTE FROM PUBLIC + GRANT TO authenticated. circles.inquiry_count/view_count, profiles.role 컬럼 UPDATE 권한 REVOKE FROM anon/authenticated.",
       "notes": "is_admin() 시그니처에 DEFAULT auth.uid() 로 정책 호출 시 자동 평가. SECURITY DEFINER + search_path=public 가 search_path 인젝션 방어. column REVOKE 는 PG ACL — RLS 평가 전 차단.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:03:09.556Z",
+      "updatedAt": "2026-05-18T14:08:19.881Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
