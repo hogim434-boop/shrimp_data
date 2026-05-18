@@ -192,7 +192,7 @@
       "name": "T-005-6: M-005-05 마이그레이션 적용 (inquiry_events + app_settings + 인덱스 + RLS enable)",
       "description": "보조 테이블 2종 (inquiry_events, app_settings) + 자주 쓰는 쿼리용 인덱스 4종 + 모든 신규 테이블에 RLS enable (정책 없이, T-006 에서 세분화).",
       "notes": "inquiry_events 의 user_id 는 FK 없이 uuid (anon 디바운스 호환). circles partial index (WHERE status = approved) 는 공개 목록 정렬용. RLS enable 후 anon select 가 모두 차단되어 T-006 까지는 service_role 또는 SECURITY DEFINER 함수로만 접근 가능 — UI 는 더미 데이터 사용 중이라 회귀 없음.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "6721e772-fae1-4aa9-9ebe-359888002942"
@@ -202,7 +202,7 @@
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:49:17.659Z",
+      "updatedAt": "2026-05-18T13:49:17.719Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
@@ -213,7 +213,8 @@
       "implementationGuide": "1. SQL 조립:\\n  CREATE TABLE inquiry_events (user_id uuid NOT NULL, circle_id uuid FK circles CASCADE NOT NULL, day date NOT NULL, PK(user_id, circle_id, day))\\n  CREATE TABLE app_settings (key text PK, value text NOT NULL)\\n  CREATE INDEX circles_status_created ON circles (status, created_at DESC) WHERE status = 'approved'\\n  CREATE INDEX circles_category ON circles (category)\\n  CREATE INDEX favorites_user_created ON favorites (user_id, created_at DESC)\\n  CREATE INDEX shinkan_events_circle_date ON shinkan_events (circle_id, event_date)\\n  ALTER TABLE profiles, circles, tags, circle_tags, circle_images, favorites, shinkan_events, activity_reports, activity_report_images, inquiry_events, app_settings ENABLE ROW LEVEL SECURITY\\n2. apply_migration(name=005_05_misc_indexes_rls)\\n3. execute_sql(SELECT relname FROM pg_class WHERE relrowsecurity = true AND relkind = 'r') → 11 행 (10 신규 + instruments)\\n4. mcp get_advisors security 확인 — RLS policy missing 경고는 T-006 까지 허용",
       "verificationCriteria": "(1) list_migrations 에 005_05_misc_indexes_rls. (2) list_tables 에 inquiry_events / app_settings 등장. (3) execute_sql 로 pg_indexes 조회 → 신규 4개 인덱스 확인. (4) pg_class relrowsecurity 가 신규 10개 테이블 모두 true. (5) get_advisors security 에서 RLS policy missing 경고 외 다른 critical 0건.",
       "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh.",
-      "summary": "M-005-05 + 보안 강화 005_05b 적용 성공. inquiry_events + app_settings 2개 보조 테이블 생성, 인덱스 4종 (circles_status_created partial, circles_category, favorites_user_created, shinkan_events_circle_date) + activity_reports_circle_created 모두 등록. 11개 신규 테이블 모두 RLS enabled (relrowsecurity=true). 보안 advisor: WARN handle_new_user SECURITY DEFINER 2건 → REVOKE EXECUTE FROM PUBLIC/anon/authenticated 로 해소. 남은 advisor는 RLS policy missing INFO 11건 (T-006 예상) + Auth Leaked Password Protection WARN 1건 (Supabase Auth 대시보드 설정, T-015 범위, DB 마이그레이션 외). list_migrations 6건."
+      "summary": "M-005-05 + 보안 강화 005_05b 적용 성공. inquiry_events + app_settings 2개 보조 테이블 생성, 인덱스 4종 (circles_status_created partial, circles_category, favorites_user_created, shinkan_events_circle_date) + activity_reports_circle_created 모두 등록. 11개 신규 테이블 모두 RLS enabled (relrowsecurity=true). 보안 advisor: WARN handle_new_user SECURITY DEFINER 2건 → REVOKE EXECUTE FROM PUBLIC/anon/authenticated 로 해소. 남은 advisor는 RLS policy missing INFO 11건 (T-006 예상) + Auth Leaked Password Protection WARN 1건 (Supabase Auth 대시보드 설정, T-015 범위, DB 마이그레이션 외). list_migrations 6건.",
+      "completedAt": "2026-05-18T13:49:17.719Z"
     },
     {
       "id": "1ad08812-e90f-44ea-b8f3-a3ad5e47e7b6",
