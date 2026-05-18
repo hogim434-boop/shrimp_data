@@ -733,14 +733,14 @@
       "name": "T-009-5: /search, /shuffle 와이어업",
       "description": "app/search/page.tsx 의 「N件のサークルを見る」 count 미리보기를 queries.filterCircles 결과 count 로 교체. app/shuffle/page.tsx 의 30건 더미 → status='approved' 전체 DB fetch.",
       "notes": "search count 는 best-effort UX — 서버 round-trip 비용 vs 정확도 trade-off. MVP 는 dummy 기반 추정 유지 OK. shuffle 은 30건 전체 prefetch → 클라이언트 Fisher-Yates shuffle.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T15:22:16.833Z",
+      "updatedAt": "2026-05-18T16:08:14.181Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/app/search/page.tsx",
