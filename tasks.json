@@ -8,7 +8,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:26.273Z",
+      "updatedAt": "2026-05-18T13:42:12.984Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/.claude/plans/image-1-composed-hartmanis.md",
@@ -33,7 +33,8 @@
       ],
       "implementationGuide": "1. docs/tasks/ 디렉터리 mkdir (없음 확인됨)\\n2. docs/tasks/T-005-db-schema-migration.md 신규 작성 — 섹션: 개요/관련 PRD 기능, 선행 작업, 변경 대상 파일·디렉토리, 수락 기준 (체크리스트), 구현 단계 (Step 0~8 체크리스트), 테스트 체크리스트, 위험/롤백\\n3. plan 파일 산출물 A 섹션을 그대로 활용 — pseudocode SQL 미리보기 포함\\n4. ROADMAP T-034 의 anchor 「T-005 갱신 ToDo」 해소 명시\\n5. 작업 파일 자체는 자기 참조 — 본 T-005-1 완료가 곧 산출물.",
       "verificationCriteria": "(1) docs/tasks/T-005-db-schema-migration.md 가 존재. (2) 6개 섹션(개요/선행/대상/수락기준/구현단계/테스트)이 모두 있음 — grep '## '로 6+ 헤더 확인. (3) Step 0~8 체크리스트가 9개 항목 포함. (4) ROADMAP T-034 line 199 anchor '활동 리포트' 와 일관.",
-      "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh."
+      "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh.",
+      "summary": "docs/tasks/T-005-db-schema-migration.md 신설 완료. 8개 섹션 (개요/선행/변경대상/수락기준/구현단계/테스트/위험롤백/참조SSOT) + Step 0~8 9개 체크리스트 모두 포함, 158 lines. ROADMAP T-034 anchor (활동 리포트 DB 스키마 추가) 해소 명시, plan 파일 산출물 A 섹션을 베이스로 모든 마이그레이션 5건의 pseudocode 미리보기 포함. 사용자 결정 사항 (MCP apply_migration 직접, activity_report_images 별도 테이블, docs/tasks/ 위치) 모두 반영."
     },
     {
       "id": "5b484b48-1a9f-4564-b372-7f6d12f2a176",
