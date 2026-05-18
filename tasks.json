@@ -516,14 +516,14 @@
       "name": "T-008-2: lib/storage/strip-exif.ts + next.config + validateUpload 단위 테스트",
       "description": "lib/storage/strip-exif.ts 신규 작성 — validateUpload (size/MIME) + stripImageExif (Canvas) + upload 헬퍼 3종 (cover/gallery/report). next.config.ts images.remotePatterns 에 Supabase Storage URL 추가. validateUpload 단위 테스트 추가 (stripImageExif 는 jsdom 한계로 Playwright 통합 테스트로 미루기, 본 sub-task 는 validate 만).",
       "notes": "stripImageExif 의 jsdom 환경 단위 테스트는 Canvas API 미지원으로 어려움 — Playwright E2E 또는 통합 환경에서 검증. validateUpload 만 단위 테스트로 처리해도 핵심 보안(size/MIME)은 보장. crypto.randomUUID 는 브라우저 + Node.js 모두 지원.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "4ca3ed1a-c816-47d7-9566-b5c3ed323c43"
         }
       ],
       "createdAt": "2026-05-18T14:52:00.287Z",
-      "updatedAt": "2026-05-18T14:52:00.287Z",
+      "updatedAt": "2026-05-18T14:55:24.512Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/storage/strip-exif.ts",
