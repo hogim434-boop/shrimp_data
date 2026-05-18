@@ -458,14 +458,14 @@
       "name": "T-007-3: types 동기화 + advisor 점검 + ROADMAP T-007 갱신 + commit",
       "description": "mcp generate_typescript_types → Functions 객체에 2개 추가 확인 + lib/types/database.ts 갱신 + npm lint/build/test 통과. get_advisors security 잔여 항목 확인 (T-006 잔여만, 신규 critical 0). docs/ROADMAP.md T-007 본문 + Phase 1.2 표 갱신 (pending → completed + ✅, 완료 노트, RPC 시그니처/디바운스/PRD 정합/M-NEW-2 해소/잔여 advisor 명시). 단일 commit.",
       "notes": "T-005-7 + T-005-8 패턴 결합. lint-staged 자동 실행. 작업 파일 없음 — ROADMAP 본문이 SSOT.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "e7c01e69-daf4-4193-850e-1fccfa402d4b"
         }
       ],
       "createdAt": "2026-05-18T14:29:35.383Z",
-      "updatedAt": "2026-05-18T14:29:35.383Z",
+      "updatedAt": "2026-05-18T14:41:04.417Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
