@@ -228,7 +228,7 @@
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:49:24.802Z",
+      "updatedAt": "2026-05-18T13:51:53.050Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
@@ -248,7 +248,8 @@
       ],
       "implementationGuide": "1. mcp__supabase__generate_typescript_types 호출 → 결과 받음\\n2. 현재 lib/types/database.ts 와 diff:\\n  - 예상 차이 1: activity_reports / activity_report_images 신규\\n  - 예상 차이 2: circles 신규 5컬럼 (description, activity_days, member_count, recruitment_status, activity_time_band)\\n  - 예상 차이 3: freshmen_ratio 미포함 (확인)\\n3. lib/types/database.ts 를 자동 생성 결과로 무손실 교체 — JSDoc 주석은 보존 또는 자동 생성에 맞게 갱신\\n4. npm run build 실행 → 컴파일 에러 0건 확인\\n5. npm run lint 실행 → 에러 0건 확인\\n6. 단위 테스트 npm run test → 기존 PASS 회귀 0건 확인",
       "verificationCriteria": "(1) lib/types/database.ts 가 generate_typescript_types 결과와 무손실 일치. (2) npm run build 통과 (컴파일 에러 0). (3) npm run lint 통과. (4) npm run test 통과 (기존 단위 테스트 회귀 0). (5) Tables circles 가 신규 5컬럼 (description/activity_days/member_count/recruitment_status/activity_time_band) 포함. (6) Tables activity_reports / activity_report_images 정의 존재. (7) freshmen_ratio 미포함.",
-      "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh."
+      "analysisResult": "T-005 DB 스키마 마이그레이션 1차 — Phase 1.2 출발점. 핵심 10개 테이블 + 8개 enum + 트리거 + 인덱스 + RLS enable (정책 없이) 적용. 사용자 결정 사항: (1) Supabase MCP apply_migration 직접 사용, supabase/ CLI 디렉터리 안 만듦. (2) activity_reports 갤러리는 별도 테이블 activity_report_images. (3) 작업 파일은 docs/tasks/T-005-db-schema-migration.md. enum 8종은 lib/constants/* 의 as const 값과 1:1 일치 (추론 금지). circles 컬럼 nullability/타입은 lib/types/database.ts 기존 정의 인용. annual_fee_yen 보존, freshmen_ratio 미포함. owner_id nullable (T-009 시점 결정). RLS 정책 세분화는 T-006, 시드 적재는 T-009. project_ref=wmiaxjgitpahribjrdyh.",
+      "summary": "lib/types/database.ts 자동 생성 결과로 무손실 교체 완료. mcp generate_typescript_types 호출 결과를 그대로 반영 + 상단 헤더 주석으로 SSOT 출처 명시. 변경 사항: (1) Tables 12개 (기존 9 + activity_reports + activity_report_images + Functions 0개 - T-007 RPC 미생성 반영). (2) circles 신규 5컬럼 (description/activity_days/member_count/recruitment_status/activity_time_band[]) 포함. (3) freshmen_ratio 미포함 확인. (4) helper types Enums<>/CompositeTypes<>/Constants 추가. (5) Role 수동 타입 제거 (사용처 0건 확인). 검증: npm run lint 통과, npm run build 통과 (27 pages), npm run test 통과 (4 files / 51 tests). 외부 import 영향 0건."
     },
     {
       "id": "0f341693-c4f4-46f0-ac2a-2f82d6bd980f",
