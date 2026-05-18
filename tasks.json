@@ -438,19 +438,20 @@
       "name": "T-007-2: 12 SQL 시나리오 테스트 (디바운스 + RAISE + column REVOKE)",
       "description": "mcp execute_sql 로 fixture INSERT 후 12 시나리오 SAVEPOINT/ROLLBACK 격리 실행. 디바운스 동작, status 검증, anon RAISE, column REVOKE 우회 차단 모두 검증.",
       "notes": "S3 의 FOUND=false 검증이 디바운스 핵심. S5 의 pending 시 inquiry_events 추가 안 되는 것이 status pending → approved 전환 후 첫 호출 정상 카운트의 전제. S11 는 column REVOKE 가 특정 컬럼만이라 다른 컬럼은 owner UPDATE 가능 확인 (T-006 policy 와 column priv 분리).",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "fc6de947-bf14-4f3e-be09-0f5bede800a1"
         }
       ],
       "createdAt": "2026-05-18T14:29:35.383Z",
-      "updatedAt": "2026-05-18T14:40:56.964Z",
+      "updatedAt": "2026-05-18T14:40:57.032Z",
       "relatedFiles": [],
       "implementationGuide": "1. fixture (service_role 권한):\\n  BEGIN;\\n  -- auth.users 2명 (user-A, user-B), profiles 자동 생성\\n  -- circles 2건: approved(C1), pending(C2). owner_id = user-A\\n2. 시나리오:\\n  S1 anon increment_inquiry(C1) → EXPECT raise 42501\\n  S2 SET LOCAL role authenticated + jwt user-A; increment_inquiry(C1) → inquiry_count=1, inquiry_events 1건\\n  S3 같은 컨텍스트 재호출 → 그대로 (FOUND=false)\\n  S4 user-B jwt; increment_inquiry(C1) → inquiry_count=2 (다른 user 디바운스 키)\\n  S5 user-A jwt; increment_inquiry(C2 pending) → 그대로 (NOT EXISTS return)\\n  S6 anon increment_view(C1) → view_count +1\\n  S7 authenticated increment_view(C1) → 추가 +1\\n  S8 anon increment_view(C2 pending) → 그대로\\n  S9 user-A jwt; UPDATE circles SET inquiry_count = 999 WHERE id=C1 → EXPECT 42501 column priv\\n  S10 user-A jwt; UPDATE circles SET view_count = 999 WHERE id=C1 → EXPECT 42501 column priv\\n  S11 user-A jwt (owner); UPDATE circles SET name='x' WHERE id=C1 → 성공 (T-006 policy 통과, column 권한 있음)\\n  S12 authenticated; increment_inquiry('00000000-0000-0000-0000-000000000000') → 그대로 (NOT EXISTS)\\n3. 각 시나리오 SAVEPOINT/ROLLBACK 으로 격리\\n4. 마지막 ROLLBACK 으로 fixture 정리",
       "verificationCriteria": "(1) S1 42501 RAISE 캡처. (2) S2~S4 카운트 시퀀스 1→1→2 (디바운스 + 다른 user). (3) S5 pending 무시. (4) S6~S7 view_count 증가. (5) S8 pending view 무시. (6) S9, S10 42501 column priv. (7) S11 owner name UPDATE 성공. (8) S12 non-existent uuid 조용히 무시. (9) fixture rollback clean.",
       "analysisResult": "T-007 RPC 등록. increment_inquiry_count (PRD 명세 line 410-466 + inquiry_events 일별 디바운스 통합, authenticated EXECUTE) + increment_view_count (단순 +1, anon+authenticated EXECUTE). 두 함수 모두 SECURITY DEFINER + search_path=public, status='approved' WHERE 절로 영향 범위 제한. column REVOKE (T-006 적용) 와 정합 — SECURITY DEFINER 만 counter 갱신. 작업 파일 없음 (T-006 패턴, ROADMAP 본문이 SSOT). 3 sub-task, 순차 의존.",
-      "summary": "12 시나리오 전체 PASS. S1(anon EXECUTE 차단 42501), S2~S4(디바운스 시퀀스 1→1→2), S5(pending 무시), S6~S7(view +1+1), S8(pending view 무시), S9~S10(컬럼 REVOKE 42501), S11(owner name 변경 성공), S12(non-existent uuid 조용히 무시). T-007c 보강 마이그레이션으로 circles inquiry_count/view_count 컬럼 UPDATE 권한을 테이블 수준 REVOKE 후 허용 컬럼만 재GRANT 하여 T-006 컬럼 REVOKE 누락을 수정했습니다. inquiry_events RLS deny-by-default는 설계대로 동작(service_role에서만 직접 조회 가능)."
+      "summary": "12 시나리오 전체 PASS. S1(anon EXECUTE 차단 42501), S2~S4(디바운스 시퀀스 1→1→2), S5(pending 무시), S6~S7(view +1+1), S8(pending view 무시), S9~S10(컬럼 REVOKE 42501), S11(owner name 변경 성공), S12(non-existent uuid 조용히 무시). T-007c 보강 마이그레이션으로 circles inquiry_count/view_count 컬럼 UPDATE 권한을 테이블 수준 REVOKE 후 허용 컬럼만 재GRANT 하여 T-006 컬럼 REVOKE 누락을 수정했습니다. inquiry_events RLS deny-by-default는 설계대로 동작(service_role에서만 직접 조회 가능).",
+      "completedAt": "2026-05-18T14:40:57.031Z"
     },
     {
       "id": "1cf0953b-e556-4f2b-acdd-66818295e250",
