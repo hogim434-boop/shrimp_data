@@ -552,14 +552,14 @@
       "name": "T-008-3: SQL 검증 + advisor + ROADMAP T-008 갱신 + commit",
       "description": "storage.objects RLS 정책 동작 SQL 검증 (anon SELECT OK, anon INSERT fail, auth INSERT 다른 owner circle path → fail, auth INSERT 자신 owner path → ok). get_advisors security 잔여 항목 확인. docs/ROADMAP.md T-008 본문 + Phase 1.2 표 갱신 + 완료 노트. 단일 commit.",
       "notes": "T-006/T-007 패턴 동일. storage.objects fixture 는 service_role 권한으로 INSERT 시 user 컨텍스트 시뮬레이션 어려움 — SET LOCAL ROLE + JWT claims 패턴 사용. ROADMAP 본문이 SSOT (작업 파일 없음).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "d72ffd90-ba4d-448e-9203-1837df5ddf70"
         }
       ],
       "createdAt": "2026-05-18T14:52:00.287Z",
-      "updatedAt": "2026-05-18T14:52:00.287Z",
+      "updatedAt": "2026-05-18T14:57:43.983Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
