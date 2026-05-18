@@ -387,10 +387,10 @@
       "name": "T-006-5b: advisor 점검 + ROADMAP T-006 본문 갱신 + commit",
       "description": "mcp get_advisors security → RLS policy missing 0~1건 (inquiry_events 의도 deny). docs/ROADMAP.md T-006 본문을 「상세 명세 SSOT」로 갱신 (별도 작업 파일 없음, 1인 운영 over-documentation 회피) — 정책 매트릭스 11×4×4 요약 + is_admin() 시그니처 + column REVOKE + status trigger + inquiry_events 의도 deny + 완료 노트. Phase 1.2 표 상태 pending→completed + ✅. 단일 commit.",
       "notes": "T-005-8 패턴 변형 — 작업 파일 없이 ROADMAP 본문 단독 SSOT. 1인 운영 over-documentation 회피. 정책 매트릭스가 길어지면 짧은 표 또는 그룹별 불릿으로 압축.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-05-18T14:03:09.556Z",
-      "updatedAt": "2026-05-18T14:21:07.146Z",
+      "updatedAt": "2026-05-18T14:21:11.795Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
