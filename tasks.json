@@ -221,14 +221,14 @@
       "name": "T-005-7: TypeScript 타입 동기화 (generate_typescript_types → lib/types/database.ts 무손실 교체)",
       "description": "Supabase MCP generate_typescript_types 호출 결과로 lib/types/database.ts 의 수동 정의를 자동 생성으로 교체. 차이점 분석 후 안전하게 적용 (npm run build / lint 통과 확인).",
       "notes": "자동 생성 결과는 JSDoc 주석이 없을 수 있음 — 기존 수동 정의의 JSDoc 가치 있는 부분(SSOT 출처 표시 등)을 별도 파일 lib/types/database-notes.ts 로 분리하거나 자동 생성 파일 상단에 보존. 단순화를 위해 일단 자동 생성 그대로 적용.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "cab0cbad-76c3-4e11-a892-6453a325e51b"
         }
       ],
       "createdAt": "2026-05-18T13:40:04.442Z",
-      "updatedAt": "2026-05-18T13:40:04.442Z",
+      "updatedAt": "2026-05-18T13:49:24.802Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
