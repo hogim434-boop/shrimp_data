@@ -483,6 +483,89 @@
       "analysisResult": "T-007 RPC 등록. increment_inquiry_count (PRD 명세 line 410-466 + inquiry_events 일별 디바운스 통합, authenticated EXECUTE) + increment_view_count (단순 +1, anon+authenticated EXECUTE). 두 함수 모두 SECURITY DEFINER + search_path=public, status='approved' WHERE 절로 영향 범위 제한. column REVOKE (T-006 적용) 와 정합 — SECURITY DEFINER 만 counter 갱신. 작업 파일 없음 (T-006 패턴, ROADMAP 본문이 SSOT). 3 sub-task, 순차 의존.",
       "summary": "lib/types/database.ts Functions 객체에 increment_inquiry_count / increment_view_count / is_admin 3개 추가, 동기화 날짜 T-007로 갱신. npm run lint / build(27페이지 정상) / test(51 tests PASS) 모두 통과. get_advisors security 신규 critical 0건 (T-006 잔여 + RPC WARN 4건 의도된 설계). ROADMAP Phase 1.2 표 T-007 completed+✅, T-007 본문 RPC 시그니처/디바운스 동작/PRD 정합/M-NEW-2 해소/T-009 anchor/완료 노트 전부 반영. commit d69b34e 정상.",
       "completedAt": "2026-05-18T14:43:42.735Z"
+    },
+    {
+      "id": "4ca3ed1a-c816-47d7-9566-b5c3ed323c43",
+      "name": "T-008-1: M-008 마이그레이션 — circles-public 버킷 + 4 RLS 정책",
+      "description": "storage.buckets 에 circles-public INSERT (public=true, file_size_limit=4MB, allowed_mime_types=[jpeg/png/webp]) + storage.objects 에 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin with path matching). split_part(name, '/', 2) 로 circle_id 추출 후 circles.owner_id=auth.uid() OR is_admin() 검증.",
+      "notes": "split_part(name, '/', 1) = 'circles' 검사가 path prefix 강제. activity_reports 갤러리도 같은 정책 (circles/{circle_id}/reports/{report_id}/...) 통과. is_admin() T-006 함수 재사용.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-18T14:52:00.287Z",
+      "updatedAt": "2026-05-18T14:52:00.287Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
+          "type": "REFERENCE",
+          "description": "T-008 본문 line 283-286"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/types/database.ts",
+          "type": "REFERENCE",
+          "description": "circles/circle_images/activity_reports 컬럼 정의"
+        }
+      ],
+      "implementationGuide": "1. mcp__supabase__apply_migration name='008_storage_bucket_and_policies'\\n2. SQL:\\n  INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)\\n  VALUES ('circles-public', 'circles-public', true, 4194304, ARRAY['image/jpeg', 'image/png', 'image/webp'])\\n  ON CONFLICT (id) DO UPDATE SET public=EXCLUDED.public, file_size_limit=EXCLUDED.file_size_limit, allowed_mime_types=EXCLUDED.allowed_mime_types;\\n  -- 4 RLS 정책 (T-006 EXISTS 패턴):\\n  CREATE POLICY circles_public_select_all ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'circles-public');\\n  CREATE POLICY circles_public_insert_owner_or_admin ON storage.objects FOR INSERT TO authenticated WITH CHECK (\\n    bucket_id = 'circles-public' AND split_part(name, '/', 1) = 'circles' AND\\n    EXISTS (SELECT 1 FROM public.circles WHERE id::text = split_part(name, '/', 2) AND (owner_id = auth.uid() OR public.is_admin()))\\n  );\\n  CREATE POLICY circles_public_update_owner_or_admin ON storage.objects FOR UPDATE TO authenticated USING (\\n    bucket_id = 'circles-public' AND EXISTS (SELECT 1 FROM public.circles WHERE id::text = split_part(name, '/', 2) AND (owner_id = auth.uid() OR public.is_admin()))\\n  ) WITH CHECK (\\n    bucket_id = 'circles-public' AND split_part(name, '/', 1) = 'circles' AND EXISTS (SELECT 1 FROM public.circles WHERE id::text = split_part(name, '/', 2) AND (owner_id = auth.uid() OR public.is_admin()))\\n  );\\n  CREATE POLICY circles_public_delete_owner_or_admin ON storage.objects FOR DELETE TO authenticated USING (\\n    bucket_id = 'circles-public' AND EXISTS (SELECT 1 FROM public.circles WHERE id::text = split_part(name, '/', 2) AND (owner_id = auth.uid() OR public.is_admin()))\\n  );\\n3. 검증: SELECT id, name, public, file_size_limit FROM storage.buckets WHERE id='circles-public', pg_policies 의 storage.objects 정책 4개",
+      "verificationCriteria": "(1) list_migrations 에 008_storage_bucket_and_policies. (2) storage.buckets 에 circles-public 행 (public=true, file_size_limit=4194304, mime types 3). (3) pg_policies WHERE tablename='objects' AND policyname LIKE 'circles_public_%' = 4건. (4) get_advisors security 신규 critical 0.",
+      "analysisResult": "T-008 Storage 인프라. circles-public 퍼블릭 버킷 (4MB, image/jpeg|png|webp) + storage.objects 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin) + path prefix circles/{circle_id}/ 매칭 + 클라이언트 Canvas EXIF strip + 파일 검증 + next.config.ts Storage host 추가. 단위 테스트는 validateUpload 만 (stripImageExif Canvas 는 jsdom 한계로 Playwright 미루기). 3 sub-task 순차. 작업 파일 없음 (T-006/T-007 패턴). is_admin() T-006 재사용."
+    },
+    {
+      "id": "d72ffd90-ba4d-448e-9203-1837df5ddf70",
+      "name": "T-008-2: lib/storage/strip-exif.ts + next.config + validateUpload 단위 테스트",
+      "description": "lib/storage/strip-exif.ts 신규 작성 — validateUpload (size/MIME) + stripImageExif (Canvas) + upload 헬퍼 3종 (cover/gallery/report). next.config.ts images.remotePatterns 에 Supabase Storage URL 추가. validateUpload 단위 테스트 추가 (stripImageExif 는 jsdom 한계로 Playwright 통합 테스트로 미루기, 본 sub-task 는 validate 만).",
+      "notes": "stripImageExif 의 jsdom 환경 단위 테스트는 Canvas API 미지원으로 어려움 — Playwright E2E 또는 통합 환경에서 검증. validateUpload 만 단위 테스트로 처리해도 핵심 보안(size/MIME)은 보장. crypto.randomUUID 는 브라우저 + Node.js 모두 지원.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "4ca3ed1a-c816-47d7-9566-b5c3ed323c43"
+        }
+      ],
+      "createdAt": "2026-05-18T14:52:00.287Z",
+      "updatedAt": "2026-05-18T14:52:00.287Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/lib/storage/strip-exif.ts",
+          "type": "CREATE",
+          "description": "신규 EXIF strip + 업로드 유틸"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/next.config.ts",
+          "type": "TO_MODIFY",
+          "description": "remotePatterns 추가"
+        },
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/tests/unit/strip-exif.test.ts",
+          "type": "CREATE",
+          "description": "validateUpload 단위 테스트"
+        }
+      ],
+      "implementationGuide": "1. lib/storage/strip-exif.ts Write — 코드:\\n  export const BUCKET = 'circles-public';\\n  export const MAX_BYTES = 4 * 1024 * 1024;\\n  export const ALLOWED_MIME = ['image/jpeg','image/png','image/webp'] as const;\\n  export function validateUpload(file: File | null | undefined): { ok: true } | { ok: false; error: string } { ... }\\n  export async function stripImageExif(file: File): Promise<File> { ... Canvas drawImage + toBlob('image/jpeg', 0.9) ... }\\n  export async function uploadCoverImage(supabase, circleId, file): Promise<{url:string}|{error:string}> { validate → strip → supabase.storage.from(BUCKET).upload('circles/'+circleId+'/cover.jpg', stripped, {upsert:true, contentType:'image/jpeg'}) → getPublicUrl }\\n  export async function uploadGalleryImage(supabase, circleId, file) { ... 'circles/'+circleId+'/gallery/'+crypto.randomUUID()+'.jpg' ... }\\n  export async function uploadReportImage(supabase, circleId, reportId, file) { ... 'circles/'+circleId+'/reports/'+reportId+'/'+crypto.randomUUID()+'.jpg' ... }\\n2. next.config.ts Edit — images.remotePatterns 에 추가:\\n  { protocol: 'https', hostname: 'wmiaxjgitpahribjrdyh.supabase.co', pathname: '/storage/v1/object/public/circles-public/**' }\\n3. tests/unit/strip-exif.test.ts 작성 (validateUpload 만):\\n  - ok: 1MB jpeg → ok=true\\n  - oversize: 5MB jpeg → ok=false, error 'MB 초과'\\n  - unsupported MIME: image/gif → ok=false, error '허용되지 않은'\\n  - null/undefined → ok=false, error '없습니다'\\n4. npm run lint, npm run build, npm run test 모두 통과",
+      "verificationCriteria": "(1) lib/storage/strip-exif.ts 존재 + export validateUpload/stripImageExif/uploadCoverImage/uploadGalleryImage/uploadReportImage. (2) next.config.ts remotePatterns 에 Supabase Storage host 등장. (3) tests/unit/strip-exif.test.ts 4 케이스 모두 PASS. (4) npm run lint/build/test 통과 (기존 51 + 신규 4 = 55+ tests).",
+      "analysisResult": "T-008 Storage 인프라. circles-public 퍼블릭 버킷 (4MB, image/jpeg|png|webp) + storage.objects 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin) + path prefix circles/{circle_id}/ 매칭 + 클라이언트 Canvas EXIF strip + 파일 검증 + next.config.ts Storage host 추가. 단위 테스트는 validateUpload 만 (stripImageExif Canvas 는 jsdom 한계로 Playwright 미루기). 3 sub-task 순차. 작업 파일 없음 (T-006/T-007 패턴). is_admin() T-006 재사용."
+    },
+    {
+      "id": "c7560172-9dae-4353-a978-a383ea842984",
+      "name": "T-008-3: SQL 검증 + advisor + ROADMAP T-008 갱신 + commit",
+      "description": "storage.objects RLS 정책 동작 SQL 검증 (anon SELECT OK, anon INSERT fail, auth INSERT 다른 owner circle path → fail, auth INSERT 자신 owner path → ok). get_advisors security 잔여 항목 확인. docs/ROADMAP.md T-008 본문 + Phase 1.2 표 갱신 + 완료 노트. 단일 commit.",
+      "notes": "T-006/T-007 패턴 동일. storage.objects fixture 는 service_role 권한으로 INSERT 시 user 컨텍스트 시뮬레이션 어려움 — SET LOCAL ROLE + JWT claims 패턴 사용. ROADMAP 본문이 SSOT (작업 파일 없음).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "d72ffd90-ba4d-448e-9203-1837df5ddf70"
+        }
+      ],
+      "createdAt": "2026-05-18T14:52:00.287Z",
+      "updatedAt": "2026-05-18T14:52:00.287Z",
+      "relatedFiles": [
+        {
+          "path": "/Users/kiimho/workspace/keio-school-club/docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "T-008 본문 + Phase 1.2 표 (line 215, 283)"
+        }
+      ],
+      "implementationGuide": "1. mcp execute_sql 시나리오 (fixture SAVEPOINT/ROLLBACK):\\n  - SAVEPOINT: auth.users user-A INSERT → profiles 자동 (T-005 trigger), circles owner=user-A C1 INSERT\\n  - S1 SET LOCAL ROLE anon; SELECT name FROM storage.objects WHERE bucket_id='circles-public' → 0 행 OK (RLS SELECT 허용)\\n  - S2 SET LOCAL ROLE anon; INSERT INTO storage.objects (bucket_id, name, ...) → expect 42501 (정책 위반)\\n  - S3 SET LOCAL ROLE authenticated + jwt user-B; INSERT path='circles/'+C1_id+'/cover.jpg' → expect 42501 (다른 user 의 circle)\\n  - S4 SET LOCAL ROLE authenticated + jwt user-A; INSERT path='circles/'+C1_id+'/cover.jpg' → success\\n  - S5 SET LOCAL ROLE authenticated + jwt user-A; INSERT path='other-prefix/'+C1_id+'/cover.jpg' → expect 42501 (split_part(name,'/',1) != 'circles')\\n  - ROLLBACK\\n2. mcp__supabase__get_advisors type=security → 기대: 신규 critical 0 (storage 정책 추가됨)\\n3. docs/ROADMAP.md Read T-008 본문\\n4. Edit:\\n  - Phase 1.2 표 T-008 행 pending → completed + ✅\\n  - T-008 본문 헤더 ✅\\n  - 버킷 설정 명시 (이름, public, 4MB, MIME 3종)\\n  - path 구조 (circles/{circle_id}/cover.jpg, gallery/, reports/{report_id}/)\\n  - RLS 4 정책 명시\\n  - EXIF strip 위치: 클라이언트 Canvas (lib/storage/strip-exif.ts)\\n  - upload 헬퍼 3종 (uploadCoverImage/uploadGalleryImage/uploadReportImage)\\n  - next.config.ts remotePatterns 갱신\\n  - 완료 (2026-05-18) 노트: 마이그 1건 + 유틸 + 단위 테스트 + advisor 잔여\\n  - T-018 anchor 명시 (등록 폼에서 upload 헬퍼 호출)\\n5. git add docs/ROADMAP.md lib/storage/strip-exif.ts tests/unit/strip-exif.test.ts next.config.ts\\n6. git commit -m '✨ feat(storage): T-008 circles-public 버킷 + RLS 4 정책 + 클라이언트 EXIF strip'",
+      "verificationCriteria": "(1) 5 SQL 시나리오 모두 기대 결과. (2) get_advisors security 신규 critical 0. (3) ROADMAP Phase 1.2 표 T-008 completed + ✅. (4) ROADMAP T-008 본문에 버킷 설정 + path 구조 + RLS 정책 + EXIF strip + 헬퍼 + T-018 anchor 모두 명시. (5) git log commit 등장. (6) git status clean.",
+      "analysisResult": "T-008 Storage 인프라. circles-public 퍼블릭 버킷 (4MB, image/jpeg|png|webp) + storage.objects 4 RLS 정책 (SELECT all, INSERT/UPDATE/DELETE owner_or_admin) + path prefix circles/{circle_id}/ 매칭 + 클라이언트 Canvas EXIF strip + 파일 검증 + next.config.ts Storage host 추가. 단위 테스트는 validateUpload 만 (stripImageExif Canvas 는 jsdom 한계로 Playwright 미루기). 3 sub-task 순차. 작업 파일 없음 (T-006/T-007 패턴). is_admin() T-006 재사용."
     }
   ]
 }
