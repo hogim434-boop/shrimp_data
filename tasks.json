@@ -733,14 +733,14 @@
       "name": "T-009-5: /search, /shuffle 와이어업",
       "description": "app/search/page.tsx 의 「N件のサークルを見る」 count 미리보기를 queries.filterCircles 결과 count 로 교체. app/shuffle/page.tsx 의 30건 더미 → status='approved' 전체 DB fetch.",
       "notes": "search count 는 best-effort UX — 서버 round-trip 비용 vs 정확도 trade-off. MVP 는 dummy 기반 추정 유지 OK. shuffle 은 30건 전체 prefetch → 클라이언트 Fisher-Yates shuffle.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "f837af6f-3a6a-43a6-89cd-7319a9476a9b"
         }
       ],
       "createdAt": "2026-05-18T15:22:16.833Z",
-      "updatedAt": "2026-05-18T16:08:25.330Z",
+      "updatedAt": "2026-05-18T16:08:25.398Z",
       "relatedFiles": [
         {
           "path": "/Users/kiimho/workspace/keio-school-club/app/search/page.tsx",
@@ -756,7 +756,8 @@
       "implementationGuide": "1. app/search/page.tsx:\\n  - ApplyButton 안 count 계산 = await queries.filterCircles(draft) 결과 count 사용\\n  - 단 RSC props 가 아닌 client state 라 별도 처리 필요 — client 측 fetch hook 또는 서버 액션으로 count fetch\\n  - 단순화: 본 페이지에서 클라 측 count 추정 (lib/dummy 의 filterCircles 그대로 유지) → /circles 진입 후 실제 결과 노출\\n  - 또는 서버 API route 신설 /api/search-count?... → fetch → display\\n  - 결정: 일단 lib/dummy 의 filterCircles 그대로 유지 (count 미리보기는 best-effort, 실제 결과는 /circles)\\n2. app/shuffle/page.tsx:\\n  - lib/dummy/circles.ts → lib/supabase/queries/circles.ts.filterCircles({page:1, sort:undefined, all:true}) 또는 단순 select status='approved'\\n  - SwipeDeck 에 결과 prop 전달\\n3. npm run build 통과",
       "verificationCriteria": "(1) /search 페이지 더미 import 사용 가능 (count 추정). (2) /shuffle anon 접근 시 30 카드 노출. (3) npm run build 통과.",
       "analysisResult": "T-009 Phase 1.2 통합 지점. DB 시드 3건 (tags 10 + circles 30 + activity_reports 100) + lib/supabase/queries 모듈 신설 + Server Action 2종 (toggleFavorite, incrementInquiryCount) + 모든 페이지 RSC fetch 와이어업 + 비로그인 가드 (favorites/「参加する」 둘 다 /auth/login?next=... 리디렉션, sessionStorage 제거) + E2E 회귀 + ROADMAP 갱신. 6 sub-task, 1.5d. 작업 파일 없음 (T-006~T-008 패턴). owner_id NULL 시드 (auth.users 미존재 회피, anon SELECT 는 status='approved' 만 보므로 OK). picsum.photos URL 그대로.",
-      "summary": "T-009-5 /search /shuffle 와이어업 완료 (commit f549c71). app/search/actions.ts 신설 getFilterCount Server Action (Apply 버튼 카운트 미리보기). components/search/apply-button.tsx 더미 filterCircles → getFilterCount 교체. app/shuffle/page.tsx + components/shuffle/swipe-deck.tsx Supabase 쿼리 + Server Action 직접 호출 교체 (filterCircles({all:true})). components/circles/hourly-category-strip.tsx 도 getCirclesByCategory Supabase 버전 교체. build 27 페이지 PPR 통과."
+      "summary": "T-009-5 /search /shuffle 와이어업 완료 (commit f549c71). app/search/actions.ts 신설 getFilterCount Server Action (Apply 버튼 카운트 미리보기). components/search/apply-button.tsx 더미 filterCircles → getFilterCount 교체. app/shuffle/page.tsx + components/shuffle/swipe-deck.tsx Supabase 쿼리 + Server Action 직접 호출 교체 (filterCircles({all:true})). components/circles/hourly-category-strip.tsx 도 getCirclesByCategory Supabase 버전 교체. build 27 페이지 PPR 통과.",
+      "completedAt": "2026-05-18T16:08:25.397Z"
     },
     {
       "id": "8b692a9a-1033-4a34-aae0-f0ae5fac818d",
