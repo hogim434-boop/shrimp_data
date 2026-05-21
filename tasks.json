@@ -1,3 +1,314 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "579dd918-bcb4-497d-8edd-76889f2215d5",
+      "name": "T-018-1: 검증·제출 lib 레이어 + 의존성 설치",
+      "description": "react-hook-form/zod/@hookform/resolvers 설치 후, 서클 등록의 데이터·검증·제출 로직을 lib 레이어로 분리 구현한다. (1) zod 등록 스키마 + 단계별 필드 매핑, (2) SNS URL 호스트 화이트리스트 검증, (3) name 기반 slug 생성·중복회피 유틸, (4) circles insert→cover 업로드→circle_tags insert 순차 제출 함수. UI 비포함, 순수 로직·타입.",
+      "notes": "Supabase JS 멀티트랜잭션 미지원 → 순차 처리, 핵심 circles insert 성공 후 이미지/태그 실패는 best-effort. www. prefix 정규화. annual_fee_yen 미입력(default 0).",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "lib/storage/strip-exif.ts",
+          "type": "REFERENCE",
+          "description": "uploadCoverImage/validateUpload 재사용",
+          "lineStart": 199,
+          "lineEnd": 206
+        },
+        {
+          "path": "lib/constants/official-type.ts",
+          "type": "REFERENCE",
+          "description": "OFFICIAL_TYPES enum"
+        },
+        {
+          "path": "lib/constants/category.ts",
+          "type": "REFERENCE",
+          "description": "CATEGORIES enum"
+        },
+        {
+          "path": "lib/supabase/client.ts",
+          "type": "REFERENCE",
+          "description": "브라우저 클라이언트"
+        },
+        {
+          "path": "lib/circles/registration-schema.ts",
+          "type": "CREATE",
+          "description": "zod 스키마 + STEP_FIELDS + URL 화이트리스트"
+        },
+        {
+          "path": "lib/circles/slug.ts",
+          "type": "CREATE",
+          "description": "slug 생성 유틸"
+        },
+        {
+          "path": "lib/circles/submit-registration.ts",
+          "type": "CREATE",
+          "description": "순차 제출 함수"
+        }
+      ],
+      "implementationGuide": "1) npm i react-hook-form zod @hookform/resolvers.\\n2) lib/circles/registration-schema.ts: zod 스키마 — name(1~50), category(z.enum CATEGORIES), official_type(z.enum OFFICIAL_TYPES), activity_frequency(z.enum), member_count(coerce.number min0 optional), description(max1000 optional), tags(string[] max5), contact_instagram/x/line(각 string optional .refine(hostMatch)), pledge1/pledge2(z.literal(true)). superRefine으로 'SNS 최소 1개' 강제. STEP_FIELDS 상수 export {basic:[...], tags:[...], contact:[...]}.\\n3) URL 화이트리스트: function isAllowedSnsUrl(url, allowed:string[]) { try { const h = new URL(url).hostname.replace(/^www\\\\./,''); return allowed.includes(h);} catch {return false;} }. instagram→['instagram.com'], x→['x.com','twitter.com'], line→['line.me','lin.ee']. 에러 메시지 '公式 SNS の URL を入力してください'.\\n4) lib/circles/slug.ts: makeCircleSlug(name) → name 영숫자화(불가 시 'circle') + '-' + crypto.randomUUID().slice(0,8).\\n5) lib/circles/submit-registration.ts: async submitRegistration(values, coverFile) — getUser→owner_id; circles insert(status default pending, pledge_accepted_at:new Date().toISOString(), slug)→returning id; coverFile면 uploadCoverImage→circles update cover_image_url; tags면 tags.slug→id select 후 circle_tags insert; 결과 {ok,id}|{error}. 실패는 인라인 에러용 메시지 반환.",
+      "verificationCriteria": "단위 테스트 또는 노드 실행으로 isAllowedSnsUrl이 instagram.com 통과/evil.example.com 거부, www.instagram.com 통과 확인. zod 스키마가 서약 미체크·SNS 0개 입력을 reject. makeCircleSlug가 일본어 이름에도 유효 slug 생성. lint/typecheck 통과.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "b62c512d-5a0f-40b7-ad4e-592a9e32e38b",
+      "name": "T-018-2: /circles/new 라우트 인증 보호",
+      "description": "비로그인 사용자가 /circles/new 진입 시 /auth/login?next=/circles/new 로 리다이렉트되도록 proxy.ts/lib/supabase/proxy.ts 의 경로 정책을 수정한다. /mypage 보호 패턴을 참조해 /circles/new 만 비공개로 추가(나머지 /circles/* 공개 유지).",
+      "notes": "CLAUDE.md: 인증은 proxy.ts updateSession에서 getClaims 후 분기. 새 NextResponse 생성 시 쿠키 복사 주의.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "TO_MODIFY",
+          "description": "updateSession 경로 보호 로직"
+        },
+        {
+          "path": "proxy.ts",
+          "type": "REFERENCE",
+          "description": "Edge 진입점 matcher"
+        },
+        {
+          "path": "lib/utils.ts",
+          "type": "REFERENCE",
+          "description": "isPublicPath/hasEnvVars"
+        }
+      ],
+      "implementationGuide": "1) lib/supabase/proxy.ts updateSession + lib/utils 의 isPublicPath(혹은 공개 경로 목록) 확인.\\n2) /circles/* 가 공개라면 /circles/new 를 예외로 비공개 처리(미인증 시 /auth/login?next=경로 리다이렉트). /mypage 보호 분기 로직 그대로 차용.\\n3) 이미 /circles/new 가 보호되면 변경 없이 확인만.",
+      "verificationCriteria": "로그아웃 상태로 /circles/new 접근 시 /auth/login?next=/circles/new 로 리다이렉트. 로그인 상태에서는 정상 진입. /circles, /circles/[id] 등 공개 경로는 영향 없음.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "f14599ba-2292-4e69-9049-31838337b617",
+      "name": "T-018-3: 멀티스텝 컨테이너 + 페이지 셸 + 완료 화면",
+      "description": "회원가입 온보딩 패턴을 차용한 멀티스텝 등록 컨테이너를 구현한다. RHF FormProvider로 전체 폼 상태를 단일 보존하고 ?step= 쿼리로 단계 전환(basic→tags→contact→done). AuthScreen 셸 + StepProgress(또는 n/3 텍스트) + 네이비 CTA footer + motion 패턴. 완료(done) 화면(審査中 안내 + 마이페이지 링크) 포함. step UI 컴포넌트는 후속 태스크에서 채우고 여기서는 컨테이너·라우팅·셸·완료 화면·page.tsx 교체를 담당.",
+      "notes": "cacheComponents:true → useSearchParams 사용 컴포넌트는 반드시 Suspense. CTA_BTN_CLS·EASE 등 sign-up-form 토큰 복제. step UI는 T-018-4~6에서 구현.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "579dd918-bcb4-497d-8edd-76889f2215d5"
+        }
+      ],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/new/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "ComingSoon → 멀티스텝 폼 + Suspense"
+        },
+        {
+          "path": "components/sign-up-form.tsx",
+          "type": "REFERENCE",
+          "description": "멀티스텝 step 라우팅·motion·CTA 패턴",
+          "lineStart": 66,
+          "lineEnd": 200
+        },
+        {
+          "path": "components/auth/auth-screen.tsx",
+          "type": "REFERENCE",
+          "description": "풀스크린 셸 슬롯 구조"
+        },
+        {
+          "path": "components/auth/step-progress.tsx",
+          "type": "REFERENCE",
+          "description": "분절 진행 바"
+        },
+        {
+          "path": "components/circles/new/circle-registration-form.tsx",
+          "type": "CREATE",
+          "description": "멀티스텝 컨테이너 + 완료 화면"
+        }
+      ],
+      "implementationGuide": "1) app/circles/new/page.tsx: ComingSoon 제거, Suspense로 CircleRegistrationForm 래핑(useSearchParams 때문).\\n2) components/circles/new/circle-registration-form.tsx (Client): useForm({resolver:zodResolver(schema), mode:'onChange', defaultValues}) + FormProvider. step=searchParams.get('step')??'basic'. goNext=async()=>{ if(await trigger(STEP_FIELDS[step])) router.push(?step=next) }. backHref/router.back. reducedMotion+FADE_UP+makeFadeTransition 차용(sign-up-form 참조).\\n3) AuthScreen 셸: progress=StepProgress current/3 또는 'n / 3', footer=네이비 CTA(basic·tags='次へ', contact='登録申請する'). step별 자식 컴포넌트(StepBasic/StepTags/StepContact) 분기 렌더(placeholder import).\\n4) done 단계: AuthScreen align center, '審査中です' 안내 + 'マイページへ'(/mypage/circles). sign-up done 톤.",
+      "verificationCriteria": "/circles/new 진입 시 1/3 기본정보 셸 노출, 잘못된 입력으로 次へ 시 단계 이동 안 됨(부분검증), 정상 시 ?step=tags 이동, 뒤로가기 동작, ?step=done 완료 화면에서 マイページへ 이동. lint/build 통과.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "55cc0b52-fe83-44c3-b819-95b4a7e5be73",
+      "name": "T-018-4: Step1 기본정보 입력 UI",
+      "description": "1단계 기본정보 폼 UI를 구현한다. 단체명·카테고리·official_type·활동빈도·개요(description)·회원수(member_count)·커버 이미지(선택)를 RHF Controller/register로 연결. 모바일 1열 스택, AUTH_INPUT_CLS, inputmode 적절. 커버 이미지는 file input(accept image/*, capture environment) + 미리보기.",
+      "notes": "커버 이미지는 단일 대표 이미지로 기본정보에 선택 포함(갤러리/게시글과 구분). 실제 업로드는 제출 시 submitRegistration이 처리.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "f14599ba-2292-4e69-9049-31838337b617"
+        }
+      ],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "components/circles/new/step-basic.tsx",
+          "type": "CREATE",
+          "description": "기본정보 입력 UI"
+        },
+        {
+          "path": "lib/constants/activity-frequency.ts",
+          "type": "REFERENCE",
+          "description": "활동빈도 라벨"
+        },
+        {
+          "path": "lib/constants/category.ts",
+          "type": "REFERENCE",
+          "description": "카테고리 라벨"
+        },
+        {
+          "path": "lib/auth/input-class.ts",
+          "type": "REFERENCE",
+          "description": "AUTH_INPUT_CLS"
+        },
+        {
+          "path": "lib/storage/strip-exif.ts",
+          "type": "REFERENCE",
+          "description": "validateUpload"
+        }
+      ],
+      "implementationGuide": "1) components/circles/new/step-basic.tsx: useFormContext로 register/control 접근.\\n2) 단체명 Input(maxLength50), 카테고리 select(CATEGORY_LABELS), official_type select(OFFICIAL_TYPE_LABELS 5종), 활동빈도 select(ACTIVITY_FREQUENCY_LABELS), 개요 textarea(optional), 회원수 Input inputmode=numeric(optional).\\n3) 커버 이미지: <input type=file accept='image/*' capture='environment'>, validateUpload로 즉시 검증, URL.createObjectURL 미리보기. 파일은 RHF에 File로 보관(또는 부모 state). 없으면 placeholder 안내.\\n4) 인라인 에러 role=alert. sign-up FADE_UP stagger.",
+      "verificationCriteria": "기본정보 모든 입력이 RHF 상태에 반영되고, 단체명 미입력 시 次へ 차단·에러 표시. 커버 이미지 선택 시 미리보기 노출, 4MB 초과/비허용 형식 시 에러. 모바일 뷰포트 1열 정상.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "9716e476-b2e4-41ba-8f50-39bb8f341e07",
+      "name": "T-018-5: Step2 태그 선택 UI",
+      "description": "2단계 태그 선택 UI를 구현한다. tags 마스터를 kind별 그룹으로 칩 토글, 최대 5개 선택 제한(초과 시 안내). 선택된 slug 배열을 RHF tags 필드에 반영.",
+      "notes": "tag-kind 상수·filter-labels(TAG_LABELS) 재사용. 태그는 선택 항목(필수 아님).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "f14599ba-2292-4e69-9049-31838337b617"
+        }
+      ],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "components/circles/new/step-tags.tsx",
+          "type": "CREATE",
+          "description": "태그 칩 선택 UI"
+        },
+        {
+          "path": "lib/constants/tag-kind.ts",
+          "type": "REFERENCE",
+          "description": "태그 분류"
+        },
+        {
+          "path": "lib/circles/filter-labels.ts",
+          "type": "REFERENCE",
+          "description": "TAG_LABELS"
+        }
+      ],
+      "implementationGuide": "1) tags 마스터 로드: 서버에서 props로 전달하거나 클라이언트 fetch(getTags). lib/supabase에 태그 조회가 있으면 재사용, 없으면 select id,slug,label_ja,kind.\\n2) components/circles/new/step-tags.tsx: TAG_KIND별 섹션 + 칩 버튼 토글. 선택 5개 도달 시 미선택 칩 disabled 또는 toast.\\n3) RHF setValue('tags', slugs, {shouldValidate:true}). 선택 0개 허용(optional). 칩 active 스타일은 search-categories/filter 칩 톤 참조.",
+      "verificationCriteria": "kind별 태그 칩 노출, 토글 동작, 6번째 선택 차단·안내, 선택 slug가 RHF tags에 반영. 太그 0개로도 다음 단계 진행 가능.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "68201806-c70c-40f7-a4dd-7434658b8bce",
+      "name": "T-018-6: Step3 연락처+서약 UI + 제출 연동",
+      "description": "3단계 연락처·서약 UI와 최종 제출을 구현한다. Instagram/X/LINE URL 입력(inputmode=url, 화이트리스트 검증, 최소 1개) + 公式 계정 안내 + 서약 체크 2종. 제출 시 submitRegistration 호출→성공 시 ?step=done, 실패 시 인라인 에러.",
+      "notes": "submitRegistration(T-018-1) 호출. 화이트리스트 외 URL은 zod refine에서 거부. 서약 미체크 시 zod literal(true) 실패로 제출 차단.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "579dd918-bcb4-497d-8edd-76889f2215d5"
+        },
+        {
+          "taskId": "f14599ba-2292-4e69-9049-31838337b617"
+        },
+        {
+          "taskId": "55cc0b52-fe83-44c3-b819-95b4a7e5be73"
+        },
+        {
+          "taskId": "9716e476-b2e4-41ba-8f50-39bb8f341e07"
+        }
+      ],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "components/circles/new/step-contact.tsx",
+          "type": "CREATE",
+          "description": "연락처·서약 UI + 제출"
+        },
+        {
+          "path": "lib/circles/registration-schema.ts",
+          "type": "DEPENDENCY",
+          "description": "화이트리스트·서약 스키마"
+        },
+        {
+          "path": "lib/circles/submit-registration.ts",
+          "type": "DEPENDENCY",
+          "description": "제출 함수"
+        }
+      ],
+      "implementationGuide": "1) components/circles/new/step-contact.tsx: contact_instagram/x/line Input(type=url inputmode=url). '個人アカウントではなくサークル公式アカウントのURLを' 안내.\\n2) 서약 체크 2종(pledge1/pledge2) — 실재·학칙 / 公式 인증 무관·책임 귀속. Checkbox + 라벨, role=alert 에러.\\n3) 제출 핸들러: handleSubmit(async values=>{ const res=await submitRegistration(values, coverFile); if('error' in res) setSubmitError(res.error); else router.replace('/circles/new?step=done'); }). 제출 중 isSubmitting로 CTA 비활성/'送信中…'.\\n4) zod superRefine(SNS 최소1)·화이트리스트 에러를 필드별 표시.",
+      "verificationCriteria": "evil.example.com/instagram 입력 시 필드 에러·제출 차단, SNS 0개 입력 시 차단, 서약 미체크 시 차단. 정상 입력+서약 시 submitRegistration 호출→done 단계 이동. 제출 중 CTA 비활성.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "522ca377-f7e1-4216-88ef-4e1bc6ea1b93",
+      "name": "T-018-7: Playwright MCP 통합 검증 + lint/build",
+      "description": "등록 플로우 전체를 Playwright MCP로 모바일 뷰포트에서 검증하고 lint/build를 통과시킨다. 화이트리스트 거부, 서약 미동의 거부, 정상 제출 후 /mypage/circles 「審査中」 노출 시나리오 확인.",
+      "notes": "모바일 reducedMotion 환경 고려. DB에 테스트 row 생성되므로 정리 또는 테스트 계정 사용.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b62c512d-5a0f-40b7-ad4e-592a9e32e38b"
+        },
+        {
+          "taskId": "68201806-c70c-40f7-a4dd-7434658b8bce"
+        }
+      ],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/new/page.tsx",
+          "type": "REFERENCE",
+          "description": "검증 대상 페이지"
+        },
+        {
+          "path": "app/mypage/circles/page.tsx",
+          "type": "REFERENCE",
+          "description": "審査中 뱃지 노출 확인"
+        }
+      ],
+      "implementationGuide": "1) 로그인 상태로 /circles/new 진입(테스트 계정).\\n2) 기본정보 입력→次へ, 태그 선택→次へ.\\n3) 연락처에 evil.example.com URL 입력→에러·차단 확인.\\n4) 정상 SNS URL + 서약 미체크→제출 차단 확인.\\n5) 서약 체크 후 제출→done(審査中) 노출.\\n6) /mypage/circles 이동→방금 등록 단체 「審査中」 뱃지 확인.\\n7) npm run lint && npm run build 통과. 필요 시 tests/e2e/circle-registration.spec.ts 추가(선택).",
+      "verificationCriteria": "3가지 시나리오(화이트리스트 거부/서약 미동의 거부/정상 제출 후 審査中) 모두 통과. lint·build 무오류.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    },
+    {
+      "id": "b7b57916-e940-4bdb-b00d-b1a73fc6d72e",
+      "name": "T-018-후속: 상세 페이지 소유자 콘텐츠 추가 (별도 분리)",
+      "description": "등록 폼에서 제외한 갤러리(앨범)·활동리포트(게시글) 및 커버 변경을, 등록 후 서클 상세 페이지에서 소유자(owner_id == 현재 user)가 직접 추가·관리하는 기능. 본 T-018(등록 폼) 완료 후 착수하는 후속 태스크로, 권한 게이팅 + 업로드 UI + circle_images/activity_reports insert가 필요해 기능군이 달라 분리한다. 상세 설계·분할은 착수 시 별도 plan_task로 진행.",
+      "notes": "이번 작업 범위 밖. ROADMAP에 후속으로 기록 권장. 착수 시 plan_task로 세분화.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "522ca377-f7e1-4216-88ef-4e1bc6ea1b93"
+        }
+      ],
+      "createdAt": "2026-05-21T10:44:05.204Z",
+      "updatedAt": "2026-05-21T10:44:05.204Z",
+      "relatedFiles": [
+        {
+          "path": "lib/storage/strip-exif.ts",
+          "type": "REFERENCE",
+          "description": "uploadGalleryImage/uploadReportImage"
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "REFERENCE",
+          "description": "소유자 진입점 추가 대상"
+        }
+      ],
+      "implementationGuide": "개략: 1) 상세 페이지에서 owner 판별(getUser vs owner_id) → 소유자에게만 '編集/追加' 진입 노출. 2) 갤러리 추가: uploadGalleryImage→circle_images insert(sort_order). 3) 활동리포트 작성: 제목·본문·이미지(uploadReportImage)→activity_reports insert. 4) 커버 변경: uploadCoverImage upsert→cover_image_url update. RLS 정책(owner만 수정) 확인 필요.",
+      "verificationCriteria": "별도 plan_task에서 정의. 본 태스크는 분리·기록 목적의 placeholder.",
+      "analysisResult": "T-018: KCircle 서클 등록을 회원가입(T-015) 온보딩 패턴 차용 3단계 풀스크린 멀티스텝 폼으로 구현. 단계: ①기본정보(단체명·카테고리·official_type·활동빈도·개요·회원수·커버이미지 선택) → ②태그(최대5) → ③연락처(SNS URL 화이트리스트)+서약2종 → 완료(審査中). 갤러리·활동리포트(게시글)는 등록 폼 제외, 상세 페이지 소유자 추가(후속 분리). 재사용: AuthScreen/StepProgress(components/auth/), sign-up-form.tsx motion 패턴, AUTH_INPUT_CLS, strip-exif.ts(uploadCoverImage/validateUpload), 도메인 상수, lib/supabase/client.ts. DB 사실: circles UNIQUE slug(생성 필수)·status default pending·owner_id/contact_*/pledge_accepted_at/cover_image_url nullable·annual_fee_yen 폐기. circle_tags(circle_id uuid, tag_id integer). 신규 의존성: react-hook-form, zod, @hookform/resolvers. 제출 순서: circles insert→cover upload→cover update→circle_tags insert→완료. Supabase JS 멀티트랜잭션 미지원→순차+best-effort. 검증: lint/build + Playwright(화이트리스트 거부/서약 미동의 거부/정상 제출 후 /mypage/circles 審査中)."
+    }
+  ]
 }
