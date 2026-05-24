@@ -1,3 +1,174 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "c831421a-c7c1-47a8-ad46-b7a7eff76757",
+      "name": "T-019-1: reviewed_by/reviewed_at 컬럼 UPDATE 권한 GRANT 마이그레이션",
+      "description": "승인/거절 Server Action 이 circles.reviewed_by·reviewed_at 를 기록할 수 있도록 authenticated 롤에 해당 컬럼 UPDATE 권한을 부여하는 선행 마이그레이션. 조사 결과 status·rejection_reason 에는 authenticated UPDATE 권한이 있으나 reviewed_by·reviewed_at 에는 없어, 미적용 시 Server Action 의 reviewed_* 갱신이 권한 부족으로 실패/누락된다(이 프로젝트의 알려진 GRANT 함정). 스키마 변경 없이 GRANT 만 수행하므로 위험 낮고 멱등하다.",
+      "notes": "스키마(컬럼/타입) 변경 없음. 다른 태스크의 선행 조건. RLS(circles_update_owner_or_admin)는 이미 admin UPDATE 허용하므로 행 단위 권한은 충족 — 컬럼 단위 GRANT 만 보강.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-24T11:55:26.777Z",
+      "updatedAt": "2026-05-24T11:55:26.777Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations",
+          "type": "CREATE",
+          "description": "GRANT UPDATE 마이그레이션 신규 파일(apply_migration 으로 생성)"
+        }
+      ],
+      "implementationGuide": "supabase apply_migration(name: grant_circles_review_columns_update) 로 다음 적용:\\nGRANT UPDATE (reviewed_by, reviewed_at) ON public.circles TO authenticated;\\n(GRANT 는 멱등이라 REVOKE 불필요). 적용 후 information_schema.column_privileges 로 authenticated 의 reviewed_by/reviewed_at UPDATE 존재를 재확인.",
+      "verificationCriteria": "information_schema.column_privileges 조회 시 grantee=authenticated, column_name in (reviewed_by, reviewed_at), privilege_type=UPDATE 행이 존재한다.",
+      "analysisResult": "T-019 관리자 승인 큐 페이지(/admin/circles) UI 구현. 게이오 공인 동아리 검색 웹앱(Next.js 15 App Router + Supabase, SSR-first, shadcn/ui new-york). 현 ComingSoon 을 실제 큐로 교체: RSC 가 pending 동아리를 신청일순 fetch → 인라인 미리보기 → 承認/却下 Server Action(status 갱신 + reviewed_by/reviewed_at 기록, 거절 시 rejection_reason 필수) → 처리 후 목록 즉시 갱신. 이메일 알림(T-020)은 TODO 주석만. 권한 가드(app/admin/layout.tsx AdminGuard: proxy 인증 1차 + is_admin() 2차, 비관리자 /circles 리다이렉트)·DB 스키마·RLS 모두 기존 존재. 확정 사실: FK circles_owner_id_fkey→profiles, RLS circles_update_owner_or_admin/profiles_select_own_or_admin admin 허용, 컬럼 GRANT 에서 reviewed_by/reviewed_at 만 authenticated UPDATE 누락(선행 마이그레이션 필요), profiles 에 email 없음(대표자 이메일 v1 제외), formatJpDate 함수는 미존재(직접 포맷). 기준 패턴: Server Action=app/mypage/actions.ts, 카드 UI=components/mypage/managed-circle-card.tsx, 쿼리/JOIN 평탄화=lib/supabase/queries/circles.ts(getMyCircles). 일본어 UI·한국어 주석, ESLint+build 무에러."
+    },
+    {
+      "id": "7c20aa98-5379-4995-933f-5bda0769f81b",
+      "name": "T-019-2: getPendingCircles 쿼리 + PendingCircle 타입 추가",
+      "description": "lib/supabase/queries/circles.ts 에 pending 동아리를 신청일 오름차순으로 조회하는 RSC 전용 함수 getPendingCircles 와 반환 타입 PendingCircle 을 추가한다. owner 프로필(display_name, keio_verified)을 FK circles_owner_id_fkey 로 임베드해 평탄화한다. 대표자 이메일은 profiles 에 없으므로 v1 에서 제외.",
+      "notes": "RLS 가 admin 에 전체 SELECT + 전체 profiles SELECT 를 허용함이 확인됨. createClient 는 호출마다 새로 생성(전역 저장 금지). 기존 toCircleSummary/getMyCircles 의 JOIN 평탄화 스타일을 따른다.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-24T11:55:26.777Z",
+      "updatedAt": "2026-05-24T11:55:26.777Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/queries/circles.ts",
+          "type": "TO_MODIFY",
+          "description": "getPendingCircles 함수 + PendingCircle 타입 추가",
+          "lineStart": 340,
+          "lineEnd": 670
+        },
+        {
+          "path": "lib/supabase/server.ts",
+          "type": "DEPENDENCY",
+          "description": "createClient (RSC 전용)"
+        }
+      ],
+      "implementationGuide": "lib/supabase/queries/circles.ts 에 추가:\\nexport type PendingCircle = { id; name; category; official_type; submission_note: string|null; created_at; cover_image_url: string|null; owner_display_name: string|null; owner_keio_verified: boolean }.\\nexport async function getPendingCircles(): Promise<PendingCircle[]> {\\n  const supabase = await createClient();\\n  const { data, error } = await supabase.from('circles')\\n    .select('id,name,category,official_type,submission_note,created_at,cover_image_url, profiles!circles_owner_id_fkey(display_name,keio_verified)')\\n    .eq('status','pending').order('created_at',{ascending:true});\\n  // error 시 console.error 후 [] 반환(기존 함수 패턴)\\n  // 중첩 profiles 객체 평탄화(getMyCircles 매핑 패턴 참고)\\n}\\n캐싱하지 않음(항상 최신, cacheComponents OFF 정책).",
+      "verificationCriteria": "RSC 에서 getPendingCircles() 호출 시 pending 상태 동아리만, created_at 오름차순으로, owner_display_name/owner_keio_verified 가 평탄화되어 반환된다. 타입체크 통과.",
+      "analysisResult": "T-019 관리자 승인 큐 페이지(/admin/circles) UI 구현. 게이오 공인 동아리 검색 웹앱(Next.js 15 App Router + Supabase, SSR-first, shadcn/ui new-york). 현 ComingSoon 을 실제 큐로 교체: RSC 가 pending 동아리를 신청일순 fetch → 인라인 미리보기 → 承認/却下 Server Action(status 갱신 + reviewed_by/reviewed_at 기록, 거절 시 rejection_reason 필수) → 처리 후 목록 즉시 갱신. 이메일 알림(T-020)은 TODO 주석만. 권한 가드(app/admin/layout.tsx AdminGuard: proxy 인증 1차 + is_admin() 2차, 비관리자 /circles 리다이렉트)·DB 스키마·RLS 모두 기존 존재. 확정 사실: FK circles_owner_id_fkey→profiles, RLS circles_update_owner_or_admin/profiles_select_own_or_admin admin 허용, 컬럼 GRANT 에서 reviewed_by/reviewed_at 만 authenticated UPDATE 누락(선행 마이그레이션 필요), profiles 에 email 없음(대표자 이메일 v1 제외), formatJpDate 함수는 미존재(직접 포맷). 기준 패턴: Server Action=app/mypage/actions.ts, 카드 UI=components/mypage/managed-circle-card.tsx, 쿼리/JOIN 평탄화=lib/supabase/queries/circles.ts(getMyCircles). 일본어 UI·한국어 주석, ESLint+build 무에러."
+    },
+    {
+      "id": "377864ab-8a4f-4acb-9767-2053ba63f569",
+      "name": "T-019-3: approveCircle/rejectCircle Server Action 추가",
+      "description": "app/admin/actions.ts 를 신설해 승인/거절 Server Action 을 구현한다. app/mypage/actions.ts 패턴(createClient→getClaims 인증가드→update→revalidatePath, 반환 {ok,error})을 그대로 따른다. 승인/거절 시 reviewed_by=claims.sub, reviewed_at=now() 기록. 거절은 rejection_reason 필수(trim 빈값 서버 차단). 이메일 알림은 T-020 범위로 TODO 주석만 남긴다.",
+      "notes": "auth.uid 는 클라이언트 입력이 아닌 서버 getClaims().claims.sub 로 주입. is_admin 재확인은 RLS 가 강제하므로 액션 내 명시 호출은 선택(이중 방어로 추가 가능). 선행: T-019-1(reviewed_* GRANT) 미적용 시 reviewed_* update 가 실패.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c831421a-c7c1-47a8-ad46-b7a7eff76757"
+        }
+      ],
+      "createdAt": "2026-05-24T11:55:26.777Z",
+      "updatedAt": "2026-05-24T11:55:26.777Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/actions.ts",
+          "type": "CREATE",
+          "description": "approveCircle / rejectCircle Server Action"
+        },
+        {
+          "path": "app/mypage/actions.ts",
+          "type": "REFERENCE",
+          "description": "Server Action 기준 패턴(인증가드·update·revalidate)",
+          "lineStart": 1,
+          "lineEnd": 93
+        }
+      ],
+      "implementationGuide": "app/admin/actions.ts ('use server'):\\nimport { revalidatePath, revalidateTag } from 'next/cache'; import { createClient } from '@/lib/supabase/server';\\nasync function requireAdminUid(supabase): claims=getClaims(); if(!claims) return null; return claims.sub;\\nexport async function approveCircle(circleId): {ok,error?} {\\n  supabase=await createClient(); uid=...; if(!uid) return {ok:false,error:'unauthenticated'};\\n  update circles set status='approved', reviewed_by=uid, reviewed_at=new Date().toISOString() where id=circleId; // RLS is_admin() 가 비관리자 차단\\n  if(error) return {ok:false,error}; revalidatePath('/admin/circles'); revalidateTag('circles',{expire:0}); // TODO(T-020): 오너 이메일(승인) 알림\\n  return {ok:true}; }\\nexport async function rejectCircle(circleId, reason): {ok,error?} {\\n  const r=reason?.trim(); if(!r) return {ok:false,error:'却下理由は必須です'};\\n  if(r.length>500) return {ok:false,error:'却下理由は500文字以内'};\\n  update circles set status='rejected', rejection_reason=r, reviewed_by=uid, reviewed_at=now where id=circleId; revalidatePath('/admin/circles'); // TODO(T-020): 거절 알림\\n  return {ok:true}; }",
+      "verificationCriteria": "approveCircle 호출 시 status=approved·reviewed_by(=호출 admin)·reviewed_at 가 DB 에 기록되고 revalidate 됨. rejectCircle 은 빈/공백 사유를 {ok:false}로 차단하고, 유효 사유 시 status=rejected·rejection_reason 저장. 비관리자 호출은 RLS 로 거부.",
+      "analysisResult": "T-019 관리자 승인 큐 페이지(/admin/circles) UI 구현. 게이오 공인 동아리 검색 웹앱(Next.js 15 App Router + Supabase, SSR-first, shadcn/ui new-york). 현 ComingSoon 을 실제 큐로 교체: RSC 가 pending 동아리를 신청일순 fetch → 인라인 미리보기 → 承認/却下 Server Action(status 갱신 + reviewed_by/reviewed_at 기록, 거절 시 rejection_reason 필수) → 처리 후 목록 즉시 갱신. 이메일 알림(T-020)은 TODO 주석만. 권한 가드(app/admin/layout.tsx AdminGuard: proxy 인증 1차 + is_admin() 2차, 비관리자 /circles 리다이렉트)·DB 스키마·RLS 모두 기존 존재. 확정 사실: FK circles_owner_id_fkey→profiles, RLS circles_update_owner_or_admin/profiles_select_own_or_admin admin 허용, 컬럼 GRANT 에서 reviewed_by/reviewed_at 만 authenticated UPDATE 누락(선행 마이그레이션 필요), profiles 에 email 없음(대표자 이메일 v1 제외), formatJpDate 함수는 미존재(직접 포맷). 기준 패턴: Server Action=app/mypage/actions.ts, 카드 UI=components/mypage/managed-circle-card.tsx, 쿼리/JOIN 평탄화=lib/supabase/queries/circles.ts(getMyCircles). 일본어 UI·한국어 주석, ESLint+build 무에러."
+    },
+    {
+      "id": "3d399d2f-3878-4f9d-9b56-45886f3ef60d",
+      "name": "T-019-4: 승인 큐 UI(page + loading + 카드/리스트 컴포넌트) 구현",
+      "description": "app/admin/circles/page.tsx 의 ComingSoon 을 실제 큐로 교체하고, components/admin 에 카드/리스트 클라이언트 컴포넌트와 loading.tsx 를 추가한다. managed-circle-card.tsx 의 Card/Badge/스타일 토큰과 shadcn Dialog/Sheet/Textarea/sonner 를 재사용. 데스크탑 우선 + 모바일 1열, 거절 사유 입력은 모바일 Sheet/데스크탑 Dialog. 승인/거절 후 낙관적으로 목록에서 제거.",
+      "notes": "official_type 은 admin 검수 목적이라 getOfficialTypeDisplayLabel(体育会/インカレ만) 대신 OFFICIAL_TYPE_LABELS 5종 전부 표시. stretched-link 불필요(상세 이동이 주목적 아님). cacheComponents OFF + loading.tsx 즉시 스켈레톤 정책 준수.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7c20aa98-5379-4995-933f-5bda0769f81b"
+        },
+        {
+          "taskId": "377864ab-8a4f-4acb-9767-2053ba63f569"
+        }
+      ],
+      "createdAt": "2026-05-24T11:55:26.777Z",
+      "updatedAt": "2026-05-24T11:55:26.777Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/circles/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "ComingSoon → 실제 큐 RSC",
+          "lineStart": 1,
+          "lineEnd": 16
+        },
+        {
+          "path": "app/admin/circles/loading.tsx",
+          "type": "CREATE",
+          "description": "스켈레톤 로딩"
+        },
+        {
+          "path": "components/admin/admin-queue-view.tsx",
+          "type": "CREATE",
+          "description": "큐 리스트 컨테이너(낙관적 state)"
+        },
+        {
+          "path": "components/admin/pending-circle-card.tsx",
+          "type": "CREATE",
+          "description": "pending 신청 카드 + 거절 사유 모달"
+        },
+        {
+          "path": "components/mypage/managed-circle-card.tsx",
+          "type": "REFERENCE",
+          "description": "카드/뱃지/모달 스타일 토큰 참고",
+          "lineStart": 1,
+          "lineEnd": 264
+        },
+        {
+          "path": "components/ui/sheet.tsx",
+          "type": "DEPENDENCY",
+          "description": "모바일 거절사유 입력"
+        },
+        {
+          "path": "components/ui/dialog.tsx",
+          "type": "DEPENDENCY",
+          "description": "데스크탑 거절사유 입력"
+        }
+      ],
+      "implementationGuide": "app/admin/circles/page.tsx (RSC): ComingSoon import 제거 → <Suspense> 로 감싼 목록 fetch(getPendingCircles) → <AdminQueueView initial={...}/>. 권한 확인 없음(layout AdminGuard 담당). pending 0건 시 빈 상태 안내.\\napp/admin/circles/loading.tsx: 스켈레톤 카드 n개.\\ncomponents/admin/admin-queue-view.tsx ('use client'): props initial: PendingCircle[]. useState(list)+useTransition. 데스크탑 grid / 모바일 1열. 각 카드에 onApprove(id)/onReject(id,reason) → action 호출, 성공 시 setList(filter), 실패 시 toast(sonner). 빈 목록 시 안내.\\ncomponents/admin/pending-circle-card.tsx ('use client'): 커버(있으면 next/image), 이름, CATEGORY_LABELS[category] + OFFICIAL_TYPE_LABELS[official_type](5종 전부), 대표자 display_name + keio_verified 뱃지, 제출일(new Date(created_at).toLocaleDateString('ja-JP',{year,month:'long',day})), submission_note(있으면 박스). 「承認」 Button(처리중 disabled) + 「却下」 Button → 却下理由 textarea 모달(Dialog/Sheet, 필수검증 빈값 시 제출 비활성) → onReject.\\n일본어 라벨: 承認/却下/却下理由/審査待ちのサークル/申請日 등.",
+      "verificationCriteria": "admin 으로 /admin/circles 진입 시 pending 카드가 신청일순으로 표시되고 미리보기 필드가 모두 보인다. 承認 클릭 시 카드가 목록에서 사라진다. 却下 시 사유 입력 모달이 뜨고 빈 사유는 제출 불가. pending 0건 시 빈 상태 안내. npm run lint 통과.",
+      "analysisResult": "T-019 관리자 승인 큐 페이지(/admin/circles) UI 구현. 게이오 공인 동아리 검색 웹앱(Next.js 15 App Router + Supabase, SSR-first, shadcn/ui new-york). 현 ComingSoon 을 실제 큐로 교체: RSC 가 pending 동아리를 신청일순 fetch → 인라인 미리보기 → 承認/却下 Server Action(status 갱신 + reviewed_by/reviewed_at 기록, 거절 시 rejection_reason 필수) → 처리 후 목록 즉시 갱신. 이메일 알림(T-020)은 TODO 주석만. 권한 가드(app/admin/layout.tsx AdminGuard: proxy 인증 1차 + is_admin() 2차, 비관리자 /circles 리다이렉트)·DB 스키마·RLS 모두 기존 존재. 확정 사실: FK circles_owner_id_fkey→profiles, RLS circles_update_owner_or_admin/profiles_select_own_or_admin admin 허용, 컬럼 GRANT 에서 reviewed_by/reviewed_at 만 authenticated UPDATE 누락(선행 마이그레이션 필요), profiles 에 email 없음(대표자 이메일 v1 제외), formatJpDate 함수는 미존재(직접 포맷). 기준 패턴: Server Action=app/mypage/actions.ts, 카드 UI=components/mypage/managed-circle-card.tsx, 쿼리/JOIN 평탄화=lib/supabase/queries/circles.ts(getMyCircles). 일본어 UI·한국어 주석, ESLint+build 무에러."
+    },
+    {
+      "id": "62c9999d-fb0e-4617-b17d-cd38a914583b",
+      "name": "T-019-5: 통합 검증(승인/거절 플로우 + 가드 회귀 + 빌드)",
+      "description": "구현 완료 후 엔드투엔드 검증. 승인/거절이 DB 에 올바르게 반영되는지 SQL 로 확인하고, 비관리자 접근 시 /circles 리다이렉트(AdminGuard 회귀), lint/build 무에러를 확인한다.",
+      "notes": "더미 시드 동아리는 대부분 approved 라 pending 테스트 데이터가 필요할 수 있음. 검증 후 임시 데이터 정리. revalidate 동작은 새로고침으로 확인.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "3d399d2f-3878-4f9d-9b56-45886f3ef60d"
+        }
+      ],
+      "createdAt": "2026-05-24T11:55:26.777Z",
+      "updatedAt": "2026-05-24T11:55:26.777Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/circles/page.tsx",
+          "type": "REFERENCE",
+          "description": "검증 대상 페이지"
+        },
+        {
+          "path": "app/admin/layout.tsx",
+          "type": "REFERENCE",
+          "description": "AdminGuard 회귀 검증 대상",
+          "lineStart": 1,
+          "lineEnd": 60
+        }
+      ],
+      "implementationGuide": "1) admin 계정 로그인 → /admin/circles → pending 표시 확인.\\n2) 한 건 承認 → 목록에서 사라짐 → SQL: select status,reviewed_by,reviewed_at from circles where id=… → approved + reviewed_* 기록 확인.\\n3) 한 건 却下 + 사유 입력 → SQL: status=rejected, rejection_reason 저장 확인. 빈 사유 차단 확인(서버 {ok:false}).\\n4) 일반(비admin) 로그인 사용자로 /admin/circles 접근 → /circles 리다이렉트 확인(AdminGuard). 미로그인 → /auth/login?next=/admin/circles.\\n5) npm run lint && npm run build 무에러. (선택) Playwright 로 시각 확인은 사용자 요청 시.\\n검증용으로 테스트 동아리를 pending 으로 만들어 사용(예: 기존 사용자 생성 동아리 또는 임시 INSERT).",
+      "verificationCriteria": "승인/거절이 status·reviewed_by·reviewed_at·rejection_reason 에 정확히 반영, 거절 사유 빈값 차단, 비관리자 /circles 리다이렉트, npm run lint·npm run build 무에러가 모두 확인된다.",
+      "analysisResult": "T-019 관리자 승인 큐 페이지(/admin/circles) UI 구현. 게이오 공인 동아리 검색 웹앱(Next.js 15 App Router + Supabase, SSR-first, shadcn/ui new-york). 현 ComingSoon 을 실제 큐로 교체: RSC 가 pending 동아리를 신청일순 fetch → 인라인 미리보기 → 承認/却下 Server Action(status 갱신 + reviewed_by/reviewed_at 기록, 거절 시 rejection_reason 필수) → 처리 후 목록 즉시 갱신. 이메일 알림(T-020)은 TODO 주석만. 권한 가드(app/admin/layout.tsx AdminGuard: proxy 인증 1차 + is_admin() 2차, 비관리자 /circles 리다이렉트)·DB 스키마·RLS 모두 기존 존재. 확정 사실: FK circles_owner_id_fkey→profiles, RLS circles_update_owner_or_admin/profiles_select_own_or_admin admin 허용, 컬럼 GRANT 에서 reviewed_by/reviewed_at 만 authenticated UPDATE 누락(선행 마이그레이션 필요), profiles 에 email 없음(대표자 이메일 v1 제외), formatJpDate 함수는 미존재(직접 포맷). 기준 패턴: Server Action=app/mypage/actions.ts, 카드 UI=components/mypage/managed-circle-card.tsx, 쿼리/JOIN 평탄화=lib/supabase/queries/circles.ts(getMyCircles). 일본어 UI·한국어 주석, ESLint+build 무에러."
+    }
+  ]
 }
