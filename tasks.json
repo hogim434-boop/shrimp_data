@@ -1,3 +1,273 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "1ab2301e-99f1-40df-ab8f-cd6671044572",
+      "name": "T-001: (tabs) route group + 하단 4탭 레이아웃",
+      "description": "app/(tabs)/layout.tsx 생성 + components/layout/bottom-tabs.tsx 작성 + 기존 app/page.tsx·app/search/·app/mypage/ 를 app/(tabs)/ 안으로 이전. F001 하단 4탭 내비게이션(ホーム·さがす·カレンダー·マイページ) 구현. 인증 여부 무관 항상 표시. 빈 껍데기 app/(tabs)/calendar/page.tsx 생성(T-019 마운트 대기). Phase 1 전체의 라우팅 길목.",
+      "notes": "위험: route group 이전 시 import 깨질 수 있음 — 사전 @/* 절대경로 리팩터링 필수. /events/[id] 풀스크린은 (tabs) 바깥에 둬야 [[circle-detail-template-fixed-trap]] 회피. usePathname 은 client component 에서만, layout.tsx 자체는 server.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "기존 홈페이지 — app/(tabs)/page.tsx 로 이동"
+        },
+        {
+          "path": "app/search/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "기존 검색 페이지 — app/(tabs)/search/page.tsx 로 이동"
+        },
+        {
+          "path": "app/mypage/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "기존 마이페이지 — app/(tabs)/mypage/page.tsx 로 이동"
+        },
+        {
+          "path": "app/(tabs)/layout.tsx",
+          "type": "CREATE",
+          "description": "신규 — 서버 컴포넌트 layout, BottomTabs 마운트"
+        },
+        {
+          "path": "components/layout/bottom-tabs.tsx",
+          "type": "CREATE",
+          "description": "신규 — 클라이언트 컴포넌트, 4탭 nav"
+        },
+        {
+          "path": "app/(tabs)/calendar/page.tsx",
+          "type": "CREATE",
+          "description": "신규 빈 껍데기 — T-019 마운트 대기"
+        },
+        {
+          "path": "lib/utils.ts",
+          "type": "DEPENDENCY",
+          "description": "cn() 헬퍼 재사용"
+        },
+        {
+          "path": "docs/tasks/T-001-tabs-layout.md",
+          "type": "REFERENCE",
+          "description": "Task 상세·코드 스니펫"
+        }
+      ],
+      "implementationGuide": "1) 기존 app/page.tsx·app/search/page.tsx·app/mypage/page.tsx 의 상대경로 import 를 @/* 절대경로로 사전 리팩터링 2) app/(tabs)/layout.tsx 작성 — 서버 컴포넌트, children + <BottomTabs /> 마운트, main pb-[calc(env(safe-area-inset-bottom)+64px)] 3) components/layout/bottom-tabs.tsx 작성 — 클라이언트 컴포넌트(use client), usePathname 으로 active 판별, lucide-react Home·Search·Calendar·User 아이콘, fixed bottom-0 nav, TABS 배열 4개 4) 기존 파일 이동: app/page.tsx → app/(tabs)/page.tsx, app/search/ → app/(tabs)/search/, app/mypage/ → app/(tabs)/mypage/ 5) app/(tabs)/calendar/page.tsx 빈 껍데기 — 「カレンダー機能は近日公開」 placeholder 6) npm run dev 로 4탭 표시·라우트 전환·active 상태 변경 확인",
+      "verificationCriteria": "npm run dev 실행 시 / 진입에 4탭이 하단에 표시. 각 탭 클릭으로 URL 전환 + active 탭 하이라이트. 미로그인 사용자도 4탭 표시. 이전된 페이지(/search, /mypage)가 (tabs) layout 안에서 정상 렌더. import 경로 깨진 곳 0건. TypeScript 컴파일 에러 0건.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "417099f4-8efb-44de-96e7-55125fd9c6c7",
+      "name": "T-002: proxy.ts isPublicPath 분기 추가",
+      "description": "lib/supabase/proxy.ts 의 isPublicPath() 함수에 신규 경로 분기 4건 추가. /calendar (공개), /events/* (공개), /circles/[id]/dm/* (인증 필수, 기존 동아리 상세 공개는 유지). proxy.ts 루트 파일 matcher 정규식은 catch-all 이므로 그대로 유지. F070 기본 인증 + F071 redirect_to 보존 패턴 정합.",
+      "notes": "위험: matcher 정규식 수정 금지(이미 catch-all). updateSession 내부 cookies setAll·return supabaseResponse 패턴 절대 변경 X — 변경 시 세션 끊김. isPublicPath 분기 추가만.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/proxy.ts",
+          "type": "TO_MODIFY",
+          "description": "isPublicPath 함수에 4건 분기 추가",
+          "lineStart": 12,
+          "lineEnd": 30
+        },
+        {
+          "path": "proxy.ts",
+          "type": "REFERENCE",
+          "description": "루트 matcher 정규식 — 변경 없음"
+        },
+        {
+          "path": "docs/tasks/T-002-proxy-matcher.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) lib/supabase/proxy.ts 의 isPublicPath() 함수 수정 — 기존 분기 보존 2) /calendar 공개 추가: if (pathname === \"/calendar\") return true 3) /events/* 공개 추가: if (pathname.startsWith(\"/events/\")) return true (페이지 내부에서 visibility 검증) 4) /circles/[id]/dm/* 인증 필수: pathname.startsWith(\"/circles/\") 분기 안에 match(/^\\/circles\\/[^/]+\\/dm/) 시 return false 추가 5) updateSession() 본체는 절대 변경 X (getClaims 흐름·NextResponse 반환 패턴 보존) 6) 한국어 주석으로 변경 의도 명시",
+      "verificationCriteria": "미로그인 상태에서 /calendar·/events/test-id 접근 시 /auth/login 으로 리다이렉트 안 됨(통과). /circles/test-id 접근 가능(공개), /circles/test-id/dm 접근 시 /auth/login?next=/circles/test-id/dm 리다이렉트. 기존 /admin/*·/mypage 인증 동작 유지. updateSession() 의 getClaims·온보딩 분기 동작 유지.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "21000da9-6146-4c30-a8b1-8705fc48986e",
+      "name": "T-003: RLS 헬퍼 함수 is_circle_staff",
+      "description": "supabase 마이그레이션 1건 — public.is_circle_staff(_circle_id uuid) RETURNS boolean STABLE SECURITY INVOKER 함수 정의. circle_members 테이블 참조(T-005 에서 생성, 함수 정의 시점에는 미존재 OK). 모든 운영진 권한 RLS 정책(events_write, inquiries_select 등)의 베이스. GRANT EXECUTE TO authenticated, anon. is_admin() 헬퍼 존재 여부 확인 후 없으면 함께 추가. F072·F074 정합.",
+      "notes": "위험: STABLE 마킹 필수(같은 트랜잭션 내 결과 캐싱, RLS row-by-row 호출 비용 최소화). SECURITY INVOKER 권장(DEFINER 안 씀). 순환 의존 주의: circle_members 의 SELECT 정책이 본 함수 호출하면 무한 루프 — circle_members 정책은 직접 user_id = auth.uid() 비교.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "신규 019_00_is_circle_staff.sql"
+        },
+        {
+          "path": "docs/tasks/T-003-rls-helper.md",
+          "type": "REFERENCE",
+          "description": "Task 상세·SQL 스니펫"
+        }
+      ],
+      "implementationGuide": "1) Phase 0 마이그레이션 마지막 시퀀스 확인 — 018 직후이므로 019_00 부터 시작 2) supabase/migrations/YYYYMMDDHHMMSS_019_00_is_circle_staff.sql 작성 3) CREATE OR REPLACE FUNCTION public.is_circle_staff(_circle_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER AS dollar dollar SELECT EXISTS (SELECT 1 FROM public.circle_members WHERE circle_id = _circle_id AND user_id = auth.uid() AND role IN ('owner','staff')) dollar dollar 4) GRANT EXECUTE ON FUNCTION public.is_circle_staff(uuid) TO authenticated, anon 5) is_admin() 존재 확인 — list_tables 또는 직접 SELECT proname FROM pg_proc WHERE proname='is_admin' 6) 없으면 동일 마이그레이션에 추가 7) Supabase MCP apply_migration 으로 적용 8) SELECT public.is_circle_staff('00000000-0000-0000-0000-000000000000') 호출 시 false 반환 확인",
+      "verificationCriteria": "Supabase list_migrations 에서 019_00 노출. SELECT proname FROM pg_proc WHERE proname='is_circle_staff' 1행 반환. anon 으로 호출 시 false. get_advisors 경고 0건. is_admin() 함수도 존재 확인.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "b6004098-84c7-4e07-944c-96dc4b22a2b1",
+      "name": "T-004: 이벤트 코어 마이그레이션 5종",
+      "description": "이벤트 도메인 핵심 테이블 5개 마이그레이션 — events(v2.1 컬럼 6개 포함), event_interests(가벼움 모드), event_rsvps(강한 모드 6단계 status), event_change_logs(변경 이력), event_comments(Q&A 댓글). 1파일 1테이블 원칙. 각 파일에 테이블 + RLS + GRANT 묶음(인덱스는 T-007). show_profile DEFAULT false 강제. F030·F033·F045·F048·F039 정합.",
+      "notes": "위험: 컬럼 GRANT 함정 [[circles-column-grant-trap]] — v2.1 신규 컬럼 6개에 별도 GRANT UPDATE 명시 안 하면 42501 오류. event_rsvps 의 본인 row + staff 승인 정책 2개 중첩은 OR 조합 의도된 동작. event_change_logs.notified_at 인덱스는 T-007 에서 partial. F045 자동 승격 트리거는 T-023 에서 별도 추가(본 Task 는 테이블 정의만).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "21000da9-6146-4c30-a8b1-8705fc48986e"
+        }
+      ],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "신규 019_01~019_05 5건"
+        },
+        {
+          "path": "docs/tasks/T-004-event-core-migration.md",
+          "type": "REFERENCE",
+          "description": "Task 상세·SQL 스니펫"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "PRD 8-1 events/event_interests/event_rsvps/event_change_logs/event_comments 정의",
+          "lineStart": 480,
+          "lineEnd": 650
+        }
+      ],
+      "implementationGuide": "1) supabase/migrations/ 에 019_01~019_05 SQL 5건 작성 2) 019_01_events.sql — 컬럼 정의: id·circle_id·created_by·title·description·starts_at·ends_at·location·cover_image_url·category·visibility CHECK(public/members)·is_all_day·v2.1 6개(rsvp_mode CHECK(light/strict)·capacity·rsvp_deadline·requires_approval·cancelled_at·cancellation_reason)·created_at·updated_at. RLS: events_select USING(visibility='public' OR auth.uid() IS NOT NULL), events_write FOR ALL USING(is_circle_staff(circle_id) OR is_admin()). GRANT SELECT TO authenticated,anon. GRANT INSERT,UPDATE,DELETE TO authenticated. GRANT UPDATE(rsvp_mode,capacity,rsvp_deadline,requires_approval,cancelled_at,cancellation_reason) ON events TO authenticated 3) 019_02_event_interests.sql — 복합 PK(event_id,user_id), status CHECK(interested/going), show_profile boolean DEFAULT false, RLS: 본인 row 만 ALL, anon SELECT 허용(count 용). GRANT 동일 4) 019_03_event_rsvps.sql — 복합 PK, status CHECK 6종(going/maybe/declined/pending/waiting/cancelled), waiting_position·approved_at·approved_by·rejected_at·rejection_reason·cancelled_at·show_profile DEFAULT false. RLS: SELECT(본인 또는 owner/staff via is_circle_staff), 본인 row ALL + staff 의 UPDATE 별도 정책. GRANT 동일 5) 019_04_event_change_logs.sql — id·event_id·changed_by·field_name·old_value·new_value·notified_at·created_at. RLS: SELECT(이벤트 공개 범위 따름), INSERT(운영진만 EXISTS 검증). GRANT SELECT TO authenticated,anon. GRANT INSERT TO authenticated 6) 019_05_event_comments.sql — id·event_id·user_id·parent_id(self FK)·body·created_at. RLS: SELECT(공개), INSERT(인증), UPDATE/DELETE(본인 + admin). GRANT 동일 7) Supabase MCP apply_migration 으로 5건 순차 적용 8) list_tables 로 5개 확인 9) get_advisors 점검",
+      "verificationCriteria": "list_tables 에서 events·event_interests·event_rsvps·event_change_logs·event_comments 5개 모두 노출. get_advisors 경고 0건(특히 GRANT 누락). 본인 user 로 event_interests INSERT 가능, 타인 row UPDATE 불가. 운영진 user 로 events UPDATE 가능, 일반 사용자 RLS 거부 확인. 공개 이벤트 anon SELECT 가능. v2.1 컬럼 6개 명시 GRANT 확인.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "0bb5c8bd-10c9-4b53-b116-5e310e506daa",
+      "name": "T-005: 동아리 운영 마이그레이션 2종",
+      "description": "동아리 운영 도메인 테이블 2개 — circle_galleries(활동 갤러리, B축 핵심), circle_members(권한 3단계 enum owner/staff/member, MVP 는 owner+staff 만 사용). F021·F072·F073 정합. T-003 의 is_circle_staff() 가 본 Task 의 circle_members 를 참조하므로 적용 순서는 019_00 헬퍼 → 019_06·019_07 의 순서로 진행(헬퍼 정의는 STABLE 이므로 테이블 미존재 OK, 실 호출 시점에 테이블 필요).",
+      "notes": "위험: circle_members 의 SELECT 정책은 절대 is_circle_staff() 호출 금지(무한 재귀). EXISTS 서브쿼리도 본 테이블 참조 안 되게 작성. MVP 는 owner+staff 만 사용, member 는 Phase 2 활성(F072) — CHECK enum 에는 포함하되 INSERT 정책에서 member role 차단 또는 별도 처리.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "21000da9-6146-4c30-a8b1-8705fc48986e"
+        }
+      ],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "신규 019_06_circle_galleries.sql, 019_07_circle_members.sql"
+        },
+        {
+          "path": "docs/tasks/T-005-circle-ops-migration.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "PRD 8-1 circle_galleries / circle_members",
+          "lineStart": 680,
+          "lineEnd": 730
+        }
+      ],
+      "implementationGuide": "1) 019_06_circle_galleries.sql — 컬럼: id·circle_id(FK)·uploaded_by(FK profiles)·image_url·caption·taken_at·created_at. RLS: SELECT(공개, anon 허용), INSERT/UPDATE/DELETE(is_circle_staff(circle_id) OR is_admin()). GRANT SELECT TO authenticated,anon. GRANT INSERT,UPDATE,DELETE TO authenticated 2) 019_07_circle_members.sql — 복합 PK(circle_id,user_id), role text CHECK(owner/staff/member), approved_by_admin boolean DEFAULT false(owner 한정), created_at. **중요: SELECT 정책은 직접 user_id = auth.uid() 비교 — is_circle_staff() 호출 금지(순환 의존)**. INSERT: owner 추가는 admin 만(approved_by_admin), staff 추가는 owner 가. RLS 정책 4개: members_select_self, members_select_circle_staff(is_circle_staff 직접 비교 X, EXISTS 명시), members_insert_owner_by_admin, members_insert_staff_by_owner. GRANT SELECT TO authenticated. GRANT INSERT,UPDATE,DELETE TO authenticated 3) Supabase MCP apply_migration 4) list_tables 검증 5) T-003 헬퍼가 이제 정상 동작 확인 — 본인이 owner/staff 로 등록된 circle 에 대해 SELECT is_circle_staff(circle_id) → true",
+      "verificationCriteria": "list_tables 에서 circle_galleries·circle_members 2개 노출. get_advisors 경고 0건. 본인 user 로 자신의 circle_members row SELECT 가능. owner 권한 부여 시 SELECT is_circle_staff(circle_id) → true. member role INSERT 시 정책 차단(MVP 미사용). circle_galleries INSERT 시 RLS 검증 → 운영진 외 거부.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "592351d7-95f8-432e-9df1-88410f289f6f",
+      "name": "T-006: DM·안전망 마이그레이션 5종",
+      "description": "운영진 DM 도메인 테이블 5개 — inquiries(스레드, category enum 6종 fee/schedule/vibe/trial/interest/other), inquiry_messages(메시지 + 첨부 + is_read), inquiry_reports(신고), user_blocks(차단), presence(운영진 온라인 상태). F050·F051·F052·F053·F054·F055·F058 정합. 풀 안전망 4종(신고·차단·cooldown·동의) 인프라.",
+      "notes": "위험: inquiry_messages.sender_role 은 CHECK 만 — 실제 검증은 Server Action 에서 한 번 더. presence 의 last_seen_at 5분 미갱신 = 오프라인 처리는 T-029 의 클라이언트 heartbeat 책임. category enum 의 'interest' 는 v2.2 신규(가입 의사) — 잊지 말 것. 컬럼 GRANT 함정 회피.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "21000da9-6146-4c30-a8b1-8705fc48986e"
+        }
+      ],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "신규 019_08~019_12 5건"
+        },
+        {
+          "path": "docs/tasks/T-006-dm-safety-migration.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "PRD 8-1 inquiries 계열",
+          "lineStart": 740,
+          "lineEnd": 830
+        }
+      ],
+      "implementationGuide": "1) 019_08_inquiries.sql — id·circle_id·sender_user_id·category text CHECK(fee/schedule/vibe/trial/interest/other) **v2.2 interest 포함**·subject·status text CHECK(open/resolved/blocked)·last_message_at·created_at. RLS: SELECT(본인 발신 또는 is_circle_staff(circle_id) OR is_admin), INSERT(인증, sender_user_id = auth.uid()). GRANT SELECT,INSERT TO authenticated 2) 019_09_inquiry_messages.sql — id·inquiry_id(FK CASCADE)·sender_user_id·sender_role CHECK(inquirer/circle_staff)·body·attachments text[]·is_read_by_recipient boolean DEFAULT false·created_at. RLS: SELECT/INSERT(스레드 참여자), UPDATE is_read(수신측만). GRANT 동일 3) 019_10_inquiry_reports.sql — id·inquiry_id·message_id(FK)·reporter_user_id·reason·admin_resolved_at·created_at. RLS: SELECT(본인 신고 또는 admin), INSERT(인증). GRANT 동일 4) 019_11_user_blocks.sql — 복합 PK(blocker_user_id,blocked_user_id,circle_id)·created_at. RLS: 본인이 만든 차단만 본인이 관리. GRANT 동일 5) 019_12_presence.sql — user_id PK·circle_id NULL(어느 동아리 인박스 보는지)·last_seen_at. RLS: 본인 row 만 ALL, SELECT 는 같은 circle owner/staff 공개(온라인 상태 노출). GRANT 동일 6) Supabase MCP apply_migration 5건 적용 7) list_tables 검증",
+      "verificationCriteria": "list_tables 에서 inquiries·inquiry_messages·inquiry_reports·user_blocks·presence 5개 노출. get_advisors 경고 0건. 본인 user 로 inquiries INSERT 가능. inquiry_messages 의 스레드 참여자(sender 또는 운영진)만 SELECT 가능. user_blocks 본인 row 만 INSERT 가능. presence row 본인만 UPDATE, 같은 circle staff 가 SELECT 가능. category 에 'interest' 포함 확인.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "6f283fc4-68c2-4d6f-b061-fc9eb4f85249",
+      "name": "T-007: 인덱스 10종 + Supabase advisors 검증",
+      "description": "Phase 1-1 종료 단계 — PRD 8-2 정의 인덱스 10종 일괄 적용 + Supabase get_advisors 호출로 RLS·인덱스·GRANT 누락 0건 검증. partial index 적극 활용(events_upcoming, event_rsvps_waiting, event_change_logs_unsent). F082 컬럼 GRANT 명시 컨벤션 최종 검수. M-Infra 마일스톤 달성 → Phase 1-2 진입 게이트.",
+      "notes": "위험: 데이터 0건 상태에서 인덱스 생성 → 빠름. 운영 시점 데이터 누적 후 추가 시 LOCK 위험 — Week 3 안에 마무리. partial index 는 WHERE 조건 정합성 주의(예: cancelled_at IS NULL 은 events 의 cancelled_at 컬럼 v2.1 신규 — 잊지 말 것). get_advisors 경고가 1건이라도 있으면 즉시 후속 마이그레이션으로 해결.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b6004098-84c7-4e07-944c-96dc4b22a2b1"
+        },
+        {
+          "taskId": "0bb5c8bd-10c9-4b53-b116-5e310e506daa"
+        },
+        {
+          "taskId": "592351d7-95f8-432e-9df1-88410f289f6f"
+        }
+      ],
+      "createdAt": "2026-05-31T07:24:30.537Z",
+      "updatedAt": "2026-05-31T07:24:30.537Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "신규 019_13_phase1_indexes.sql"
+        },
+        {
+          "path": "docs/tasks/T-007-indexes-advisors.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        },
+        {
+          "path": "docs/PRD.md",
+          "type": "REFERENCE",
+          "description": "PRD 8-2 인덱스 정의",
+          "lineStart": 860,
+          "lineEnd": 880
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "REFERENCE",
+          "description": "M-Infra 마일스톤 검증 기준",
+          "lineStart": 446,
+          "lineEnd": 446
+        }
+      ],
+      "implementationGuide": "1) 019_13_phase1_indexes.sql 작성 2) CREATE INDEX 10종: a) events(circle_id, starts_at DESC) — 동아리 이벤트 목록 b) events(starts_at) WHERE starts_at > now() AND cancelled_at IS NULL — 다가오는 이벤트 partial c) event_interests(event_id, status) — 가벼움 카운트 d) event_interests(user_id, created_at DESC) — 마이페이지 e) event_rsvps(event_id, status) — 강한 카운트 f) event_rsvps(event_id, status, waiting_position) WHERE status='waiting' — 웨이팅 큐 partial g) event_rsvps(user_id, created_at DESC) — 마이페이지 강함 h) event_change_logs(event_id, created_at DESC) — 변경 이력 i) event_change_logs(notified_at) WHERE notified_at IS NULL — 미발송 알림 큐 partial j) inquiries(circle_id, last_message_at DESC), inquiries(sender_user_id, last_message_at DESC), inquiry_messages(inquiry_id, created_at), circle_galleries(circle_id, taken_at DESC), circle_members(circle_id, role) 3) Supabase MCP apply_migration 4) get_advisors 호출 — 결과를 docs/tasks/T-007-result.md 에 첨부 5) list_tables 호출 → 12개 신규 테이블 + Phase 0 합계 확인 6) list_migrations 호출 → 019_00 ~ 019_13 모두 노출 7) M-Infra 마일스톤 체크리스트 작성(ROADMAP 6장 라인 446)",
+      "verificationCriteria": "list_migrations 에서 019_00 ~ 019_13 14건 노출. get_advisors 경고 0건. 인덱스 10종 모두 pg_indexes 에 노출. partial index 의 WHERE 조건 정확. M-Infra 마일스톤 4개 모두 통과: 1) list_tables 신규 12건 확인 2) get_advisors 경고 0건 3) proxy.ts matcher 신규 경로 통과 4) 하단 4탭 dev 서버 표시·이동. Phase 1-2 (T-008·T-009·T-010) 진입 준비 완료.",
+      "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    }
+  ]
 }
