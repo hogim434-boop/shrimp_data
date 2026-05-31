@@ -268,6 +268,263 @@
       "implementationGuide": "1) 019_13_phase1_indexes.sql 작성 2) CREATE INDEX 10종: a) events(circle_id, starts_at DESC) — 동아리 이벤트 목록 b) events(starts_at) WHERE starts_at > now() AND cancelled_at IS NULL — 다가오는 이벤트 partial c) event_interests(event_id, status) — 가벼움 카운트 d) event_interests(user_id, created_at DESC) — 마이페이지 e) event_rsvps(event_id, status) — 강한 카운트 f) event_rsvps(event_id, status, waiting_position) WHERE status='waiting' — 웨이팅 큐 partial g) event_rsvps(user_id, created_at DESC) — 마이페이지 강함 h) event_change_logs(event_id, created_at DESC) — 변경 이력 i) event_change_logs(notified_at) WHERE notified_at IS NULL — 미발송 알림 큐 partial j) inquiries(circle_id, last_message_at DESC), inquiries(sender_user_id, last_message_at DESC), inquiry_messages(inquiry_id, created_at), circle_galleries(circle_id, taken_at DESC), circle_members(circle_id, role) 3) Supabase MCP apply_migration 4) get_advisors 호출 — 결과를 docs/tasks/T-007-result.md 에 첨부 5) list_tables 호출 → 12개 신규 테이블 + Phase 0 합계 확인 6) list_migrations 호출 → 019_00 ~ 019_13 모두 노출 7) M-Infra 마일스톤 체크리스트 작성(ROADMAP 6장 라인 446)",
       "verificationCriteria": "list_migrations 에서 019_00 ~ 019_13 14건 노출. get_advisors 경고 0건. 인덱스 10종 모두 pg_indexes 에 노출. partial index 의 WHERE 조건 정확. M-Infra 마일스톤 4개 모두 통과: 1) list_tables 신규 12건 확인 2) get_advisors 경고 0건 3) proxy.ts matcher 신규 경로 통과 4) 하단 4탭 dev 서버 표시·이동. Phase 1-2 (T-008·T-009·T-010) 진입 준비 완료.",
       "analysisResult": "K CLUB Phase 1-1 기반 인프라: Phase 1 전체 (T-008~T-045) 가 의지할 라우팅·DB 스키마·권한 기반을 Week 1-3 안에 세움. (tabs) route group + 하단 4탭 + proxy.ts isPublicPath 분기 추가 + RLS 헬퍼 함수 is_circle_staff() + 12개 신규 테이블 마이그레이션 + 인덱스 10종 + Supabase advisors 검증. 기존 Phase 0 코드베이스(profiles, circles, circle_satellite, activity_reports, tags 시드 완료) 위에 추가. 핵심 컨벤션: lib/supabase 3-context 패턴, proxy.ts 인증 미들웨어, cacheComponents OFF, @/* 절대경로, 한국어 주석, 일본어 UI, サークル・部活動 표기, 公認 금지. 메모리 함정 회피: circles-column-grant-trap(GRANT 명시), circle-detail-template-fixed-trap(/events/[id] 루트 분리), cachecomponents-disabled-on-purpose. M-Infra 마일스톤 달성 시 Phase 1-2/1-3 의 9개 Task 동시 진입 가능."
+    },
+    {
+      "id": "1bd36800-e528-4fb2-9e23-e42fcd8997df",
+      "name": "T-008: さがす 검색·필터·정렬 강화",
+      "description": "app/(tabs)/search/page.tsx 강화 — 다단계 필터(카테고리·태그·활동 빈도) + 정렬 4종(활동 빈도/인기도/가나다순/최근). 기존 components/search/ 7개 + circle-list-card 재사용. lib/supabase/queries/circles-public.ts 신규(anon+unstable_cache). F010·F014.",
+      "notes": "cacheComponents OFF 유지. 公認 카테고리 금지. URL 쿼리 파라미터 활용.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "1ab2301e-99f1-40df-ab8f-cd6671044572"
+        }
+      ],
+      "createdAt": "2026-05-31T08:48:26.607Z",
+      "updatedAt": "2026-05-31T08:48:26.607Z",
+      "relatedFiles": [
+        {
+          "path": "app/(tabs)/search/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "검색 페이지 강화"
+        },
+        {
+          "path": "lib/supabase/queries/circles-public.ts",
+          "type": "CREATE",
+          "description": "신규 anon 쿼리"
+        },
+        {
+          "path": "components/search/search-page-body.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "components/circles/circle-list-card.tsx",
+          "type": "DEPENDENCY",
+          "description": "결과 카드"
+        },
+        {
+          "path": "docs/tasks/T-008-search-enhance.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) circles-public.ts 신규 — createAnonClient + unstable_cache([circles:public:search],{tags:[circles:public],revalidate:300}) + ilike q + eq category + order sort 2) circles.ts 보존 3) search/page.tsx Server Component 강화 4) 빈상태 該当するサークル·部活動が見つかりませんでした 5) Server Action 끝 revalidateTag(circles:public)",
+      "verificationCriteria": "검색 결과 30건+. 필터·정렬 동작. unstable_cache 적중. 빈상태 카피. TS 0 에러.",
+      "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
+    },
+    {
+      "id": "d680da9c-7110-462c-8302-14dd8825f03c",
+      "name": "T-009: ホーム 신환 큐레이션·다가오는 이벤트·추천",
+      "description": "app/(tabs)/page.tsx ホーム 강화 — 今週新歓 + 다가오는 이벤트 3 + 추천 동아리 3섹션. horizontal-circle-strip·recruiting-strip·promo-tile-carousel·home-category-grid 재사용. 시즌 분기(4·5·10·11월 활성). F011·F012·F038.",
+      "notes": "시즌 분기 환경변수 또는 월 기반 간단. Phase 3에서 자동 cron 격상.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "1ab2301e-99f1-40df-ab8f-cd6671044572"
+        }
+      ],
+      "createdAt": "2026-05-31T08:48:26.607Z",
+      "updatedAt": "2026-05-31T08:48:26.607Z",
+      "relatedFiles": [
+        {
+          "path": "app/(tabs)/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "ホーム 강화"
+        },
+        {
+          "path": "lib/supabase/queries/circles-public.ts",
+          "type": "TO_MODIFY",
+          "description": "함수 추가"
+        },
+        {
+          "path": "components/circles/horizontal-circle-strip.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "components/circles/promo-tile-carousel.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "docs/tasks/T-009-home-curation.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) page.tsx 강화 2) circles-public.ts 에 함수 추가 — getFeaturedCircles·getUpcomingEvents·getRecommendedCircles 3) 今週新歓 시즌 분기 4) 다가오는 이벤트 events WHERE starts_at>now() AND visibility=public AND cancelled_at IS NULL ORDER BY starts_at LIMIT 3 5) unstable_cache + tags:[circles:public,events:public]",
+      "verificationCriteria": "3섹션 모두 데이터 표시: 今週新歓·다가오는 이벤트 1+·추천 5+. 시즌 분기. unstable_cache 적중. TS 0.",
+      "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
+    },
+    {
+      "id": "3fc3f00e-f40b-4021-87f6-42f3db910c75",
+      "name": "T-010: 동아리 상세 단순화 + 메인 CTA 運営に問い合わせる",
+      "description": "circles/[id]/page.tsx 단순화(v2.2). 4영역: 프로필+갤러리자리+이벤트자리+외부 SNS 풋터(Instagram·X·웹사이트만, LINE 그룹 링크 금지). 메인 CTA 運営に問い合わせる fixed bottom → /circles/[id]/dm. circle-detail-tabs 3탭→2탭(掲示板=F023 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. activity_reports 별도 섹션. F020·F026·F050 진입.",
+      "notes": "template.tsx 보존(트랜지션 안전). contact_line 데이터 자체는 보존(DM 답신 안내용). useFavorites hook 유지. RSC children-as-prop 보존.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "0bb5c8bd-10c9-4b53-b116-5e310e506daa"
+        }
+      ],
+      "createdAt": "2026-05-31T08:48:26.607Z",
+      "updatedAt": "2026-05-31T08:48:26.607Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "단순화 4영역"
+        },
+        {
+          "path": "components/circles/circle-detail-tabs.tsx",
+          "type": "TO_MODIFY",
+          "description": "3탭→2탭"
+        },
+        {
+          "path": "components/circles/circle-actions.tsx",
+          "type": "TO_MODIFY",
+          "description": "참가→문의"
+        },
+        {
+          "path": "components/circles/join-channel-modal.tsx",
+          "type": "TO_MODIFY",
+          "description": "LINE 제거"
+        },
+        {
+          "path": "components/circles/activity-reports-list.tsx",
+          "type": "DEPENDENCY",
+          "description": "별도 섹션"
+        },
+        {
+          "path": "docs/tasks/T-010-circle-detail.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) template.tsx 보존(슬라이드 안전 확인) 2) circle-detail-tabs.tsx TAB_ORDER 3→2([home,album]), 掲示板 Trigger/Content 제거, board 케이스 album 폴백 3) circle-actions.tsx 参加する→運営に問い合わせる, JoinChannelModal 트리거→router.push(/circles/+id+/dm) 직접 4) join-channel-modal.tsx contact_line 제거, Instagram/X만 5) activity-reports-list 별도 섹션 6) 외부 SNS 풋터 LINE 금지 7) fixed bottom + safe-area-inset",
+      "verificationCriteria": "4영역 표시. 메인 CTA fixed bottom. 클릭 시 /circles/[id]/dm 이동. 2탭만(掲示板 없음). Instagram/X만(LINE 없음). 외부 SNS 풋터 LINE 그룹 없음. TS 0.",
+      "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
+    },
+    {
+      "id": "0fedcc60-bf38-4977-8080-7acafcabdc44",
+      "name": "T-011: 활동 갤러리 표시 + Storage RLS",
+      "description": "동아리 상세 갤러리 섹션 + Storage 정책. 학기 필터. circle-album·image-lightbox·cover-carousel 재사용. Storage 008 패턴 재사용 — circles-public 버킷 galleries/{circle_id}/{uuid}.jpg + is_circle_staff RLS. N+1 회피 JOIN. F021 B축.",
+      "notes": "폴더 구조 강제. 컬럼 GRANT 회피. N+1 회피. lazy loading.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "0bb5c8bd-10c9-4b53-b116-5e310e506daa"
+        },
+        {
+          "taskId": "3fc3f00e-f40b-4021-87f6-42f3db910c75"
+        }
+      ],
+      "createdAt": "2026-05-31T08:48:26.607Z",
+      "updatedAt": "2026-05-31T08:48:26.607Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "Storage 정책"
+        },
+        {
+          "path": "lib/supabase/queries/circle-galleries.ts",
+          "type": "CREATE",
+          "description": "갤러리 쿼리"
+        },
+        {
+          "path": "components/circles/circle-album.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "components/circles/image-lightbox.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "갤러리 섹션 마운트"
+        },
+        {
+          "path": "docs/tasks/T-011-gallery-display.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) Storage 정책 마이그레이션 — SELECT bucket=circles-public AND foldername[1]=galleries / INSERT·DELETE is_circle_staff(foldername[2]::uuid) 2) circle-galleries.ts 신규 — listGalleries(circleId,semester) + JOIN profiles 3) 학기 필터 4) circle-album 재사용 그리드 5) image-lightbox 풀스크린 6) 동아리 상세 アルバム 탭 또는 별도 마운트 7) 빈상태 まだ갤러리がありません",
+      "verificationCriteria": "운영자 업로드 → 표시. 학기 필터. lightbox. 비운영자 SELECT 통과·INSERT/DELETE 거부. get_advisors 신규 0건. TS 0.",
+      "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
+    },
+    {
+      "id": "4cf35c8e-aa58-4cf2-acf7-42f49a0cce7d",
+      "name": "T-012: 운영자 갤러리 업로드 UI",
+      "description": "app/circles/[id]/galleries/upload/page.tsx 신규 — 운영자 전용. react-easy-crop(이미 의존성) 크롭 UI. Server Action Storage 업로드 + circle_galleries INSERT + revalidateTag. is_circle_staff 검증.",
+      "notes": "server-side 권한 검증 필수. 기존 PR 6c6ce05·bb1067f·ca8f1a9·dad84f0 크롭 참조. uuid() 충돌 회피. 컬럼 GRANT 회피.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "0fedcc60-bf38-4977-8080-7acafcabdc44"
+        }
+      ],
+      "createdAt": "2026-05-31T08:48:26.607Z",
+      "updatedAt": "2026-05-31T08:48:26.607Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/galleries/upload/page.tsx",
+          "type": "CREATE",
+          "description": "운영자 업로드 페이지"
+        },
+        {
+          "path": "components/circles/gallery-upload-form.tsx",
+          "type": "CREATE",
+          "description": "크롭 폼"
+        },
+        {
+          "path": "app/circles/[id]/galleries/actions.ts",
+          "type": "CREATE",
+          "description": "Server Action"
+        },
+        {
+          "path": "docs/tasks/T-012-gallery-upload.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) upload/page.tsx Server Component — getClaims + is_circle_staff RPC 검증, 미운영자 redirect 2) GalleryUploadForm 클라이언트 — react-easy-crop(16:9 또는 자유), 캡션, 학기 select 3) Server Action uploadGallery(formData) — storage.upload(galleries/+circleId+/+uuid()+.jpg) → INSERT → revalidateTag 4) 진행 표시 5) 성공 redirect 6) 실패 에러",
+      "verificationCriteria": "운영자 진입·미운영자 redirect. 업로드 → circle_galleries+Storage 정합. revalidateTag로 즉시 반영. 잘못된 파일 에러. TS 0.",
+      "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
+    },
+    {
+      "id": "ea9d254d-e0b8-4955-a115-f04e99447417",
+      "name": "T-013: v2.1·v2.2 폐기 잔여물 grep 정리",
+      "description": "코드+마이그레이션+UI에서 폐기 잔여물 0건. 6+ 키워드 검수(公認·公式LINEに参加·LINE卒業·circle_faqs·先輩のコメント·F022~F025·contact_line UI·参加する 잔존). grep 보고서. M-Discovery 마일스톤 게이트.",
+      "notes": "contact_line 데이터 자체는 보존(DM 답신 안내용). UI 노출만 제거. 의도적 참가する(이벤트 RSVP) 구분.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "3fc3f00e-f40b-4021-87f6-42f3db910c75"
+        }
+      ],
+      "createdAt": "2026-05-31T08:48:26.607Z",
+      "updatedAt": "2026-05-31T08:48:26.607Z",
+      "relatedFiles": [
+        {
+          "path": "docs/tasks/T-013-deprecated-cleanup.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        },
+        {
+          "path": "docs/tasks/T-013-result.md",
+          "type": "CREATE",
+          "description": "grep 보고서"
+        }
+      ],
+      "implementationGuide": "1) rg 公認 0건 2) rg 公式LINEに参加 0건 3) rg LINE卒業 0건 4) rg circle_faqs 0건(list_tables 부재, 있으면 DROP IF EXISTS) 5) rg 先輩のコメント 0건 6) rg F022~F025 주석 0건 7) rg contact_line UI 노출 0건 8) rg 参加する 의도적 외 0건 9) サークル·部活動 통일 10) 보고서 docs/tasks/T-013-result.md",
+      "verificationCriteria": "6+ 키워드 grep 0건. UI LINE 그룹 링크 노출 0건. 보고서 작성. M-Discovery 4개 통과: 검색 30+·갤러리 노출·公認 0건·公式LINEに参加 0건.",
+      "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
     }
   ]
 }
