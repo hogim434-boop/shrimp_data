@@ -1,3 +1,237 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "c2b555a7-fcf2-447e-b2d8-383e4196de40",
+      "name": "T1: P5 이벤트 pill (셀 내 제목 + 좌측 컬러 막대)",
+      "description": "category-color.ts 에 CATEGORY_BAR_COLOR 매핑 추가 + calendar-month-view.tsx 의 CustomDayButton dot 영역을 「첫 이벤트 pill + 나머지 dot」 구조로 교체. 첫 이벤트는 좌측 2px border + 제목 truncate text-[8px] pill. 두번째 이후는 기존 P2 stagger dot 유지. TINT 배경 제거 (단순화). 모바일 393px 셀폭 ~53px 에서 가시성 검증.",
+      "notes": "P2 의 첫 dot 위치를 P5 pill 이 차지. CATEGORY_BAR_COLOR 는 Tailwind purge 안전 (정적 문자열). text-[8px] 가독성은 모바일 우선 — 안 보이면 text-[9px] 까지 허용. TINT 제거로 다크모드 깜빡임 회피.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-06-01T09:25:01.400Z",
+      "updatedAt": "2026-06-01T09:25:01.400Z",
+      "relatedFiles": [
+        {
+          "path": "lib/constants/category-color.ts",
+          "type": "TO_MODIFY",
+          "description": "CATEGORY_BAR_COLOR 매핑 추가",
+          "lineStart": 1,
+          "lineEnd": 49
+        },
+        {
+          "path": "components/calendar/calendar-month-view.tsx",
+          "type": "TO_MODIFY",
+          "description": "CustomDayButton dot 블록을 pill 구조로 교체",
+          "lineStart": 225,
+          "lineEnd": 275
+        }
+      ],
+      "implementationGuide": "파일 1: lib/constants/category-color.ts (BAR 추가)\\nexport const CATEGORY_BAR_COLOR: Record<Category, string> = { sports: 'border-orange-500', culture_art: 'border-purple-500', music: 'border-pink-500', academic: 'border-blue-500', international: 'border-teal-500', event: 'border-yellow-500', volunteer: 'border-green-500', media: 'border-red-500' };\\nexport const FALLBACK_BAR_COLOR = 'border-neutral-400';\\n\\n파일 2: components/calendar/calendar-month-view.tsx CustomDayButton dot 블록 교체\\nimport { CATEGORY_BAR_COLOR, FALLBACK_BAR_COLOR } from '@/lib/constants/category-color';\\n\\n{hasEvents && (\\n  <div className='flex w-full flex-col items-stretch gap-0.5 px-0.5'>\\n    <m.div\\n      key={`${monthKey}-pill-${firstEvent.id}`}\\n      initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: -2 }}\\n      animate={{ opacity: 1, y: 0 }}\\n      transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 480, damping: 26 }}\\n      className={cn('truncate rounded-sm border-l-2 pl-1 text-[8px] leading-[14px] font-medium', barColor)}\\n    >\\n      {firstEvent.title}\\n    </m.div>\\n    {restEvents.length > 0 && (\\n      <div className='flex items-center gap-[2px]'>\\n        {restDots.map((e, i) => <m.span key={`${monthKey}-${e.id}-${i}`} ...P2 stagger... />)}\\n        {overflow > 0 && <span className='text-muted-foreground text-[9px]'>+{overflow}</span>}\\n      </div>\\n    )}\\n  </div>\\n)}\\n\\n검증:\\n- npx tsc --noEmit 0 에러\\n- Playwright 모바일 393x852 — 6/3 셀 'AI×読書会...' 7자 truncate 가시성\\n- 셀 hover ring (P2) 그대로 동작\\n- dot stagger spring (P2) 두번째 이후만 적용",
+      "verificationCriteria": "1) 6/3 셀에 'AI×読書会...' 제목 pill 표시 (좌측 파란 막대 = academic). 2) 셀 hover ring (P2) 정상. 3) dot pop stagger (P2) 두번째 이후 이벤트에 적용. 4) +N overflow 정상. 5) tsc 0 에러 + 콘솔 0 에러.",
+      "analysisResult": "K CLUB 캘린더 옵션 🅒 풀 패키지 6 패턴 적용 — 🅑 컬러풀 발견 (P5·P6) + Phase 2 트렌드 (P9·P10·P11·P8). 🅐 4 패턴 (P1~P4) 호환 유지. 변경 파일 4 + 신규 1 (list-event-card.tsx). P5 TINT 제거 단순화, P6 가드 완전 제거, P8 첫 pill↔첫 카드 배지 morph 한정, P11 sticky 클래스 동시 추가. 모션 토큰: iOS easing [0.32,0.72,0,1] (P3·P8), Material decel [0,0,0.2,1] (P10), spring 420/36 (P9) / 480/26 (P5). reduced-motion 가드 + View Transitions 폴백 (Firefox 128- 등) 필수. 모바일 393px 셀 폭 ~53px 에서 pill text-[8px] 가시성 우선 검증."
+    },
+    {
+      "id": "1c81410d-b85b-431d-8429-7d48ea16ac2d",
+      "name": "T2: P6 빈 날 세렌디피티 Sheet",
+      "description": "calendar-month-view.tsx 의 handleDayClick 에서 'if (!eventsByDate.has) return' 가드 완전 제거. Sheet 내부에 '予定なし + 近くのイベント 2개' 분기 추가. 추천: 선택일 이후 미래 이벤트 starts_at ASC 상위 2개 (useMemo). outside 일자 클릭도 동일 처리.",
+      "notes": "events 가 현재 月 범위만이라 月末 클릭은 추천 0건. 「他の月も見る」 링크는 향후 옵션. SheetEventRow 기존 그대로 재사용. Sparkles 아이콘은 amber-500 으로 톤다운.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c2b555a7-fcf2-447e-b2d8-383e4196de40"
+        }
+      ],
+      "createdAt": "2026-06-01T09:25:01.400Z",
+      "updatedAt": "2026-06-01T09:25:01.400Z",
+      "relatedFiles": [
+        {
+          "path": "components/calendar/calendar-month-view.tsx",
+          "type": "TO_MODIFY",
+          "description": "handleDayClick 가드 제거 + nearbyRecommended useMemo + Sheet 분기",
+          "lineStart": 1,
+          "lineEnd": 400
+        }
+      ],
+      "implementationGuide": "파일: components/calendar/calendar-month-view.tsx\\n\\n1) handleDayClick 가드 제거:\\nfunction handleDayClick(date: Date) {\\n  setSelectedDate(date);\\n}\\n\\n2) nearbyRecommended useMemo:\\nconst nearbyRecommended = React.useMemo(() => {\\n  if (!selectedDate) return [];\\n  const k = toDateKey(selectedDate);\\n  const selectedEvents = eventsByDate.get(k) ?? [];\\n  if (selectedEvents.length > 0) return [];\\n  return events.filter(e => eventToDateKey(e) > k).slice(0, 2);\\n}, [selectedDate, eventsByDate, events]);\\n\\n3) Sheet 내부 분기:\\nimport { Sparkles } from 'lucide-react';\\n\\n{selectedEvents.length === 0 ? (\\n  <div className='px-4 py-4'>\\n    <p className='text-center text-sm text-muted-foreground'>この日は予定がありません</p>\\n    {nearbyRecommended.length > 0 && (\\n      <>\\n        <div className='mt-6 mb-2 flex items-center gap-1.5'>\\n          <Sparkles className='size-3.5 text-amber-500' aria-hidden='true' />\\n          <p className='text-xs font-semibold'>近くのイベント</p>\\n        </div>\\n        <div className='flex flex-col divide-y'>\\n          {nearbyRecommended.map(e => <SheetEventRow key={e.id} event={e} onClose={() => setSelectedDate(null)} />)}\\n        </div>\\n      </>\\n    )}\\n  </div>\\n) : (\\n  selectedEvents.map(...)\\n)}\\n\\n검증:\\n- 6/11 (이벤트 없음) 클릭 → Sheet '予定なし + 추천 2개'\\n- 6/30 (月末 + 이후 없음) → '予定なし' 만\\n- 6/3 (이벤트 있음) → 기존 이벤트 리스트",
+      "verificationCriteria": "1) 빈 날 클릭 → Sheet 열림 + '予定なし'. 2) 추천 이벤트 2개 표시 (있는 경우). 3) 추천 카드 클릭 → /events/{id} 이동. 4) 6/30 클릭 추천 0건이면 '予定なし' 만. 5) 기존 이벤트 있는 날 동작 무변경.",
+      "analysisResult": "K CLUB 캘린더 옵션 🅒 풀 패키지 6 패턴 적용 — 🅑 컬러풀 발견 (P5·P6) + Phase 2 트렌드 (P9·P10·P11·P8). 🅐 4 패턴 (P1~P4) 호환 유지. 변경 파일 4 + 신규 1 (list-event-card.tsx). P5 TINT 제거 단순화, P6 가드 완전 제거, P8 첫 pill↔첫 카드 배지 morph 한정, P11 sticky 클래스 동시 추가. 모션 토큰: iOS easing [0.32,0.72,0,1] (P3·P8), Material decel [0,0,0.2,1] (P10), spring 420/36 (P9) / 480/26 (P5). reduced-motion 가드 + View Transitions 폴백 (Firefox 128- 등) 필수. 모바일 393px 셀 폭 ~53px 에서 pill text-[8px] 가시성 우선 검증."
+    },
+    {
+      "id": "ed3a2b9b-234b-403f-9385-5f185d59c441",
+      "name": "T3: P9 오늘·선택 shared layoutId",
+      "description": "Calendar 에 selected={selectedDate} prop 전달. CustomDayButton 의 셀 배경 강조 박스를 m.span layoutId='calendar-active-cell' 로 분리. 선택 우선 (selected || (today && !selectedDate)). spring 420/36 으로 미끄러짐. 28px 원형 (P1) 은 z-10 으로 박스 위.",
+      "notes": "layoutId 중복 회피 위해 showActiveLayout 우선순위 엄수. P1 28px 원형은 z-10 으로 박스 위 유지. modifiers.outside 일자도 클릭 가능 (P6 와 연동).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "1c81410d-b85b-431d-8429-7d48ea16ac2d"
+        }
+      ],
+      "createdAt": "2026-06-01T09:25:01.400Z",
+      "updatedAt": "2026-06-01T09:25:01.400Z",
+      "relatedFiles": [
+        {
+          "path": "components/calendar/calendar-month-view.tsx",
+          "type": "TO_MODIFY",
+          "description": "Calendar selected prop + CustomDayButton layoutId 박스",
+          "lineStart": 1,
+          "lineEnd": 400
+        }
+      ],
+      "implementationGuide": "파일: components/calendar/calendar-month-view.tsx\\n\\n1) Calendar 에 selected prop 전달:\\n<Calendar\\n  mode='single'\\n  selected={selectedDate ?? undefined}\\n  month={currentMonth}\\n  ...\\n/>\\n\\n2) CustomDayButton 내부:\\nconst showActiveLayout = modifiers.selected || (modifiers.today && !selectedDate);\\n\\n<m.button ... className={cn('relative ...')}>\\n  {showActiveLayout && (\\n    <m.span\\n      layoutId='calendar-active-cell'\\n      className={cn('absolute inset-1 rounded-md', modifiers.selected ? 'bg-keio-navy/15' : 'bg-accent/40')}\\n      transition={reducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 420, damping: 36 }}\\n    />\\n  )}\\n  <span className={cn('relative z-10 leading-none', modifiers.today && 'flex size-7 items-center justify-center rounded-full bg-keio-navy font-semibold text-keio-navy-foreground')}>\\n    {day.date.getDate()}\\n  </span>\\n  {/* P5 pill + P2 dot 영역도 relative z-10 */}\\n  {hasEvents && <div className='relative z-10 ...P5 pill 블록...'>...</div>}\\n</m.button>\\n\\n주의:\\n- 같은 layoutId 가 동시에 2개 마운트 금지 — showActiveLayout 판정에서 selectedDate 있으면 today 박스 제거\\n- 셀 className 의 modifiers.selected 분기는 layoutId 박스가 담당하므로 제거 (배경색 중복 회피)\\n\\n검증:\\n- 6/1 (오늘) 자동 활성 박스 표시 (회색 톤)\\n- 6/3 클릭 → 박스가 6/3 로 미끄러짐 (네이비 톤)\\n- 6/14 클릭 → 박스가 6/14 로 미끄러짐\\n- 콘솔 layoutId duplicate 경고 없음",
+      "verificationCriteria": "1) 6/1 초기 오늘 박스 (회색). 2) 6/3 클릭 → 박스 spring 미끄러짐 (네이비 톤). 3) 다른 셀 연속 클릭 → 박스 매끄럽게 이동. 4) 콘솔 layoutId 경고 0. 5) P1 28px 원형 z-10 으로 박스 위 유지. 6) tsc 0 에러.",
+      "analysisResult": "K CLUB 캘린더 옵션 🅒 풀 패키지 6 패턴 적용 — 🅑 컬러풀 발견 (P5·P6) + Phase 2 트렌드 (P9·P10·P11·P8). 🅐 4 패턴 (P1~P4) 호환 유지. 변경 파일 4 + 신규 1 (list-event-card.tsx). P5 TINT 제거 단순화, P6 가드 완전 제거, P8 첫 pill↔첫 카드 배지 morph 한정, P11 sticky 클래스 동시 추가. 모션 토큰: iOS easing [0.32,0.72,0,1] (P3·P8), Material decel [0,0,0.2,1] (P10), spring 420/36 (P9) / 480/26 (P5). reduced-motion 가드 + View Transitions 폴백 (Firefox 128- 등) 필수. 모바일 393px 셀 폭 ~53px 에서 pill text-[8px] 가시성 우선 검증."
+    },
+    {
+      "id": "bbe2c437-82e9-4c6a-907f-f67560bd05cc",
+      "name": "T4: P10·P11 리스트 stagger + sticky conditional blur",
+      "description": "calendar-list-view.tsx 의 내부 ListEventCard 함수를 신규 파일 components/calendar/list-event-card.tsx (Client) 로 분리 + whileInView stagger reveal. globals.css 에 @supports animation-timeline scroll() 키프레임 추가. list-view 의 헤더에 sticky top-0 z-10 + cal-list-date-header 클래스 부여 (현재 sticky 미동작 회귀 동시 수정).",
+      "notes": "ListEventCard 분리 시 기존 코드 그대로 이전 — 비즈니스 로직 변경 0. SheetEventRow 와 혼동 금지 (다른 컴포넌트). animation-timeline 은 Chrome 113+/Safari 26+/Firefox 미지원. @supports 가드 + reduced-motion 가드로 폴백.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-06-01T09:25:01.400Z",
+      "updatedAt": "2026-06-01T09:25:01.400Z",
+      "relatedFiles": [
+        {
+          "path": "components/calendar/calendar-list-view.tsx",
+          "type": "TO_MODIFY",
+          "description": "ListEventCard 정의 삭제 + import + 헤더 sticky 클래스",
+          "lineStart": 1,
+          "lineEnd": 230
+        },
+        {
+          "path": "components/calendar/list-event-card.tsx",
+          "type": "CREATE",
+          "description": "Client Component, stagger reveal",
+          "lineStart": 1,
+          "lineEnd": 80
+        },
+        {
+          "path": "app/globals.css",
+          "type": "TO_MODIFY",
+          "description": "animation-timeline 키프레임 추가",
+          "lineStart": 120,
+          "lineEnd": 140
+        }
+      ],
+      "implementationGuide": "파일 1: 신규 components/calendar/list-event-card.tsx (~80줄)\\n'use client';\\nimport Link from 'next/link';\\nimport Image from 'next/image';\\nimport { CalendarDays, MapPin, Clock } from 'lucide-react';\\nimport { LazyMotion, domAnimation, m, useReducedMotion } from 'motion/react';\\nimport { cn } from '@/lib/utils';\\nimport type { EventDetail } from '@/lib/types/domain';\\n// ... 기존 ListEventCard 의 import 모두 이전\\n\\nexport function ListEventCard({ event }: { event: EventDetail }) {\\n  const reducedMotion = useReducedMotion();\\n  // ... 기존 cat / badgeColor / categoryLabel / isCancelled / timeDisplay 계산 그대로 이전\\n  return (\\n    <LazyMotion features={domAnimation}>\\n      <m.div\\n        initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 8 }}\\n        whileInView={{ opacity: 1, y: 0 }}\\n        viewport={{ once: true, margin: '-10% 0px' }}\\n        transition={reducedMotion ? { duration: 0 } : { duration: 0.36, ease: [0, 0, 0.2, 1] as [number, number, number, number] }}\\n      >\\n        <Link href={`/events/${event.id}`} className={...}>\\n          {/* 기존 Link 내부 그대로 이전 (썸네일·텍스트·배지) */}\\n        </Link>\\n      </m.div>\\n    </LazyMotion>\\n  );\\n}\\n\\n파일 2: components/calendar/calendar-list-view.tsx 수정\\n- 내부 ListEventCard 함수 정의 (L114-229) 완전 삭제\\n- import { ListEventCard } from './list-event-card';\\n- 헤더 className 변경 (L98):\\n  변경 전: 'bg-background/90 border-b px-4 py-2 backdrop-blur-sm'\\n  변경 후: 'cal-list-date-header sticky top-0 z-10 bg-background/90 border-b px-4 py-2 backdrop-blur-sm'\\n\\n파일 3: app/globals.css (말미에 추가)\\n@supports (animation-timeline: scroll()) {\\n  .cal-list-date-header {\\n    animation: cal-header-stick linear both;\\n    animation-timeline: scroll(nearest);\\n    animation-range: 0 80px;\\n  }\\n  @keyframes cal-header-stick {\\n    from { backdrop-filter: blur(0); background: transparent; border-color: transparent; }\\n    to   { backdrop-filter: blur(8px); background: hsl(var(--background) / 0.9); border-color: hsl(var(--border)); }\\n  }\\n}\\n@media (prefers-reduced-motion: reduce) {\\n  .cal-list-date-header { animation-timeline: none !important; }\\n}\\n\\n검증:\\n- 리스트 진입 시 카드들이 8px 위로 떠오르며 fade in (한번만)\\n- 헤더가 sticky top-0 동작 (Chrome 113+ 에선 scroll 0 일 때 투명, 80px+ blur)\\n- 폴백 환경: 헤더가 항상 blur (현재 동작 유지)",
+      "verificationCriteria": "1) 리스트 진입 시 카드들 stagger fade-up (1회만). 2) 헤더 sticky 동작 (스크롤 시 상단 고정). 3) Chrome 113+ 에선 scroll 0 일 때 헤더 투명. 4) Firefox 등 폴백 환경 헤더 항상 blur. 5) 신규 list-event-card.tsx 80줄 이내. 6) tsc 0 에러 + 콘솔 0 에러.",
+      "analysisResult": "K CLUB 캘린더 옵션 🅒 풀 패키지 6 패턴 적용 — 🅑 컬러풀 발견 (P5·P6) + Phase 2 트렌드 (P9·P10·P11·P8). 🅐 4 패턴 (P1~P4) 호환 유지. 변경 파일 4 + 신규 1 (list-event-card.tsx). P5 TINT 제거 단순화, P6 가드 완전 제거, P8 첫 pill↔첫 카드 배지 morph 한정, P11 sticky 클래스 동시 추가. 모션 토큰: iOS easing [0.32,0.72,0,1] (P3·P8), Material decel [0,0,0.2,1] (P10), spring 420/36 (P9) / 480/26 (P5). reduced-motion 가드 + View Transitions 폴백 (Firefox 128- 등) 필수. 모바일 393px 셀 폭 ~53px 에서 pill text-[8px] 가시성 우선 검증."
+    },
+    {
+      "id": "b07cf949-0200-4d80-8c45-de19eb0c2ff4",
+      "name": "T5: P8 View Transitions API cross-morph",
+      "description": "calendar-view-toggle.tsx 의 switchView 를 document.startViewTransition 감싸기. T1 의 첫 이벤트 pill + T4 의 list-event-card 배지에 viewTransitionName: cal-event-{id} inline style 부여. globals.css 에 view-transition 타이밍 + reduced-motion 가드 추가. 폴백: 미지원 브라우저는 router.replace 직접 호출.",
+      "notes": "startViewTransition 폴백 가드 + reduced-motion 가드 모두 필수. Next.js router.replace 와 호환 — Next.js 가 새 컴포넌트 마운트 시 transition 자동 종료. layoutId vs view-transition-name 영역 분리 (셀 강조 vs 이벤트 dot) 라 충돌 없음.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c2b555a7-fcf2-447e-b2d8-383e4196de40"
+        },
+        {
+          "taskId": "bbe2c437-82e9-4c6a-907f-f67560bd05cc"
+        }
+      ],
+      "createdAt": "2026-06-01T09:25:01.400Z",
+      "updatedAt": "2026-06-01T09:25:01.400Z",
+      "relatedFiles": [
+        {
+          "path": "components/calendar/calendar-view-toggle.tsx",
+          "type": "TO_MODIFY",
+          "description": "switchView startViewTransition",
+          "lineStart": 1,
+          "lineEnd": 110
+        },
+        {
+          "path": "components/calendar/calendar-month-view.tsx",
+          "type": "TO_MODIFY",
+          "description": "첫 pill 에 viewTransitionName",
+          "lineStart": 225,
+          "lineEnd": 275
+        },
+        {
+          "path": "components/calendar/list-event-card.tsx",
+          "type": "TO_MODIFY",
+          "description": "카테고리 배지에 viewTransitionName",
+          "lineStart": 1,
+          "lineEnd": 80
+        },
+        {
+          "path": "app/globals.css",
+          "type": "TO_MODIFY",
+          "description": "view-transition 타이밍 + reduced-motion",
+          "lineStart": 140,
+          "lineEnd": 160
+        }
+      ],
+      "implementationGuide": "파일 1: components/calendar/calendar-view-toggle.tsx switchView 교체\\nfunction switchView(view: CalendarView) {\\n  const params = new URLSearchParams(searchParams.toString());\\n  params.set('view', view);\\n  const next = `${pathname}?${params.toString()}`;\\n  const update = () => router.replace(next);\\n\\n  if (typeof document !== 'undefined' && 'startViewTransition' in document) {\\n    (document as Document & { startViewTransition: (cb: () => void) => void })\\n      .startViewTransition(update);\\n  } else {\\n    update();\\n  }\\n}\\n\\n파일 2: components/calendar/calendar-month-view.tsx — T1 의 첫 이벤트 pill 에 inline style 추가\\n<m.div\\n  key={`${monthKey}-pill-${firstEvent.id}`}\\n  style={{ viewTransitionName: `cal-event-${firstEvent.id}` }}\\n  ...\\n>\\n\\n파일 3: components/calendar/list-event-card.tsx — 배지에 inline style 추가\\n{categoryLabel && !isCancelled && (\\n  <span\\n    style={{ viewTransitionName: `cal-event-${event.id}` }}\\n    className={cn('inline-flex w-fit rounded-full px-2 py-0.5 text-[10px] font-medium', badgeColor)}\\n  >\\n    {categoryLabel}\\n  </span>\\n)}\\n\\n파일 4: app/globals.css (말미에 추가)\\n::view-transition-old(root), ::view-transition-new(root) {\\n  animation-duration: 240ms;\\n  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);\\n}\\n@media (prefers-reduced-motion: reduce) {\\n  ::view-transition-group(*) { animation-duration: 0.01ms; }\\n}\\n\\n주의:\\n- view-transition-name 은 한 페이지에 같은 이름 1회만 표시 — 月 뷰 / リスト 뷰 분기되어 동시 표시 안 되므로 안전\\n- 모든 첫 이벤트 pill 마다 고유 name 부여\\n- 배지 없는 카테고리 (isCancelled) 는 morph 대상 외 — 일반 fade\\n\\n검증:\\n- Chrome/Edge 에서 月→リスト 토글 시 첫 카드 배지가 그 자리에서 morph (또는 페이지 전체가 cross-fade)\\n- Firefox 128 이하: 즉시 폴백\\n- prefers-reduced-motion: 0.01ms 로 단축",
+      "verificationCriteria": "1) Chrome 토글 시 페이지 cross-fade 240ms. 2) 첫 이벤트 pill ↔ 첫 카드 배지 morph (가능한 경우). 3) Firefox 128- 즉시 폴백. 4) View Transitions 콘솔 에러 0. 5) layoutId (P4·P9) 와 충돌 없음. 6) tsc 0 에러.",
+      "analysisResult": "K CLUB 캘린더 옵션 🅒 풀 패키지 6 패턴 적용 — 🅑 컬러풀 발견 (P5·P6) + Phase 2 트렌드 (P9·P10·P11·P8). 🅐 4 패턴 (P1~P4) 호환 유지. 변경 파일 4 + 신규 1 (list-event-card.tsx). P5 TINT 제거 단순화, P6 가드 완전 제거, P8 첫 pill↔첫 카드 배지 morph 한정, P11 sticky 클래스 동시 추가. 모션 토큰: iOS easing [0.32,0.72,0,1] (P3·P8), Material decel [0,0,0.2,1] (P10), spring 420/36 (P9) / 480/26 (P5). reduced-motion 가드 + View Transitions 폴백 (Firefox 128- 등) 필수. 모바일 393px 셀 폭 ~53px 에서 pill text-[8px] 가시성 우선 검증."
+    },
+    {
+      "id": "83f294a5-12d0-4eb3-9f6a-3442111ac85e",
+      "name": "T6: Playwright 모바일+데스크탑 시각 검증",
+      "description": "옵션 🅒 6 패턴 (P5·P6·P8·P9·P10·P11) 모두 동작 확인. 모바일 393x852 + 데스크탑 1280 양쪽. P9 셀 클릭 미끄러짐 + P6 빈 날 추천 + P10 카드 stagger + P5 pill 가시성 + P8 토글 cross-morph + P11 sticky blur 모두 시각 확인. 콘솔 0 에러.",
+      "notes": "메모리 [[playwright-screenshot-vs-snapshot]] — 스크린샷 Read 로 시각 검증. View Transitions / 카드 stagger 는 동영상 모션이라 정적 캡처 한계. 콘솔 0 + URL 갱신 + 전·후 상태 비교로 간접 검증.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c2b555a7-fcf2-447e-b2d8-383e4196de40"
+        },
+        {
+          "taskId": "1c81410d-b85b-431d-8429-7d48ea16ac2d"
+        },
+        {
+          "taskId": "ed3a2b9b-234b-403f-9385-5f185d59c441"
+        },
+        {
+          "taskId": "bbe2c437-82e9-4c6a-907f-f67560bd05cc"
+        },
+        {
+          "taskId": "b07cf949-0200-4d80-8c45-de19eb0c2ff4"
+        }
+      ],
+      "createdAt": "2026-06-01T09:25:01.400Z",
+      "updatedAt": "2026-06-01T09:25:01.400Z",
+      "relatedFiles": [
+        {
+          "path": "components/calendar/calendar-month-view.tsx",
+          "type": "DEPENDENCY",
+          "description": "T1·T2·T3·T5 산출",
+          "lineStart": 1,
+          "lineEnd": 400
+        },
+        {
+          "path": "components/calendar/list-event-card.tsx",
+          "type": "DEPENDENCY",
+          "description": "T4·T5 산출",
+          "lineStart": 1,
+          "lineEnd": 80
+        },
+        {
+          "path": "components/calendar/calendar-list-view.tsx",
+          "type": "DEPENDENCY",
+          "description": "T4 산출",
+          "lineStart": 1,
+          "lineEnd": 150
+        },
+        {
+          "path": "components/calendar/calendar-view-toggle.tsx",
+          "type": "DEPENDENCY",
+          "description": "T5 산출",
+          "lineStart": 1,
+          "lineEnd": 120
+        },
+        {
+          "path": "app/globals.css",
+          "type": "DEPENDENCY",
+          "description": "T4·T5 산출",
+          "lineStart": 1,
+          "lineEnd": 160
+        }
+      ],
+      "implementationGuide": "1) browser_resize 393x852 (모바일)\\n2) browser_navigate /calendar?view=month → 스크린샷 → P5 첫 pill 가시성 + 6/1 오늘 박스 (P9 회색)\\n3) browser_click 6/3 셀 → Sheet 오픈 + 박스 미끄러짐 (P9 네이비) → 스크린샷\\n4) browser_click 6/11 (빈 날) → '予定なし + 추천 2개' Sheet (P6) → 스크린샷\\n5) Sheet 닫기 → browser_click 月 네비 > → 7월 axis slide (P3 회귀 없음) → 스크린샷\\n6) 月 → リスト 토글 클릭 → 폴백/morph 동작 확인 → 스크린샷\\n7) 리스트 뷰에서 위에서 아래로 스크롤 → 헤더 sticky + blur 변화 (P11) → 스크롤 후 스크린샷\\n8) 카드 stagger reveal (P10) 동작 확인 (정적 캡처는 모션 안 보이나 카드 표시 정상)\\n9) browser_console_messages level=error → 0 확인\\n10) browser_resize 1280x800 (데스크탑) → 위 시나리오 일부 반복 (P5 가시성 + P9 미끄러짐)\\n\\n보고:\\n- 6 패턴별 결과 ✅/❌\\n- 콘솔 에러 카운트\\n- 발견 이슈",
+      "verificationCriteria": "1) 모바일 P5 pill 가시성 ✅. 2) P9 셀 클릭 박스 미끄러짐 ✅. 3) P6 빈 날 추천 Sheet ✅. 4) P10 카드 표시 ✅. 5) P8 토글 cross-fade 또는 폴백 ✅. 6) P11 헤더 sticky 동작 ✅. 7) 데스크탑 양쪽 콘솔 에러 0. 8) 🅐 4 패턴 호환성 회귀 없음.",
+      "analysisResult": "K CLUB 캘린더 옵션 🅒 풀 패키지 6 패턴 적용 — 🅑 컬러풀 발견 (P5·P6) + Phase 2 트렌드 (P9·P10·P11·P8). 🅐 4 패턴 (P1~P4) 호환 유지. 변경 파일 4 + 신규 1 (list-event-card.tsx). P5 TINT 제거 단순화, P6 가드 완전 제거, P8 첫 pill↔첫 카드 배지 morph 한정, P11 sticky 클래스 동시 추가. 모션 토큰: iOS easing [0.32,0.72,0,1] (P3·P8), Material decel [0,0,0.2,1] (P10), spring 420/36 (P9) / 480/26 (P5). reduced-motion 가드 + View Transitions 폴백 (Firefox 128- 등) 필수. 모바일 393px 셀 폭 ~53px 에서 pill text-[8px] 가시성 우선 검증."
+    }
+  ]
 }
