@@ -525,6 +525,579 @@
       "implementationGuide": "1) rg 公認 0건 2) rg 公式LINEに参加 0건 3) rg LINE卒業 0건 4) rg circle_faqs 0건(list_tables 부재, 있으면 DROP IF EXISTS) 5) rg 先輩のコメント 0건 6) rg F022~F025 주석 0건 7) rg contact_line UI 노출 0건 8) rg 参加する 의도적 외 0건 9) サークル·部活動 통일 10) 보고서 docs/tasks/T-013-result.md",
       "verificationCriteria": "6+ 키워드 grep 0건. UI LINE 그룹 링크 노출 0건. 보고서 작성. M-Discovery 4개 통과: 검색 30+·갤러리 노출·公認 0건·公式LINEに参加 0건.",
       "analysisResult": "Phase 1-2 발견·동아리 상세 6개 Task. 기존 components/circles 35+개 재사용. template.tsx 보존(슬라이드). circle-detail-tabs 3탭→2탭(掲示板 폐기). circle-actions 参加する→運営に問い合わせる. join-channel-modal LINE 제거. Phase 1-1 4대 패턴 자동 적용. Wave1(T-008·T-009·T-010 병렬)→Wave2(T-011·T-013 병렬)→Wave3(T-012)."
+    },
+    {
+      "id": "12298149-9bf2-4d4f-b697-5fb6c0189ef8",
+      "name": "T-014: 이벤트 풀스크린 상세 페이지 /events/[id]",
+      "description": "루트 app/events/[id]/page.tsx Server Component 신규 — events 단건 조회 + 커버 16:9 + 일시(JST) + 장소 + 설명 + 이 サークル·部活動を見る 링크. proxy.ts /events/* 공개 적용됨. template 함정 회피 (루트 분리). lib/supabase/queries/events-public.ts 신규 + unstable_cache. F002·F032.",
+      "notes": "위험: template 함정 [[circle-detail-template-fixed-trap]] — 루트 라우트 절대 유지. expandable-description prop 호환 확인. JST 변환 일관 헬퍼 사용.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b6004098-84c7-4e07-944c-96dc4b22a2b1"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "app/events/[id]/page.tsx",
+          "type": "CREATE",
+          "description": "이벤트 풀스크린 Server Component"
+        },
+        {
+          "path": "lib/supabase/queries/events-public.ts",
+          "type": "CREATE",
+          "description": "공개 이벤트 쿼리"
+        },
+        {
+          "path": "lib/format/jst.ts",
+          "type": "CREATE",
+          "description": "JST 변환 헬퍼"
+        },
+        {
+          "path": "components/event/event-detail-hero.tsx",
+          "type": "CREATE",
+          "description": "커버+제목"
+        },
+        {
+          "path": "components/event/event-meta-grid.tsx",
+          "type": "CREATE",
+          "description": "메타 그리드"
+        },
+        {
+          "path": "components/circles/detail-page-header.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "components/circles/expandable-description.tsx",
+          "type": "DEPENDENCY",
+          "description": "재사용"
+        },
+        {
+          "path": "docs/tasks/T-014-event-detail.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) lib/supabase/queries/events-public.ts 신규 — getEventById(id) anon + unstable_cache(tags:[events:public]) 2) lib/format/jst.ts 신규 — formatInTimeZone Asia/Tokyo 헬퍼 3) date-fns-tz 의존성 추가 4) app/events/[id]/page.tsx Server Component — notFound 처리 5) components/event/event-detail-hero.tsx (커버+제목) + event-meta-grid.tsx (일시·장소·정원·D-day 자리) 6) detail-page-header.tsx 재사용 (뒤로가기) 7) expandable-description.tsx 재사용 (설명) 8) 이 サークル·部活動を見る 링크 /circles/{circle_id} 9) RSVP/D-day/캘린더추가 자리 placeholder (Wave 2 마운트)",
+      "verificationCriteria": "공개 이벤트 미로그인 열람 가능. JST 시각 정확. 동아리 링크 동작. proxy 분기 통과. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "7f4b534c-933b-46a8-9797-25cefbf74a43",
+      "name": "T-015: 이중 모드 RSVP pill 컴포넌트",
+      "description": "components/event/event-rsvp-pill.tsx — rsvp_mode 분기. light: 気になる/行く予定 2단계 → event_interests INSERT. strict: 行く/たぶん行く/行かない 3단계 → event_rsvps INSERT. 모드 배지 (気軽に参加/定員制) 표시. F033.",
+      "notes": "위험: 이중 모드 혼란 — 카드/상세에 모드 배지 명시. redirect_to 보존. show_profile DEFAULT false 유지. Phase 1.5 AppOnlyGate 적용 예정 (앱 only).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "12298149-9bf2-4d4f-b697-5fb6c0189ef8"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "components/event/event-rsvp-pill.tsx",
+          "type": "CREATE",
+          "description": "이중 모드 RSVP"
+        },
+        {
+          "path": "components/event/event-mode-badge.tsx",
+          "type": "CREATE",
+          "description": "모드 배지"
+        },
+        {
+          "path": "components/circles/circle-actions.tsx",
+          "type": "DEPENDENCY",
+          "description": "pill 패턴 참고"
+        },
+        {
+          "path": "app/events/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "RSVP pill 마운트"
+        },
+        {
+          "path": "docs/tasks/T-015-rsvp-pill.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) event-rsvp-pill.tsx props: event { id, rsvp_mode, requires_approval } + 현재 user 상태 2) light 분기: 気になる/行く予定 segmented pill → upsert event_interests 3) strict 분기: 行く/たぶん行く/行かない 3단계 → upsert event_rsvps (requires_approval=true 시 pending 으로 시작) 4) circle-actions.tsx segmented pill 패턴 참고 5) 미로그인 시 /auth/login?next=/events/{id} 보존 (안티패턴 A-1 차단) 6) 모드 배지 event-mode-badge.tsx — light: 気軽に参加 (gray) / strict: 定員制 (amber) 7) 운영진 승인 게이팅 시 안내 카피 運営の確認後、参加が確定します",
+      "verificationCriteria": "light 이벤트 → event_interests row. strict → event_rsvps row. requires_approval=true 시 pending 시작. 미로그인 redirect+next. 모드 배지 표시. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "adfcc5e6-1be6-4864-b0c2-d1733cf4f2f5",
+      "name": "T-016: 모드별 카운트 표시",
+      "description": "components/event/event-counts.tsx — light: 気になる N人 · 行く予定 N人. strict: 定員 N名 · 残り N名 · キャンセル待ち N番目. 본인이 waiting 시 본인 순번 강조. F034.",
+      "notes": "캐시 없음 (실시간 카운트). 본인 waiting 순번은 회복용 — 트리거가 승격하면 즉시 갱신 (revalidatePath).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7f4b534c-933b-46a8-9797-25cefbf74a43"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "components/event/event-counts.tsx",
+          "type": "CREATE",
+          "description": "모드별 카운트"
+        },
+        {
+          "path": "lib/supabase/queries/event-counts.ts",
+          "type": "CREATE",
+          "description": "집계 쿼리"
+        },
+        {
+          "path": "app/events/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "카운트 마운트"
+        },
+        {
+          "path": "docs/tasks/T-016-event-counts.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) event-counts.tsx props: event + viewerStatus 2) light 분기: event_interests count by status 3) strict 분기: capacity·going count·waiting count·본인 waiting_position 4) lib/supabase/queries/event-counts.ts 신규 — 집계 쿼리 5) rsvp_deadline 지난 시 申し込みは終了しました 카피 6) capacity 미설정 strict 이벤트 인 경우 残り N名 자리에 制限なし 표시",
+      "verificationCriteria": "light 카운트 표시. strict 정확 (定員·残り·キャンセル待ち). 마감일 지나면 申し込みは終了しました. 본인 waiting 순번 강조. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "c444e805-dbf9-450b-b390-f9b73e14ee0c",
+      "name": "T-017: カレンダーに追加 + ICS 헬퍼",
+      "description": "components/event/calendar-add-button.tsx — shadcn Popover로 Google/Apple 분기. lib/ics.ts 신규 (수동 30줄, JST 변환). F035.",
+      "notes": "수동 ICS 30줄 충분. ics 패키지 의존성 추가 안 함 (번들 가벼움). JST/UTC 변환 정확 검증.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "12298149-9bf2-4d4f-b697-5fb6c0189ef8"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "components/event/calendar-add-button.tsx",
+          "type": "CREATE",
+          "description": "Google/Apple 분기"
+        },
+        {
+          "path": "lib/ics.ts",
+          "type": "CREATE",
+          "description": "ICS 헬퍼"
+        },
+        {
+          "path": "app/events/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "버튼 마운트"
+        },
+        {
+          "path": "docs/tasks/T-017-calendar-add.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) lib/ics.ts 신규 — buildIcsString(event) BEGIN:VCALENDAR ... DTSTART:20260601T120000Z (UTC) ... 2) Google 분기: https://calendar.google.com/calendar/render?action=TEMPLATE&dates=...&text=...&location=... 3) Apple 분기: data:text/calendar;charset=utf-8,{ics} URL → 다운로드 4) shadcn Popover + 2버튼 5) date-fns-tz 의 fromZonedTime 으로 JST→UTC",
+      "verificationCriteria": "Google 캘린더 새 탭 열림. Apple .ics 다운로드. JST 시각 일치. ICS RFC 5545 형식 검증. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "492f302d-ba8d-442f-968f-56237fca1cf5",
+      "name": "T-018: D-day 배지 컴포넌트",
+      "description": "components/event/d-day-badge.tsx — あと N日 amber 배지. starts_at 기준 자동 계산. F040.",
+      "notes": "JST 일자 계산 — date-fns-tz toZonedTime 활용. 종일 이벤트 (is_all_day) 시 시각 무시.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "12298149-9bf2-4d4f-b697-5fb6c0189ef8"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "components/event/d-day-badge.tsx",
+          "type": "CREATE",
+          "description": "D-day 배지"
+        },
+        {
+          "path": "components/event/event-meta-grid.tsx",
+          "type": "TO_MODIFY",
+          "description": "배지 마운트"
+        },
+        {
+          "path": "docs/tasks/T-018-d-day-badge.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) d-day-badge.tsx props: startsAt 2) 오늘부터 starts_at 까지 일수 계산 (JST 기준) 3) 0일=本日 / 1-7일=あと N日 amber / 8일+=N月N日 gray / 음수=終了 4) tailwind tone 분기 5) event-meta-grid + 이벤트 카드 양쪽 사용",
+      "verificationCriteria": "오늘 이벤트 本日 표시. 7일 이내 あと N日 amber. 8일 이후 날짜 표시. 음수 終了. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "71a7d301-1cc1-4f87-aa02-0ac38de8b1b0",
+      "name": "T-019: 캘린더 페이지 月表示+リスト 토글",
+      "description": "app/(tabs)/calendar/page.tsx — shadcn calendar 신규 추가. URL ?view=month|list 토글. 月: 날짜 카테고리 dots. リスト: sticky 헤더. F036·F037·F038.",
+      "notes": "shadcn calendar 신규 추가 첫 작업. react-day-picker DayProps 활용해 dots 렌더. 모든 이벤트 데이터는 anon + unstable_cache. 채널 메모: 캘린더 열람은 웹+앱 양쪽.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "12298149-9bf2-4d4f-b697-5fb6c0189ef8"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "app/(tabs)/calendar/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "T-001 빈 껍데기 마운트"
+        },
+        {
+          "path": "components/calendar/calendar-month-view.tsx",
+          "type": "CREATE",
+          "description": "월간 그리드"
+        },
+        {
+          "path": "components/calendar/calendar-list-view.tsx",
+          "type": "CREATE",
+          "description": "리스트 뷰"
+        },
+        {
+          "path": "components/calendar/calendar-view-toggle.tsx",
+          "type": "CREATE",
+          "description": "月/リスト 토글"
+        },
+        {
+          "path": "components/ui/calendar.tsx",
+          "type": "CREATE",
+          "description": "shadcn add"
+        },
+        {
+          "path": "lib/supabase/queries/events-public.ts",
+          "type": "TO_MODIFY",
+          "description": "getUpcomingEventsByRange 추가"
+        },
+        {
+          "path": "docs/tasks/T-019-calendar-page.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) mcp__shadcn__get_add_command_for_items + npx shadcn add calendar 2) react-day-picker 자동 의존성 3) components/calendar/calendar-view-toggle.tsx (Tabs 月/リスト) 4) components/calendar/calendar-month-view.tsx — shadcn Calendar wrapper + day cell에 dots (최대 3개+n) 5) components/calendar/calendar-list-view.tsx — 날짜 그룹 sticky 헤더 + EventListItem 6) lib/supabase/queries/events-public.ts 에 getUpcomingEventsByRange 추가 7) URL 쿼리 ?view + ?month=YYYY-MM 동기화 8) 비로그인 anon 허용",
+      "verificationCriteria": "月/リスト URL 토글 동작. 月에 dots 표시. リスト sticky 헤더. 비로그인 열람. 이벤트 카드 클릭 → /events/[id]. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "3ec21aed-abb0-4ade-94f0-bc1c41849ac2",
+      "name": "T-020: 이벤트 등록 폼 (운영자, rsvp_mode 선택 포함)",
+      "description": "app/circles/[id]/events/new/page.tsx — 운영자 전용. rsvp_mode 라디오 + 강함 모드 시 capacity/rsvp_deadline/requires_approval 추가 입력. F030.",
+      "notes": "기존 circles/new/step-contact.tsx form 패턴 참고. Defense in Depth (T-012 패턴) 적용. JST 입력 변환 (datetime-local → UTC). 컬럼 GRANT 확인 (T-004 적용 완료).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b6004098-84c7-4e07-944c-96dc4b22a2b1"
+        },
+        {
+          "taskId": "0bb5c8bd-10c9-4b53-b116-5e310e506daa"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/events/new/page.tsx",
+          "type": "CREATE",
+          "description": "등록 페이지"
+        },
+        {
+          "path": "components/event/event-form.tsx",
+          "type": "CREATE",
+          "description": "공통 폼 (등록·수정)"
+        },
+        {
+          "path": "app/circles/[id]/events/actions.ts",
+          "type": "CREATE",
+          "description": "Server Action"
+        },
+        {
+          "path": "components/circles/new/step-contact.tsx",
+          "type": "REFERENCE",
+          "description": "form 패턴 참고"
+        },
+        {
+          "path": "docs/tasks/T-020-event-form.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) Server Component — getClaims + is_circle_staff RPC 검증, 미운영자 redirect /circles/{id} 2) components/event/event-form.tsx 클라이언트 — react-hook-form + zod 3) 필수 입력: title·starts_at·visibility·rsvp_mode 4) rsvp_mode=strict 시 capacity·rsvp_deadline·requires_approval 동적 표시 5) 옵션 입력: ends_at·location·description·category·cover_image_url·is_all_day 6) app/circles/[id]/events/actions.ts Server Action createEvent — Defense in Depth 2회 검증 + INSERT events + revalidateTag(events:public) + revalidatePath(/circles/{id}) 7) 성공 시 redirect /events/{newId}",
+      "verificationCriteria": "운영자 진입·미운영자 redirect. light/strict 라디오 전환 시 추가 필드 동적 표시. INSERT events 정상. revalidateTag 동작. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "2fa8793e-f195-43ee-924e-32a84b33f831",
+      "name": "T-021: 이벤트 수정 폼 + 변경 감지 → change_logs",
+      "description": "app/circles/[id]/events/[eventId]/edit/page.tsx — 운영자 수정. 변경 필드 비교 → event_change_logs INSERT. T-026 에서 알림 처리. F031·F048.",
+      "notes": "변경 감지는 Server Action 내부에서 수행 (DB 트리거 안 씀 — 변경 자체는 단순). notified_at NULL 상태로 INSERT (T-026 cron/Action 이 처리). starts_at/location/description 등 핵심 필드만 비교 (created_at·updated_at 등 제외).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "3ec21aed-abb0-4ade-94f0-bc1c41849ac2"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/events/[eventId]/edit/page.tsx",
+          "type": "CREATE",
+          "description": "수정 페이지"
+        },
+        {
+          "path": "components/event/event-form.tsx",
+          "type": "TO_MODIFY",
+          "description": "initialValues props 추가"
+        },
+        {
+          "path": "app/circles/[id]/events/actions.ts",
+          "type": "TO_MODIFY",
+          "description": "updateEvent 추가"
+        },
+        {
+          "path": "docs/tasks/T-021-event-edit.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) Server Component — Defense in Depth 검증 + 기존 event 로드 2) components/event/event-form.tsx 재사용 (T-020 산출) — initialValues props 추가 3) Server Action updateEvent — Defense in Depth + 기존 row 와 비교 + 변경된 필드만 event_change_logs INSERT (field_name, old_value, new_value, notified_at=NULL) 4) revalidateTag(events:public) + revalidatePath /events/{id} 5) 다중 필드 변경 시 multiple INSERT",
+      "verificationCriteria": "변경 감지 정확. event_change_logs row 생성 (변경된 필드만). notified_at NULL. revalidateTag 동작. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "5e22851a-9885-4838-af66-d99d519e1172",
+      "name": "T-022: 이벤트 Q&A 댓글",
+      "description": "components/event/event-comments.tsx — 비동기 스레드 + 답글 1단계 (parent_id self FK). F039.",
+      "notes": "패턴 채널 메모: 댓글 작성은 앱 only (Phase 1.5 게이팅). Phase 1 웹에서도 동작. 모더레이션 (신고/삭제) Phase 2.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "12298149-9bf2-4d4f-b697-5fb6c0189ef8"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "components/event/event-comments.tsx",
+          "type": "CREATE",
+          "description": "댓글 목록"
+        },
+        {
+          "path": "components/event/event-comment-compose.tsx",
+          "type": "CREATE",
+          "description": "작성 sheet"
+        },
+        {
+          "path": "app/events/[id]/actions.ts",
+          "type": "CREATE",
+          "description": "Server Action"
+        },
+        {
+          "path": "components/circles/activity-reports-list.tsx",
+          "type": "REFERENCE",
+          "description": "목록 패턴 참고"
+        },
+        {
+          "path": "components/circles/report-compose-sheet.tsx",
+          "type": "REFERENCE",
+          "description": "sheet 패턴 참고"
+        },
+        {
+          "path": "app/events/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "댓글 섹션 마운트"
+        },
+        {
+          "path": "docs/tasks/T-022-event-comments.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) Server Action createComment(eventId, body, parentId?) — getClaims + INSERT event_comments 2) event-comments.tsx Server Component — list 표시 (parent_id IS NULL 우선, 답글 children) 3) event-comment-compose.tsx 클라이언트 (작성 sheet) 4) 답글 1단계만 허용 (parent_id 가 또 parent_id 갖는 경우 UI 차단) 5) activity-reports-list + report-compose-sheet 패턴 참고 6) 비로그인 시 redirect_to /events/{id} 보존",
+      "verificationCriteria": "댓글 작성·목록 표시. 답글 1단계 동작 (2단계 이상 차단). 비로그인 redirect+next. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "e7787314-5a67-494c-be3a-59626027732f",
+      "name": "T-023: F045 자동 승격 DB 트리거 (Phase 1 최난도, notifications type 확장 포함)",
+      "description": "Phase 1 최난도. notifications.type CHECK 확장 + fn_event_rsvp_promote() plpgsql + trg_event_rsvp_promote 트리거. going 해제 시 waiting 1번 자동 승격. pending→going 승인 시 정원 초과 자동 waiting. SELECT FOR UPDATE row lock 동시성 안전. F045.",
+      "notes": "Phase 1 최난도. 동시성 부하 테스트는 T-043 (Phase 1-6) 100명 동시. row lock 필수. notifications type 확장 안 하면 CHECK 위반. notifications.body 에 jsonb 직렬화 (event_id 등). DROP TRIGGER + DROP FUNCTION 롤백 마이그레이션 별도 준비.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "b6004098-84c7-4e07-944c-96dc4b22a2b1"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "021_00·021_01·021_02 3개 마이그레이션"
+        },
+        {
+          "path": "docs/tasks/T-023-rsvp-promote-trigger.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "마이그레이션 3개 적용. 1) 021_00_notifications_type_extend.sql — ALTER TABLE notifications DROP CONSTRAINT 기존 CHECK + 새 CHECK 추가 (event_rsvp_promoted, event_rsvp_approved, event_rsvp_waiting_assigned, circle_approved, circle_rejected). 2) 021_01_fn_event_rsvp_promote.sql — CREATE FUNCTION plpgsql SECURITY INVOKER SET search_path=public. NEW.status 변화 분기: a) cancelled/declined ← going: 같은 event_id 의 waiting 중 waiting_position 가장 작은 row SELECT FOR UPDATE → status=going + position=NULL + 나머지 waiting position 1씩 감소 + notifications INSERT event_rsvp_promoted. b) going ← pending AND events.capacity NOT NULL: SELECT FOR UPDATE events row → count going > capacity 면 NEW.status=waiting + waiting_position 계산. 3) 021_02_trg_event_rsvp_promote.sql — AFTER UPDATE OF status ON event_rsvps FOR EACH ROW. 4) Supabase MCP apply_migration 3건 순차. 5) 단일 시나리오 검증: going 1 + waiting 1 → going 해제 → 자동 승격 검증 + notifications row 1건 + 본인 status=going. 6) pending+capacity=1 승인 → going. pending 2명 동시 승인 → 두 번째 waiting 강제.",
+      "verificationCriteria": "list_migrations 에 021_00~02 노출. fn_event_rsvp_promote 함수 존재. trg_event_rsvp_promote 트리거 존재. notifications.type CHECK 5개 (3개 신규 포함). 단일 시나리오 정상 (going 해제→승격, pending 승인→capacity 검증). notifications 알림 row 생성. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "fefb3cfc-e80c-4ed5-acbc-bdfd553403e3",
+      "name": "T-024: 운영자 명단·승인 게이팅 + CSV + 일괄 알림",
+      "description": "app/circles/[id]/events/[eventId]/manage/page.tsx — 신청자 목록 + 상태 필터 + pending 승인/거절 + CSV 다운로드 + 일괄 알림. F046·F047.",
+      "notes": "권한 검증 server-side 2회. CSV 다운로드는 streaming response. 일괄 알림 broadcast 는 notifications INSERT 반복 (수십~수백 row 짧은 시간). 신환 시즌 폭주 시 batch 처리 고려 (Phase 2).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "3ec21aed-abb0-4ade-94f0-bc1c41849ac2"
+        },
+        {
+          "taskId": "e7787314-5a67-494c-be3a-59626027732f"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/events/[eventId]/manage/page.tsx",
+          "type": "CREATE",
+          "description": "명단 관리"
+        },
+        {
+          "path": "app/circles/[id]/events/[eventId]/manage/csv/route.ts",
+          "type": "CREATE",
+          "description": "CSV 다운로드"
+        },
+        {
+          "path": "lib/server-actions/event-broadcast.ts",
+          "type": "CREATE",
+          "description": "일괄 알림"
+        },
+        {
+          "path": "app/circles/[id]/events/actions.ts",
+          "type": "TO_MODIFY",
+          "description": "approveRsvp·rejectRsvp 추가"
+        },
+        {
+          "path": "lib/supabase/queries/event-rsvps.ts",
+          "type": "CREATE",
+          "description": "관리자 쿼리"
+        },
+        {
+          "path": "docs/tasks/T-024-event-manage.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) Server Component — Defense in Depth 권한 검증 2) 신청자 목록: event_rsvps + event_interests JOIN profiles. 상태 필터 (going/pending/waiting/cancelled) Tabs. 3) pending row 에 승인/거절 버튼 — Server Action approveRsvp(eventId, userId)/rejectRsvp + status='going'/'rejected' UPDATE + approved_at/by 또는 rejected_at/reason 기록 (T-023 트리거가 정원 검증·waiting 강제 자동) 4) app/circles/[id]/events/[eventId]/manage/csv/route.ts — Route Handler GET → CSV stream (이름·닉네임·신청일·상태) Content-Type text/csv. 5) lib/server-actions/event-broadcast.ts — broadcastEvent(eventId, body) — 신청자 전원 notifications INSERT. 6) UI 상단 「変更通知を送信」 버튼 (T-026 트리거)·「CSV ダウンロード」·「一斉通知」 + 신청자 카드 + ⋯ 메뉴",
+      "verificationCriteria": "운영자 진입·미운영자 redirect. 상태 필터 동작. 승인 → T-023 트리거 자동 검증 (정원 초과 시 waiting 강제). CSV 다운로드. 일괄 알림 notifications 다중 row. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "4af7ece7-fbc3-4f3a-a3b5-4e655a2bdb57",
+      "name": "T-025: 이벤트 취소·재고지 동선",
+      "description": "app/circles/[id]/events/[eventId]/cancel/route.ts + 이벤트 상세에 빨간 배너. 신청자 전원 통보 + 사유 표시. F049.",
+      "notes": "취소는 soft delete (row 보존). notifications type 'event_rsvp_cancelled' 추가 필요 시 T-023 마이그레이션 갱신 또는 본 Task 의 별도 마이그레이션 (021_03). 시각 구분 events.cancelled_at IS NULL 검사.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "fefb3cfc-e80c-4ed5-acbc-bdfd553403e3"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/events/[eventId]/cancel/route.ts",
+          "type": "CREATE",
+          "description": "취소 핸들러"
+        },
+        {
+          "path": "app/events/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "빨간 배너"
+        },
+        {
+          "path": "components/calendar/calendar-list-view.tsx",
+          "type": "TO_MODIFY",
+          "description": "취소 시각 구분"
+        },
+        {
+          "path": "supabase/migrations/",
+          "type": "CREATE",
+          "description": "notifications type 추가 시"
+        },
+        {
+          "path": "docs/tasks/T-025-event-cancel.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) Route Handler 또는 Server Action cancelEvent(eventId, reason) — Defense in Depth + UPDATE events SET cancelled_at=now(), cancellation_reason=reason. 2) 신청자 전원 notifications INSERT (type='event_rsvp_cancelled' — 단 notifications CHECK 추가 필요 시 T-023 와 같이 확장). 3) app/events/[id]/page.tsx 상단에 빨간 배너 中止されました — 理由: {reason} 표시 (cancelled_at NOT NULL 시). 4) 이벤트 목록·캘린더에서 cancelled_at NOT NULL row 시각 구분 (취소선·gray). 5) revalidateTag(events:public) + revalidatePath",
+      "verificationCriteria": "운영자 취소 → cancelled_at 기록. 빨간 배너 표시 (이유 포함). 신청자 전원 notifications. 캘린더/목록 시각 구분. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
+    },
+    {
+      "id": "bc5bc445-096b-4404-aade-2e730de497a9",
+      "name": "T-026: 이벤트 변경 알림 cron/Server Action (MVP 단순화)",
+      "description": "event_change_logs.notified_at IS NULL row 처리. MVP 는 Server Action (운영자가 「変更通知を送信」 버튼 클릭 시 즉시). Phase 2/3에서 자동 cron 검토. F048.",
+      "notes": "MVP 단순화 — Vercel Cron 무료 100건/월 한계 회피. 운영자 즉시 실행 모델. notifications.type 'event_changed' 추가 필요 시 T-023 마이그레이션 갱신 또는 별도. event_change_logs.notified_at partial index (T-007 적용) 활용.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "2fa8793e-f195-43ee-924e-32a84b33f831"
+        }
+      ],
+      "createdAt": "2026-06-01T06:01:08.150Z",
+      "updatedAt": "2026-06-01T06:01:08.150Z",
+      "relatedFiles": [
+        {
+          "path": "lib/server-actions/event-change-notify.ts",
+          "type": "CREATE",
+          "description": "변경 알림 Server Action"
+        },
+        {
+          "path": "app/circles/[id]/events/[eventId]/manage/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "버튼 + count 표시"
+        },
+        {
+          "path": "lib/supabase/queries/event-change-logs.ts",
+          "type": "CREATE",
+          "description": "미발송 쿼리"
+        },
+        {
+          "path": "docs/tasks/T-026-event-change-notify.md",
+          "type": "REFERENCE",
+          "description": "Task 상세"
+        }
+      ],
+      "implementationGuide": "1) lib/server-actions/event-change-notify.ts — sendEventChangeNotifications(eventId) — Defense in Depth 검증. 2) SELECT event_change_logs WHERE event_id=$1 AND notified_at IS NULL. 3) 신청자 전원 (event_interests+event_rsvps) notifications INSERT (type='event_changed' — CHECK 확장 필요 시 T-023 와 같이) — body 에 변경 필드 요약. 4) UPDATE event_change_logs SET notified_at=now() WHERE id IN (...) — 처리 완료 표시. 5) T-024 manage 페이지 상단에 「変更通知を送信 (N件未送信)」 버튼 — 미발송 count 표시 + 클릭 시 Server Action 호출. 6) Vercel Cron 미사용 (MVP). Phase 2 에서 cron schedule 자동화.",
+      "verificationCriteria": "미발송 count 표시. 클릭 시 신청자 전원 notifications. notified_at 갱신 (재발송 차단). M-Event 마일스톤 검증 트리거. TS 0.",
+      "analysisResult": "Phase 1-3 이벤트·캘린더·빡센 관리 13개 Task (Phase 1 최대 작업량). T-023 F045 자동 승격 트리거는 Phase 1 최난도 — notifications type CHECK 확장 포함. 이벤트 상세는 루트 /events/[id] 분리 (template 함정 회피). 이중 모드 RSVP (light=event_interests, strict=event_rsvps). shadcn calendar + date-fns-tz 신규. 4 Wave 병렬: W1 T-014·T-020·T-023 → W2 T-015·T-017·T-018·T-019·T-022 → W3 T-016·T-021·T-024 → W4 T-025·T-026."
     }
   ]
 }
