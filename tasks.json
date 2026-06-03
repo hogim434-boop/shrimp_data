@@ -68,14 +68,14 @@
       "name": "T-028 DM 스레드 페이지 + Supabase Realtime 채널 구독",
       "description": "발신된 inquiry의 메시지 스레드 페이지. SSR로 초기 메시지 N건 로드 후 client component가 Realtime 채널 inquiry:${inquiryId} 구독으로 신규 메시지 1초 이내 수신. 메시지 송신 Server Action에서 송신자 role 자동판별(is_circle_staff(circle_id) true면 circle_staff, else inquirer). 운영진 메시지는 라벨 「○○サークル運営」 통일(개인이름 비노출, F058). 既読 표시 절대 금지(A-5) — is_read_by_recipient는 「未読 N件」 배지 카운트에만. 미참여자 직접 URL 접근 거부(RLS+page 가드).",
       "notes": "Realtime 첫 도입 — removeChannel cleanup 필수(누수 시 비용·중복수신). DM 개인데이터 캐시 금지. A-5 既読 금지 엄수.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "e93bad1f-add7-492a-a7a6-f1efd0d3cbb7"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:59:53.036Z",
       "relatedFiles": [
         {
           "path": "lib/supabase/client.ts",
