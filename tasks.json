@@ -126,14 +126,14 @@
       "name": "T-029 운영진 그룹 인박스 + presence 마운트·heartbeat",
       "description": "동아리 owner+staff가 들어오는 DM 스레드를 한 곳에서 보는 그룹 인박스. is_circle_staff 가드. open 스레드 우선 last_message_at DESC 정렬. 마운트 시 presence upsert(circle_id 채움), setInterval 5분 heartbeat(last_seen_at=now()), 언마운트 시 circle_id=NULL(오프라인). 새 DM 도착 시 토스트 + 未読 배지.",
       "notes": "beforeunload 모바일 미보장 → circle_id NULL 처리는 best-effort, 표시측(T-028)에서 last_seen_at 5분 경과=오프라인 판정으로 보완. heartbeat 비용 무시 가능(5분 주기).",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T08:12:37.592Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/dm/inbox/page.tsx",
