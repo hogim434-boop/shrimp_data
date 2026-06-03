@@ -336,14 +336,14 @@
       "name": "T-034 平均応答時間 통계 표시",
       "description": "동아리별 평균 응답시간 통계. DB SQL 함수/뷰 avg_response_time(circle_id) — inquirer 발신→circle_staff 첫 응답까지 시간차 AVG(최근 3개월). 동아리 상세·DM 발신 폼에 「平均的に○日以内に返信」 표시. 데이터 없으면 「データ収集中」. 강제표현(必ず) 금지 — 자율 압박만.",
       "notes": "데이터 부족 시 データ収集中 fallback. 必ず 등 강제표현 금지. 통계 수치만 캐시 가능, DM 본문은 절대 캐시 금지.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T08:41:34.099Z",
+      "updatedAt": "2026-06-03T08:41:34.177Z",
       "relatedFiles": [
         {
           "path": "lib/supabase/queries/inquiries.ts",
@@ -369,7 +369,8 @@
       "implementationGuide": "1) 마이그레이션(apply_migration): CREATE FUNCTION avg_response_time(_circle_id uuid) — inquiry_messages에서 inquirer 메시지 직후 circle_staff 첫 응답 시간차 AVG, created_at>now()-interval'3 months'. GRANT EXECUTE TO authenticated, anon.\\n2) lib/supabase/queries/inquiries.ts getAvgResponseTime(circleId): 함수 호출, 공개 통계라 unstable_cache(tags:['circles']) 적용 검토(본문 아닌 수치만).\\n3) 표시 컴포넌트 components/dm/avg-response-time.tsx: 값 있으면 平均的にN日以内に返信, NULL이면 データ収集中.\\n4) 동아리 상세 page.tsx + 발신 폼 inquiry-form.tsx의 placeholder를 실제 컴포넌트로 교체.",
       "verificationCriteria": "답변 있는 동아리→平均的に○日以内に返信 표시. 답변 없는 동아리→データ収集中. 강제표현 없음. 함수 GRANT 적용·get_advisors 경고 0건.",
       "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤.",
-      "summary": "T-034 완료. 마이그레이션 034_avg_response_time_fn(avg_response_time(_circle_id uuid) RETURNS interval, SECURITY DEFINER, 첫 inquirer→첫 circle_staff 응답 시간차 AVG 최근3개월, GRANT authenticated+anon). getAvgResponseTime():AvgResponseTime={days}|null append(anon 클라이언트+unstable_cache tags:['circles'] revalidate 60s, interval→일수 Math.ceil 최소1). avg-response-time.tsx(값 있으면 平均的に○日以内に返信, null이면 データ収集中, 약속·강제 표현 금지). 동아리 상세·dm/page.tsx placeholder 교체(inquiry-form에 avgResponseTime prop). lint·tsc·get_advisors(신규 경고 0, 기존 SECURITY DEFINER 패턴 동일)·npm run build 26/26 통과. Phase 1-4 전체 빌드 검증 완료."
+      "summary": "T-034 완료. 마이그레이션 034_avg_response_time_fn(avg_response_time(_circle_id uuid) RETURNS interval, SECURITY DEFINER, 첫 inquirer→첫 circle_staff 응답 시간차 AVG 최근3개월, GRANT authenticated+anon). getAvgResponseTime():AvgResponseTime={days}|null append(anon 클라이언트+unstable_cache tags:['circles'] revalidate 60s, interval→일수 Math.ceil 최소1). avg-response-time.tsx(값 있으면 平均的に○日以内に返信, null이면 データ収集中, 약속·강제 표현 금지). 동아리 상세·dm/page.tsx placeholder 교체(inquiry-form에 avgResponseTime prop). lint·tsc·get_advisors(신규 경고 0, 기존 SECURITY DEFINER 패턴 동일)·npm run build 26/26 통과. Phase 1-4 전체 빌드 검증 완료.",
+      "completedAt": "2026-06-03T08:41:34.176Z"
     }
   ]
 }
