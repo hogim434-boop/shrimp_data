@@ -8,7 +8,7 @@
       "status": "in_progress",
       "dependencies": [],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:53:23.794Z",
+      "updatedAt": "2026-06-03T07:59:48.142Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/template.tsx",
@@ -59,7 +59,8 @@
       ],
       "implementationGuide": "1) template 회피 선처리(블로커): app/circles/[id]/template.tsx의 if(pathname?.endsWith(\\\"/edit\\\")) 분기를 pathname?.includes(\\\"/dm\\\") 포함하도록 확장 → children만 반환.\\n2) 상수: lib/dm/constants.ts에 CATEGORY 6종 일본어 라벨맵.\\n3) zod: lib/dm/inquiry-schema.ts (category enum, body min/max).\\n4) 페이지 app/circles/[id]/dm/page.tsx (server): getClaims→미인증 시 redirect(\\\"/auth/login?redirect_to=/circles/[id]/dm\\\"). 동아리명 조회. 발신 폼 client component 렌더.\\n5) components/dm/inquiry-form.tsx (client): RadioGroup/Select 카테고리 + Textarea + (선택)첨부 + 온라인상태/평균응답 placeholder.\\n6) app/circles/[id]/dm/actions.ts sendInquiry: \\\"use server\\\"→로그인 재검증→[BLOCK 검증 placeholder T-032]→[COOLDOWN/respect 검증 placeholder T-033]→inquiries INSERT(sender_user_id=uid)→inquiry_messages INSERT(sender_role='inquirer', body)→redirect(/circles/[id]/dm/[inquiryId]).\\n7) 동아리 상세 app/circles/[id]/page.tsx sticky CTA 자리(pb-24)에 Link 「運営に問い合わせる」 버튼.\\n8) loading.tsx.",
       "verificationCriteria": "미로그인 진입→/auth/login?redirect_to 보존 후 복귀. 카테고리 interest 선택·제출→inquiries.category='interest' row + inquiry_messages 1건. 제출 후 스레드로 redirect. 동아리 상세에 運営に問い合わせる CTA 표시·클릭 시 /dm 진입. /dm 페이지가 0높이 붕괴 없이 정상 렌더(template 회피 동작).",
-      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤.",
+      "summary": "T-027 완료. template.tsx에 /dm 경로 회피 분기 추가(풀스크린 붕괴 방지, 스레드 페이지까지 커버). lib/dm/constants.ts(INQUIRY_CATEGORIES 6종)·inquiry-schema.ts(zod) 신설. app/circles/[id]/dm/{page.tsx,actions.ts,loading.tsx} 및 components/dm/inquiry-form.tsx 생성. sendInquiry Server Action에 차단(T-032)·cooldown(T-033) placeholder 확보. CTA「運営に問い合わせる」는 기존 CircleActions에 이미 구현되어 있어 중복 추가 회피. 미로그인 redirect_to 보존(A-1). lint·tsc 통과. 후속 인터페이스: actions.ts 32/37행 TODO, page.tsx T-029/T-034 placeholder, sendInquiry는 성공 시 스레드로 redirect."
     },
     {
       "id": "4dea211f-e383-4867-a54c-c5f5a6900b52",
