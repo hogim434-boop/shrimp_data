@@ -68,14 +68,14 @@
       "name": "T-028 DM 스레드 페이지 + Supabase Realtime 채널 구독",
       "description": "발신된 inquiry의 메시지 스레드 페이지. SSR로 초기 메시지 N건 로드 후 client component가 Realtime 채널 inquiry:${inquiryId} 구독으로 신규 메시지 1초 이내 수신. 메시지 송신 Server Action에서 송신자 role 자동판별(is_circle_staff(circle_id) true면 circle_staff, else inquirer). 운영진 메시지는 라벨 「○○サークル運営」 통일(개인이름 비노출, F058). 既読 표시 절대 금지(A-5) — is_read_by_recipient는 「未読 N件」 배지 카운트에만. 미참여자 직접 URL 접근 거부(RLS+page 가드).",
       "notes": "Realtime 첫 도입 — removeChannel cleanup 필수(누수 시 비용·중복수신). DM 개인데이터 캐시 금지. A-5 既読 금지 엄수.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "e93bad1f-add7-492a-a7a6-f1efd0d3cbb7"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T08:06:25.689Z",
+      "updatedAt": "2026-06-03T08:06:26.026Z",
       "relatedFiles": [
         {
           "path": "lib/supabase/client.ts",
@@ -118,7 +118,8 @@
       "implementationGuide": "1) lib/supabase/queries/inquiries.ts: getInquiryWithMessages(inquiryId) server 전용(RLS로 참여자만). unstable_cache 금지.\\n2) app/circles/[id]/dm/[inquiryId]/page.tsx (server): getClaims 가드, inquiry+초기메시지 조회(없으면 notFound), client 스레드 컴포넌트에 초기 데이터 전달.\\n3) components/dm/dm-thread.tsx (client): createClient()→supabase.channel(`inquiry:${id}`).on('postgres_changes',{event:'INSERT',table:'inquiry_messages',filter:`inquiry_id=eq.${id}`}, payload→setMessages 추가).subscribe(); cleanup return removeChannel(channel). 메시지 버블(inquirer/circle_staff 좌우 구분), circle_staff는 라벨 표시.\\n4) components/dm/dm-composer.tsx (client): Textarea+송신→replyToInquiry Server Action.\\n5) app/circles/[id]/dm/actions.ts replyToInquiry: 로그인 재검증→is_circle_staff(circle_id) RPC로 sender_role 결정→inquiry_messages INSERT→inquiries.last_message_at 갱신.\\n6) 未読 배지: is_read_by_recipient=false 카운트만. 既読 텍스트 미표시.\\n7) loading.tsx.",
       "verificationCriteria": "두 탭에서 같은 스레드 송신→1초 이내 반대편 표시. 운영진 발신 메시지에 ○○サークル運営 라벨(개인이름 없음). 既読 표시 없음(스크린샷 확인). 미참여자 직접 URL 접근→notFound/거부. removeChannel cleanup 동작(중복수신 없음).",
       "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤.",
-      "summary": "T-028 완료. lib/supabase/queries/inquiries.ts 신설(getInquiryWithMessages, InquiryMessage·InquiryWithMessages 타입 export, 후속 함수 추가 자리 주석). dm/[inquiryId]/page.tsx(getClaims 가드+notFound+viewerRole 판별), dm-thread.tsx(Realtime channel inquiry:${id} 구독+removeChannel cleanup+id dedupe+운영진 라벨 ○○運営+A-5 既読 미표시), dm-composer.tsx, loading.tsx 생성. actions.ts에 replyToInquiry 추가(is_circle_staff RPC role 자동판별, last_message_at 갱신). lint·tsc 통과. 후속 인터페이스: queries/inquiries.ts에 getCircleInbox(T-029)/getMyInquiries(T-030)/getAvgResponseTime(T-034) append 예정. replyToInquiry(inquiryId, circleId, body)."
+      "summary": "T-028 완료. lib/supabase/queries/inquiries.ts 신설(getInquiryWithMessages, InquiryMessage·InquiryWithMessages 타입 export, 후속 함수 추가 자리 주석). dm/[inquiryId]/page.tsx(getClaims 가드+notFound+viewerRole 판별), dm-thread.tsx(Realtime channel inquiry:${id} 구독+removeChannel cleanup+id dedupe+운영진 라벨 ○○運営+A-5 既読 미표시), dm-composer.tsx, loading.tsx 생성. actions.ts에 replyToInquiry 추가(is_circle_staff RPC role 자동판별, last_message_at 갱신). lint·tsc 통과. 후속 인터페이스: queries/inquiries.ts에 getCircleInbox(T-029)/getMyInquiries(T-030)/getAvgResponseTime(T-034) append 예정. replyToInquiry(inquiryId, circleId, body).",
+      "completedAt": "2026-06-03T08:06:26.020Z"
     },
     {
       "id": "fc3a1369-e260-4c04-a053-6748b63f6585",
