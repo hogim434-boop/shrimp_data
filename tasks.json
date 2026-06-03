@@ -287,14 +287,14 @@
       "name": "T-033 cooldown 로직 + 「他者尊重」 동의",
       "description": "DM 발신 남용 방지. 같은 검토자가 1시간 내 N건(N=10 상수) 이상 발송 시 거부. 회원가입 시 「他者尊重」 동의 체크박스(profiles.respect_agreed_at 컬럼 마이그레이션+GRANT 명시). respect_agreed_at NULL 사용자는 발신 폼에서 동의 모달→동의 후 발신. T-027 sendInquiry의 cooldown/respect 검증 placeholder를 실제 구현으로 교체.",
       "notes": "N=10 PRD 미명시→상수 추출(베타 조정). 기존 가입자 NULL→첫 발신 시 동의 모달. 컬럼 GRANT 명시 필수.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "e93bad1f-add7-492a-a7a6-f1efd0d3cbb7"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T08:06:30.001Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/dm/actions.ts",
