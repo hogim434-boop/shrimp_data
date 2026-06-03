@@ -206,14 +206,14 @@
       "name": "T-031 신고 UI + admin 신고 검토 페이지",
       "description": "메시지 우측 DropdownMenu 「報告する」→사유 입력 다이얼로그→inquiry_reports INSERT→admin 큐 진입. admin 검토 페이지 app/admin/inquiry-reports/page.tsx (is_admin 가드)에서 admin_resolved_at IS NULL 우선 리스트, 조치(해결/거부, admin_resolved_at=now()). 검토자·운영진 모두 신고 가능.",
       "notes": "is_admin 헬퍼 존재 확인됨. 신고 어그로 모니터링은 운영. app/admin/layout.tsx 기존 가드 패턴 참고.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T08:25:48.487Z",
       "relatedFiles": [
         {
           "path": "app/admin/layout.tsx",
