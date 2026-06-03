@@ -336,14 +336,14 @@
       "name": "T-034 平均応答時間 통계 표시",
       "description": "동아리별 평균 응답시간 통계. DB SQL 함수/뷰 avg_response_time(circle_id) — inquirer 발신→circle_staff 첫 응답까지 시간차 AVG(최근 3개월). 동아리 상세·DM 발신 폼에 「平均的に○日以内に返信」 표시. 데이터 없으면 「データ収集中」. 강제표현(必ず) 금지 — 자율 압박만.",
       "notes": "데이터 부족 시 データ収集中 fallback. 必ず 등 강제표현 금지. 통계 수치만 캐시 가능, DM 본문은 절대 캐시 금지.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T08:35:33.329Z",
       "relatedFiles": [
         {
           "path": "lib/supabase/queries/inquiries.ts",
