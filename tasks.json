@@ -167,14 +167,14 @@
       "name": "T-030 검토자 인박스 (/mypage/inbox)",
       "description": "검토자(발신자) 본인이 보낸 DM 스레드 목록 페이지. inquiries WHERE sender_user_id=auth.uid() 리스트(last_message_at DESC). 동아리명·카테고리·마지막메시지 일시·未読 배지. 클릭→스레드. 빈 상태 「まだお問い合わせがありません」. 마이페이지 통합(T-035, Phase 1-5)에서 이 페이지로 링크하므로 별도 페이지로 둔다.",
       "notes": "T-035 마이페이지 통합에서 링크 추가. 기존 app/(tabs)/mypage 구조·loading.tsx 패턴 참고.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T08:32:05.589Z",
       "relatedFiles": [
         {
           "path": "app/(tabs)/mypage/page.tsx",
