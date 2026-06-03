@@ -250,14 +250,14 @@
       "name": "T-032 차단 UI + 발신 차단 검증",
       "description": "운영진이 인박스 스레드 메뉴 「このユーザーをブロック」로 검토자 차단(user_blocks INSERT: blocker_user_id, blocked_user_id, circle_id). 차단된 검토자는 해당 동아리 DM 발신 불가 — T-027 sendInquiry Server Action의 차단 검증 placeholder를 실제 구현으로 교체. 발신 폼 진입 시 차단 상태면 「現在お問い合わせを受け付けていません」 안내. 운영진 관리 페이지에서 차단 해제. 운영진→검토자 단방향만(Phase 1).",
       "notes": "user_blocks 복합PK(blocker,blocked,circle). 차단 사유 컬럼은 현재 스키마에 없음(후속 검토). 양방향 차단은 Phase 1 미도입.",
-      "status": "in_progress",
+      "status": "completed",
       "dependencies": [
         {
           "taskId": "fc3a1369-e260-4c04-a053-6748b63f6585"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T08:25:44.322Z",
+      "updatedAt": "2026-06-03T08:25:44.702Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/dm/actions.ts",
@@ -283,7 +283,8 @@
       "implementationGuide": "1) components/dm/block-user-menu.tsx (client): 인박스 스레드 메뉴 「このユーザーをブロック」→blockUser Server Action.\\n2) app/circles/[id]/dm/actions.ts blockUser: is_circle_staff(circle_id) 재검증→user_blocks INSERT(blocker=uid, blocked=대상, circle_id). unblockUser: DELETE.\\n3) sendInquiry 차단 검증 교체: INSERT 전 user_blocks WHERE blocked_user_id=uid AND circle_id=circleId 존재 시 거부(에러 반환).\\n4) 발신 폼 page.tsx 진입 시 차단 조회→차단 상태면 폼 대신 안내 표시.\\n5) 차단 해제 UI: 운영진 인박스/관리 영역에 차단 목록+해제 버튼.",
       "verificationCriteria": "차단 후 검토자 발신 시도→거부 + 現在お問い合わせを受け付けていません 안내. 차단 해제 후 발신 가능. 비운영진은 차단 불가.",
       "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤.",
-      "summary": "T-032 완료. sendInquiry 32행 차단 placeholder 교체(user_blocks 조회→차단 시 「現在お問い合わせを受け付けていません」, fail-closed). blockUser/unblockUser(circleId, blockedUserId) 추가(getClaims+is_circle_staff RPC 재검증, upsert 멱등/DELETE). block-user-menu.tsx(DropdownMenu+AlertDialog 확인, sonner 토스트). inbox-list에 blockedUserIds:Set prop 추가(page.tsx에서 user_blocks 1회 조회로 N+1 회피, has() O(1)), 차단 스레드 opacity-60+ブロック中 배지. dm/page.tsx 발신 폼 진입 차단 안내(InquiryForm 미렌더). T-033 respect/cooldown 보존. 단방향. lint·tsc 통과."
+      "summary": "T-032 완료. sendInquiry 32행 차단 placeholder 교체(user_blocks 조회→차단 시 「現在お問い合わせを受け付けていません」, fail-closed). blockUser/unblockUser(circleId, blockedUserId) 추가(getClaims+is_circle_staff RPC 재검증, upsert 멱등/DELETE). block-user-menu.tsx(DropdownMenu+AlertDialog 확인, sonner 토스트). inbox-list에 blockedUserIds:Set prop 추가(page.tsx에서 user_blocks 1회 조회로 N+1 회피, has() O(1)), 차단 스레드 opacity-60+ブロック中 배지. dm/page.tsx 발신 폼 진입 차단 안내(InquiryForm 미렌더). T-033 respect/cooldown 보존. 단방향. lint·tsc 통과.",
+      "completedAt": "2026-06-03T08:25:44.696Z"
     },
     {
       "id": "c1a0188a-b4af-469d-93b4-dc4f130371ad",
