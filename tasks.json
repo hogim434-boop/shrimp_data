@@ -133,7 +133,7 @@
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T08:12:37.592Z",
+      "updatedAt": "2026-06-03T08:18:49.136Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/dm/inbox/page.tsx",
@@ -158,7 +158,8 @@
       ],
       "implementationGuide": "1) lib/supabase/queries/inquiries.ts에 getCircleInbox(circleId) 추가: inquiries WHERE circle_id, ORDER BY status='open' DESC, last_message_at DESC. 各 스레드 未読 카운트.\\n2) app/circles/[id]/dm/inbox/page.tsx (server): getClaims + is_circle_staff 가드(미통과 redirect/404), 인박스 리스트 SSR, presence client wrapper 마운트.\\n3) components/dm/inbox-list.tsx (client): 스레드 카드(카테고리·마지막메시지·未読 배지)→클릭 시 /circles/[id]/dm/[inquiryId].\\n4) components/dm/presence-heartbeat.tsx (client): mount useEffect→presence upsert({user_id,circle_id,last_seen_at}); setInterval(5*60*1000) last_seen_at 갱신; return cleanup→presence upsert circle_id=NULL + clearInterval.\\n5) 새 DM 토스트: Realtime 또는 SSE. 기존 토스트 라이브러리(sonner 등) 확인 후 사용.\\n6) loading.tsx.",
       "verificationCriteria": "운영자 진입→presence.circle_id 채워짐. 5분 후 last_seen_at 갱신. 페이지 떠남→circle_id NULL. open 스레드 우선·last_message_at DESC 정렬. 새 DM 도착 시 토스트+未読 배지. 비운영진 접근 거부.",
-      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤.",
+      "summary": "T-029 완료. getCircleInbox(circleId):CircleInboxItem[] append(open 우선·last_message_at DESC, unread_count=inquirer 미읽음, sender_user_id 포함 T-032용). dm/inbox/page.tsx(is_circle_staff 가드+notFound), inbox-list.tsx(스레드 카드·未読 Badge·sonner 새 DM 토스트·Realtime channel circle-inbox+removeChannel cleanup·A-5 既読 미표시), presence-heartbeat.tsx(mount upsert circle_id·5분 setInterval heartbeat·unmount circle_id=null+clearInterval), loading.tsx 생성. 토스트는 기존 sonner 재사용. T-032 차단 연동 자리(sender_user_id 노출, DropdownMenu 합성 권장) 명시. lint·tsc 통과."
     },
     {
       "id": "aadd9e54-f025-481d-9229-cb305150805a",
