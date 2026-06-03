@@ -1,3 +1,360 @@
 {
-  "tasks": []
+  "tasks": [
+    {
+      "id": "e93bad1f-add7-492a-a7a6-f1efd0d3cbb7",
+      "name": "T-027 DM 발신 폼 + 「運営に問い合わせる」 CTA + template 회피 + 발신 Server Action 골격",
+      "description": "Phase 1-4 길목 Task. 검토자가 동아리 운영진에게 DM을 시작하는 발신 폼을 만들고, 동아리 상세에 메인 CTA 버튼을 붙이며, 풀스크린 페이지 붕괴를 막는 template 회피와 발신 Server Action 골격을 확립한다. 카테고리 6종(fee/schedule/vibe/trial/interest/other, interest=「興味があります」 v2.2 신규), 본문 textarea, 첨부(선택, Phase 1은 후속 가능). 미로그인 시 redirect_to 보존(A-1 회피). 운영진 온라인상태·평균응답시간 표시 자리 placeholder. 제출 시 inquiries INSERT + 첫 inquiry_messages INSERT 후 스레드로 redirect. 발신 Server Action 내부에 차단(T-032)·cooldown(T-033) 검증 훅 자리를 주석 placeholder로 미리 확보.",
+      "notes": "template 회피를 가장 먼저. 첨부 Storage 버킷 생성은 범위 크므로 Phase1 MVP는 텍스트 본문 우선, 첨부 optional. CTA 카피 公認/必ず 금지.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/template.tsx",
+          "type": "TO_MODIFY",
+          "description": "/dm 경로 모션 래퍼 회피 분기 추가(fixed 붕괴 방지)",
+          "lineStart": 90,
+          "lineEnd": 100
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "sticky CTA 자리에 運営に問い合わせる 버튼 추가",
+          "lineStart": 38,
+          "lineEnd": 60
+        },
+        {
+          "path": "app/circles/[id]/events/actions.ts",
+          "type": "REFERENCE",
+          "description": "Server Action Defense in Depth·redirect 패턴 참고",
+          "lineStart": 1,
+          "lineEnd": 60
+        },
+        {
+          "path": "app/circles/[id]/dm/page.tsx",
+          "type": "CREATE",
+          "description": "DM 발신 폼 페이지(server, 로그인 가드)"
+        },
+        {
+          "path": "app/circles/[id]/dm/actions.ts",
+          "type": "CREATE",
+          "description": "sendInquiry Server Action(검증 훅 placeholder 포함)"
+        },
+        {
+          "path": "components/dm/inquiry-form.tsx",
+          "type": "CREATE",
+          "description": "발신 폼 client component"
+        },
+        {
+          "path": "lib/dm/inquiry-schema.ts",
+          "type": "CREATE",
+          "description": "zod 발신 스키마"
+        },
+        {
+          "path": "lib/dm/constants.ts",
+          "type": "CREATE",
+          "description": "카테고리 6종 라벨맵"
+        }
+      ],
+      "implementationGuide": "1) template 회피 선처리(블로커): app/circles/[id]/template.tsx의 if(pathname?.endsWith(\\\"/edit\\\")) 분기를 pathname?.includes(\\\"/dm\\\") 포함하도록 확장 → children만 반환.\\n2) 상수: lib/dm/constants.ts에 CATEGORY 6종 일본어 라벨맵.\\n3) zod: lib/dm/inquiry-schema.ts (category enum, body min/max).\\n4) 페이지 app/circles/[id]/dm/page.tsx (server): getClaims→미인증 시 redirect(\\\"/auth/login?redirect_to=/circles/[id]/dm\\\"). 동아리명 조회. 발신 폼 client component 렌더.\\n5) components/dm/inquiry-form.tsx (client): RadioGroup/Select 카테고리 + Textarea + (선택)첨부 + 온라인상태/평균응답 placeholder.\\n6) app/circles/[id]/dm/actions.ts sendInquiry: \\\"use server\\\"→로그인 재검증→[BLOCK 검증 placeholder T-032]→[COOLDOWN/respect 검증 placeholder T-033]→inquiries INSERT(sender_user_id=uid)→inquiry_messages INSERT(sender_role='inquirer', body)→redirect(/circles/[id]/dm/[inquiryId]).\\n7) 동아리 상세 app/circles/[id]/page.tsx sticky CTA 자리(pb-24)에 Link 「運営に問い合わせる」 버튼.\\n8) loading.tsx.",
+      "verificationCriteria": "미로그인 진입→/auth/login?redirect_to 보존 후 복귀. 카테고리 interest 선택·제출→inquiries.category='interest' row + inquiry_messages 1건. 제출 후 스레드로 redirect. 동아리 상세에 運営に問い合わせる CTA 표시·클릭 시 /dm 진입. /dm 페이지가 0높이 붕괴 없이 정상 렌더(template 회피 동작).",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "4dea211f-e383-4867-a54c-c5f5a6900b52",
+      "name": "T-028 DM 스레드 페이지 + Supabase Realtime 채널 구독",
+      "description": "발신된 inquiry의 메시지 스레드 페이지. SSR로 초기 메시지 N건 로드 후 client component가 Realtime 채널 inquiry:${inquiryId} 구독으로 신규 메시지 1초 이내 수신. 메시지 송신 Server Action에서 송신자 role 자동판별(is_circle_staff(circle_id) true면 circle_staff, else inquirer). 운영진 메시지는 라벨 「○○サークル運営」 통일(개인이름 비노출, F058). 既読 표시 절대 금지(A-5) — is_read_by_recipient는 「未読 N件」 배지 카운트에만. 미참여자 직접 URL 접근 거부(RLS+page 가드).",
+      "notes": "Realtime 첫 도입 — removeChannel cleanup 필수(누수 시 비용·중복수신). DM 개인데이터 캐시 금지. A-5 既読 금지 엄수.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "e93bad1f-add7-492a-a7a6-f1efd0d3cbb7"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/client.ts",
+          "type": "REFERENCE",
+          "description": "브라우저 클라이언트(Realtime용)",
+          "lineStart": 1,
+          "lineEnd": 10
+        },
+        {
+          "path": "lib/supabase/queries/events-public.ts",
+          "type": "REFERENCE",
+          "description": "queries 레이어 작성 패턴 참고"
+        },
+        {
+          "path": "app/circles/[id]/dm/[inquiryId]/page.tsx",
+          "type": "CREATE",
+          "description": "스레드 페이지(server, SSR 초기 메시지)"
+        },
+        {
+          "path": "components/dm/dm-thread.tsx",
+          "type": "CREATE",
+          "description": "Realtime 구독 client component"
+        },
+        {
+          "path": "components/dm/dm-composer.tsx",
+          "type": "CREATE",
+          "description": "메시지 입력·송신 client component"
+        },
+        {
+          "path": "lib/supabase/queries/inquiries.ts",
+          "type": "CREATE",
+          "description": "inquiry/메시지 server 조회 헬퍼"
+        },
+        {
+          "path": "app/circles/[id]/dm/actions.ts",
+          "type": "TO_MODIFY",
+          "description": "replyToInquiry Server Action 추가(role 자동판별)"
+        }
+      ],
+      "implementationGuide": "1) lib/supabase/queries/inquiries.ts: getInquiryWithMessages(inquiryId) server 전용(RLS로 참여자만). unstable_cache 금지.\\n2) app/circles/[id]/dm/[inquiryId]/page.tsx (server): getClaims 가드, inquiry+초기메시지 조회(없으면 notFound), client 스레드 컴포넌트에 초기 데이터 전달.\\n3) components/dm/dm-thread.tsx (client): createClient()→supabase.channel(`inquiry:${id}`).on('postgres_changes',{event:'INSERT',table:'inquiry_messages',filter:`inquiry_id=eq.${id}`}, payload→setMessages 추가).subscribe(); cleanup return removeChannel(channel). 메시지 버블(inquirer/circle_staff 좌우 구분), circle_staff는 라벨 표시.\\n4) components/dm/dm-composer.tsx (client): Textarea+송신→replyToInquiry Server Action.\\n5) app/circles/[id]/dm/actions.ts replyToInquiry: 로그인 재검증→is_circle_staff(circle_id) RPC로 sender_role 결정→inquiry_messages INSERT→inquiries.last_message_at 갱신.\\n6) 未読 배지: is_read_by_recipient=false 카운트만. 既読 텍스트 미표시.\\n7) loading.tsx.",
+      "verificationCriteria": "두 탭에서 같은 스레드 송신→1초 이내 반대편 표시. 운영진 발신 메시지에 ○○サークル運営 라벨(개인이름 없음). 既読 표시 없음(스크린샷 확인). 미참여자 직접 URL 접근→notFound/거부. removeChannel cleanup 동작(중복수신 없음).",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "fc3a1369-e260-4c04-a053-6748b63f6585",
+      "name": "T-029 운영진 그룹 인박스 + presence 마운트·heartbeat",
+      "description": "동아리 owner+staff가 들어오는 DM 스레드를 한 곳에서 보는 그룹 인박스. is_circle_staff 가드. open 스레드 우선 last_message_at DESC 정렬. 마운트 시 presence upsert(circle_id 채움), setInterval 5분 heartbeat(last_seen_at=now()), 언마운트 시 circle_id=NULL(오프라인). 새 DM 도착 시 토스트 + 未読 배지.",
+      "notes": "beforeunload 모바일 미보장 → circle_id NULL 처리는 best-effort, 표시측(T-028)에서 last_seen_at 5분 경과=오프라인 판정으로 보완. heartbeat 비용 무시 가능(5분 주기).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/dm/inbox/page.tsx",
+          "type": "CREATE",
+          "description": "운영진 인박스 페이지(staff 가드)"
+        },
+        {
+          "path": "components/dm/inbox-list.tsx",
+          "type": "CREATE",
+          "description": "인박스 스레드 리스트 client"
+        },
+        {
+          "path": "components/dm/presence-heartbeat.tsx",
+          "type": "CREATE",
+          "description": "presence upsert·5분 heartbeat·언마운트 오프라인"
+        },
+        {
+          "path": "lib/supabase/queries/inquiries.ts",
+          "type": "TO_MODIFY",
+          "description": "getCircleInbox 추가"
+        }
+      ],
+      "implementationGuide": "1) lib/supabase/queries/inquiries.ts에 getCircleInbox(circleId) 추가: inquiries WHERE circle_id, ORDER BY status='open' DESC, last_message_at DESC. 各 스레드 未読 카운트.\\n2) app/circles/[id]/dm/inbox/page.tsx (server): getClaims + is_circle_staff 가드(미통과 redirect/404), 인박스 리스트 SSR, presence client wrapper 마운트.\\n3) components/dm/inbox-list.tsx (client): 스레드 카드(카테고리·마지막메시지·未読 배지)→클릭 시 /circles/[id]/dm/[inquiryId].\\n4) components/dm/presence-heartbeat.tsx (client): mount useEffect→presence upsert({user_id,circle_id,last_seen_at}); setInterval(5*60*1000) last_seen_at 갱신; return cleanup→presence upsert circle_id=NULL + clearInterval.\\n5) 새 DM 토스트: Realtime 또는 SSE. 기존 토스트 라이브러리(sonner 등) 확인 후 사용.\\n6) loading.tsx.",
+      "verificationCriteria": "운영자 진입→presence.circle_id 채워짐. 5분 후 last_seen_at 갱신. 페이지 떠남→circle_id NULL. open 스레드 우선·last_message_at DESC 정렬. 새 DM 도착 시 토스트+未読 배지. 비운영진 접근 거부.",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "aadd9e54-f025-481d-9229-cb305150805a",
+      "name": "T-030 검토자 인박스 (/mypage/inbox)",
+      "description": "검토자(발신자) 본인이 보낸 DM 스레드 목록 페이지. inquiries WHERE sender_user_id=auth.uid() 리스트(last_message_at DESC). 동아리명·카테고리·마지막메시지 일시·未読 배지. 클릭→스레드. 빈 상태 「まだお問い合わせがありません」. 마이페이지 통합(T-035, Phase 1-5)에서 이 페이지로 링크하므로 별도 페이지로 둔다.",
+      "notes": "T-035 마이페이지 통합에서 링크 추가. 기존 app/(tabs)/mypage 구조·loading.tsx 패턴 참고.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "app/(tabs)/mypage/page.tsx",
+          "type": "REFERENCE",
+          "description": "마이페이지 섹션·로딩 패턴 참고"
+        },
+        {
+          "path": "app/(tabs)/mypage/inbox/page.tsx",
+          "type": "CREATE",
+          "description": "검토자 인박스 페이지"
+        },
+        {
+          "path": "lib/supabase/queries/inquiries.ts",
+          "type": "TO_MODIFY",
+          "description": "getMyInquiries 추가"
+        },
+        {
+          "path": "lib/dm/constants.ts",
+          "type": "REFERENCE",
+          "description": "카테고리 라벨 재사용"
+        }
+      ],
+      "implementationGuide": "1) lib/supabase/queries/inquiries.ts에 getMyInquiries() 추가: sender_user_id=auth.uid(), 동아리명 JOIN(circles.name), last_message_at DESC, 未読 카운트.\\n2) app/(tabs)/mypage/inbox/page.tsx (server): getClaims 가드, 리스트 SSR.\\n3) 리스트 카드(server 렌더 가능, 인터랙션 없으면): 동아리명·카테고리 라벨(lib/dm/constants 재사용)·마지막메시지 일시·未読 배지. Link→/circles/[id]/dm/[inquiryId].\\n4) 빈 상태 컴포넌트.\\n5) loading.tsx.",
+      "verificationCriteria": "본인 발신 스레드 목록 표시(last_message_at DESC). 미수신 답변 시 未読 배지. 클릭→스레드 이동. 발신 0건 시 まだお問い合わせがありません 빈 상태.",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "0f8f6cd9-1ee1-4cfb-becd-2d92ff44d585",
+      "name": "T-031 신고 UI + admin 신고 검토 페이지",
+      "description": "메시지 우측 DropdownMenu 「報告する」→사유 입력 다이얼로그→inquiry_reports INSERT→admin 큐 진입. admin 검토 페이지 app/admin/inquiry-reports/page.tsx (is_admin 가드)에서 admin_resolved_at IS NULL 우선 리스트, 조치(해결/거부, admin_resolved_at=now()). 검토자·운영진 모두 신고 가능.",
+      "notes": "is_admin 헬퍼 존재 확인됨. 신고 어그로 모니터링은 운영. app/admin/layout.tsx 기존 가드 패턴 참고.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "app/admin/layout.tsx",
+          "type": "REFERENCE",
+          "description": "admin 가드 레이아웃 패턴"
+        },
+        {
+          "path": "app/admin/actions.ts",
+          "type": "REFERENCE",
+          "description": "admin Server Action 패턴"
+        },
+        {
+          "path": "components/dm/report-message-menu.tsx",
+          "type": "CREATE",
+          "description": "신고 메뉴+사유 다이얼로그 client"
+        },
+        {
+          "path": "app/admin/inquiry-reports/page.tsx",
+          "type": "CREATE",
+          "description": "admin 신고 검토 페이지"
+        },
+        {
+          "path": "app/admin/inquiry-reports/actions.ts",
+          "type": "CREATE",
+          "description": "신고 조치 Server Action"
+        }
+      ],
+      "implementationGuide": "1) components/dm/report-message-menu.tsx (client): DropdownMenu(shadcn) 「報告する」→Dialog 사유 Textarea→reportMessage Server Action.\\n2) app/circles/[id]/dm/actions.ts reportMessage: 로그인 재검증→inquiry_reports INSERT(reporter_user_id=uid, inquiry_id, message_id, reason).\\n3) app/admin/inquiry-reports/page.tsx (server): is_admin 가드(미통과 redirect), 신고 리스트 ORDER BY admin_resolved_at IS NULL DESC, created_at DESC.\\n4) app/admin/inquiry-reports/actions.ts resolveReport: is_admin 재검증→admin_resolved_at=now() UPDATE (해결/거부 구분 컬럼 없으면 단순 resolved). 발신자 권한 정지 옵션은 후속.\\n5) DropdownMenu/Dialog 미설치 시 shadcn MCP add. loading.tsx.",
+      "verificationCriteria": "메시지 신고→inquiry_reports row 생성. admin 큐에 진입(미해결 우선). 조치 후 admin_resolved_at 채워지고 큐에서 제거. 비admin 접근 거부.",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "16dfd19d-c4ce-4dcd-804e-f959725a0a91",
+      "name": "T-032 차단 UI + 발신 차단 검증",
+      "description": "운영진이 인박스 스레드 메뉴 「このユーザーをブロック」로 검토자 차단(user_blocks INSERT: blocker_user_id, blocked_user_id, circle_id). 차단된 검토자는 해당 동아리 DM 발신 불가 — T-027 sendInquiry Server Action의 차단 검증 placeholder를 실제 구현으로 교체. 발신 폼 진입 시 차단 상태면 「現在お問い合わせを受け付けていません」 안내. 운영진 관리 페이지에서 차단 해제. 운영진→검토자 단방향만(Phase 1).",
+      "notes": "user_blocks 복합PK(blocker,blocked,circle). 차단 사유 컬럼은 현재 스키마에 없음(후속 검토). 양방향 차단은 Phase 1 미도입.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "fc3a1369-e260-4c04-a053-6748b63f6585"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/dm/actions.ts",
+          "type": "TO_MODIFY",
+          "description": "blockUser/unblockUser 추가 + sendInquiry 차단검증 placeholder 교체"
+        },
+        {
+          "path": "app/circles/[id]/dm/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "발신 폼 진입 시 차단 상태 안내 분기"
+        },
+        {
+          "path": "components/dm/block-user-menu.tsx",
+          "type": "CREATE",
+          "description": "차단/해제 메뉴 client"
+        },
+        {
+          "path": "components/dm/inbox-list.tsx",
+          "type": "REFERENCE",
+          "description": "인박스 스레드 메뉴 통합 지점"
+        }
+      ],
+      "implementationGuide": "1) components/dm/block-user-menu.tsx (client): 인박스 스레드 메뉴 「このユーザーをブロック」→blockUser Server Action.\\n2) app/circles/[id]/dm/actions.ts blockUser: is_circle_staff(circle_id) 재검증→user_blocks INSERT(blocker=uid, blocked=대상, circle_id). unblockUser: DELETE.\\n3) sendInquiry 차단 검증 교체: INSERT 전 user_blocks WHERE blocked_user_id=uid AND circle_id=circleId 존재 시 거부(에러 반환).\\n4) 발신 폼 page.tsx 진입 시 차단 조회→차단 상태면 폼 대신 안내 표시.\\n5) 차단 해제 UI: 운영진 인박스/관리 영역에 차단 목록+해제 버튼.",
+      "verificationCriteria": "차단 후 검토자 발신 시도→거부 + 現在お問い合わせを受け付けていません 안내. 차단 해제 후 발신 가능. 비운영진은 차단 불가.",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "c1a0188a-b4af-469d-93b4-dc4f130371ad",
+      "name": "T-033 cooldown 로직 + 「他者尊重」 동의",
+      "description": "DM 발신 남용 방지. 같은 검토자가 1시간 내 N건(N=10 상수) 이상 발송 시 거부. 회원가입 시 「他者尊重」 동의 체크박스(profiles.respect_agreed_at 컬럼 마이그레이션+GRANT 명시). respect_agreed_at NULL 사용자는 발신 폼에서 동의 모달→동의 후 발신. T-027 sendInquiry의 cooldown/respect 검증 placeholder를 실제 구현으로 교체.",
+      "notes": "N=10 PRD 미명시→상수 추출(베타 조정). 기존 가입자 NULL→첫 발신 시 동의 모달. 컬럼 GRANT 명시 필수.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "e93bad1f-add7-492a-a7a6-f1efd0d3cbb7"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "app/circles/[id]/dm/actions.ts",
+          "type": "TO_MODIFY",
+          "description": "cooldown·respect 검증 placeholder 교체 + agreeRespect 추가"
+        },
+        {
+          "path": "components/sign-up-form.tsx",
+          "type": "TO_MODIFY",
+          "description": "他者尊重 동의 체크박스 추가"
+        },
+        {
+          "path": "components/dm/inquiry-form.tsx",
+          "type": "TO_MODIFY",
+          "description": "respect_agreed_at NULL 시 동의 모달"
+        },
+        {
+          "path": "lib/dm/constants.ts",
+          "type": "TO_MODIFY",
+          "description": "COOLDOWN_MAX_PER_HOUR 상수"
+        }
+      ],
+      "implementationGuide": "1) 마이그레이션(supabase apply_migration): ALTER TABLE profiles ADD COLUMN respect_agreed_at timestamptz; + GRANT UPDATE 필요 컬럼 명시(circles-column-grant-trap 회피).\\n2) lib/dm/constants.ts에 COOLDOWN_MAX_PER_HOUR=10 상수.\\n3) sendInquiry cooldown 검증 교체: count inquiries WHERE sender_user_id=uid AND created_at>now()-interval'1 hour'; >=10이면 거부 「短時間に多くのお問い合わせを送信しました。しばらくしてから再度お試しください」.\\n4) respect 검증: profiles.respect_agreed_at IS NULL이면 거부/모달 신호.\\n5) 회원가입 폼(components/sign-up-form.tsx)에 동의 체크박스+가입 시 respect_agreed_at 기록.\\n6) 발신 폼: respect_agreed_at NULL이면 동의 Dialog→agreeRespect Server Action(now() 기록)→발신.",
+      "verificationCriteria": "같은 user 1시간 내 11회째 발송 거부. 동의 안 한 사용자 발신 시 동의 모달→동의 후 발신 가능. profiles.respect_agreed_at 컬럼 존재·GRANT 적용·get_advisors 경고 0건.",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    },
+    {
+      "id": "39576d99-8509-4b51-800d-f991556c95fe",
+      "name": "T-034 平均応答時間 통계 표시",
+      "description": "동아리별 평균 응답시간 통계. DB SQL 함수/뷰 avg_response_time(circle_id) — inquirer 발신→circle_staff 첫 응답까지 시간차 AVG(최근 3개월). 동아리 상세·DM 발신 폼에 「平均的に○日以内に返信」 표시. 데이터 없으면 「データ収集中」. 강제표현(必ず) 금지 — 자율 압박만.",
+      "notes": "데이터 부족 시 データ収集中 fallback. 必ず 등 강제표현 금지. 통계 수치만 캐시 가능, DM 본문은 절대 캐시 금지.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "4dea211f-e383-4867-a54c-c5f5a6900b52"
+        }
+      ],
+      "createdAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "relatedFiles": [
+        {
+          "path": "lib/supabase/queries/inquiries.ts",
+          "type": "TO_MODIFY",
+          "description": "getAvgResponseTime 추가"
+        },
+        {
+          "path": "components/dm/avg-response-time.tsx",
+          "type": "CREATE",
+          "description": "평균응답시간 표시 컴포넌트"
+        },
+        {
+          "path": "app/circles/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "동아리 상세에 표시"
+        },
+        {
+          "path": "components/dm/inquiry-form.tsx",
+          "type": "TO_MODIFY",
+          "description": "발신 폼 placeholder 교체"
+        }
+      ],
+      "implementationGuide": "1) 마이그레이션(apply_migration): CREATE FUNCTION avg_response_time(_circle_id uuid) — inquiry_messages에서 inquirer 메시지 직후 circle_staff 첫 응답 시간차 AVG, created_at>now()-interval'3 months'. GRANT EXECUTE TO authenticated, anon.\\n2) lib/supabase/queries/inquiries.ts getAvgResponseTime(circleId): 함수 호출, 공개 통계라 unstable_cache(tags:['circles']) 적용 검토(본문 아닌 수치만).\\n3) 표시 컴포넌트 components/dm/avg-response-time.tsx: 값 있으면 平均的にN日以内に返信, NULL이면 データ収集中.\\n4) 동아리 상세 page.tsx + 발신 폼 inquiry-form.tsx의 placeholder를 실제 컴포넌트로 교체.",
+      "verificationCriteria": "답변 있는 동아리→平均的に○日以内に返信 표시. 답변 없는 동아리→データ収集中. 강제표현 없음. 함수 GRANT 적용·get_advisors 경고 0건.",
+      "analysisResult": "K CLUB Phase 1-4「운영진 DM」(T-027~T-034). 검토자→운영진 1:1 비공개 DM(Supabase Realtime 실시간) + 운영진 그룹 인박스 + 신고·차단·cooldown·presence 온라인상태·평균응답시간 안전망/통계. DB 5테이블(inquiries/inquiry_messages/inquiry_reports/user_blocks/presence, T-006)·헬퍼(is_circle_staff/is_admin) 적용 완료. Realtime 첫 도입. 공통 제약: ①3-context 클라이언트 엄수(Client=lib/supabase/client.ts, Server=server.ts 매번 생성), DM 개인데이터는 unstable_cache 금지 ②인증은 proxy.ts/updateSession ③Defense in Depth 권한 2회 검증(page 가드+Server Action 재검증, events/actions.ts 패턴) ④안티패턴 A-1(redirect_to 보존)·A-5(既読 금지, 未読 N件만) ⑤일본어 UI·shadcn new-york·cn()·サークル部活動·금지어(公認/公式LINEに参加/必ず) ⑥변수영어/주석한국어. 디렉터리: app/circles/[id]/dm/, app/(tabs)/mypage/inbox/, app/admin/inquiry-reports/, components/dm/, lib/supabase/queries/inquiries.ts, lib/dm/(zod·상수). 각 동적 라우트에 loading.tsx 스켈레톤."
+    }
+  ]
 }
