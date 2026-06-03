@@ -250,14 +250,14 @@
       "name": "T-032 차단 UI + 발신 차단 검증",
       "description": "운영진이 인박스 스레드 메뉴 「このユーザーをブロック」로 검토자 차단(user_blocks INSERT: blocker_user_id, blocked_user_id, circle_id). 차단된 검토자는 해당 동아리 DM 발신 불가 — T-027 sendInquiry Server Action의 차단 검증 placeholder를 실제 구현으로 교체. 발신 폼 진입 시 차단 상태면 「現在お問い合わせを受け付けていません」 안내. 운영진 관리 페이지에서 차단 해제. 운영진→검토자 단방향만(Phase 1).",
       "notes": "user_blocks 복합PK(blocker,blocked,circle). 차단 사유 컬럼은 현재 스키마에 없음(후속 검토). 양방향 차단은 Phase 1 미도입.",
-      "status": "pending",
+      "status": "in_progress",
       "dependencies": [
         {
           "taskId": "fc3a1369-e260-4c04-a053-6748b63f6585"
         }
       ],
       "createdAt": "2026-06-03T07:48:12.379Z",
-      "updatedAt": "2026-06-03T07:48:12.379Z",
+      "updatedAt": "2026-06-03T08:18:53.258Z",
       "relatedFiles": [
         {
           "path": "app/circles/[id]/dm/actions.ts",
